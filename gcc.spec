@@ -1,42 +1,14 @@
-# type := core | other | full
-%define type core
-#define type other
-#define type full
-
-%if "%{type}" == "core"
 %define _vendor Manbo
 %define _host_vendor manbo
 %define _real_vendor manbo
-%endif
 
-%if "%{type}" == "core"
-%define base_name		gcc-core
-%define include_core		1
-%define include_other		0
-%endif
-%if "%{type}" == "other"
-%define base_name		gcc-other
-%define include_core		0
-%define include_other		1
-%endif
-%if "%{type}" == "full"
-%define base_name		gcc-full
-%define include_core		1
-%define include_other		1
-%endif
-
-%define name			%{cross_prefix}%{base_name}%{package_suffix}
-%define gcc_name		%{cross_prefix}gcc%{package_suffix}
+%define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.2
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.2.3
 %define snapshot_version	%{branch}-20071128
 %define base_release		4
-%if "%{_real_vendor}" == "manbo"
 %define release			%{manbo_mkrel %{base_release}}
-%else
-%define release			%{mkrel %{base_release}}
-%endif
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
@@ -221,7 +193,7 @@
 %define build_objc		1
 %define build_objcp		1
 %define build_libmudflap	1
-%define build_libgomp		1
+%define build_libgomp           1
 %define build_libffi		1
 %define build_java		1
 %define build_debug		0
@@ -293,12 +265,10 @@
 %endif
 
 # Allow --with[out] <feature> at rpm command line build
-%{expand: %{?_without_DOC:	%%global build_doc 0}}
 %{expand: %{?_without_PDF:	%%global build_pdf_doc 0}}
 %{expand: %{?_without_DEBUG:	%%global build_debug 0}}
 %{expand: %{?_without_CHECK:	%%global build_check 0}}
 %{expand: %{?_without_MINIMAL:	%%global build_minimal 0}}
-%{expand: %{?_with_DOC:		%%global build_doc 1}}
 %{expand: %{?_with_PDF:		%%global build_pdf_doc 1}}
 %{expand: %{?_with_DEBUG:	%%global build_debug 1}}
 %{expand: %{?_with_CHECK:	%%global build_check 1}}
@@ -327,9 +297,6 @@
 %define build_minimal		1
 %define libc_shared		0
 %endif
-%if "%{type}" == "core"
-%define build_minimal		1
-%endif
 %if %{build_minimal}
 %define build_doc		0
 %define build_pdf_doc		0
@@ -343,7 +310,6 @@
 %define build_debug		0
 %define build_libffi		0
 %define build_libmudflap	0
-%define build_libgomp		0
 %endif
 %if %{build_cross}
 %define build_monolithic	1
@@ -486,7 +452,10 @@ Conflicts:	gcc-cpp < 3.2.2-4mdk
 %if %{use_hash_style_gnu}
 %define binutils_version 2.16.91.0.7-6mdk
 %endif
+Requires:	%{cross_prefix}binutils >= %{binutils_version}
 BuildRequires:	%{cross_prefix}binutils >= %{binutils_version}
+# Make sure gdb will understand DW_FORM_strp
+Conflicts:	gdb < 5.1.1
 BuildRequires:	zlib-devel
 %if %{gcc34_as_system_compiler}
 # We need gcc3.4 + its libstdc++ headers
@@ -502,20 +471,30 @@ BuildRequires:	gcc4.0 >= %{gcc40_version}, gcc4.0-c++ >= %{gcc40_version}
 %endif
 %if %{build_ada}
 # Ada requires Ada to build
-BuildRequires:	%{gcc_name}-gnat >= 3.1, %{libgnat_name} >= 3.1
+BuildRequires:	%{name}-gnat >= 3.1, %{libgnat_name} >= 3.1
 %endif
+Requires:	%{name}-cpp = %{version}-%{release}
+# FIXME: We need a libgcc with 3.4 symbols
+%if %{libc_shared} && !%{build_monolithic}
+Requires:	%{libgcc_name_orig} >= 3.3.2-5mdk
+%endif
+Requires(post): update-alternatives
+Requires(postun): update-alternatives
 BuildRequires:	gettext, flex, bison
-%if %{build_doc}
 BuildRequires:	texinfo >= 4.1
-%endif
 # XXX: Needs a GNU awk recent enough to correctly generate options.h
 BuildRequires:	gawk >= 3.1.4
 %if "%{?libc_version:%{libc_version}}" != ""
+Requires:	%{cross_prefix}%{libc}-devel >= %{libc_version}
 BuildRequires:	%{cross_prefix}%{libc}-devel >= %{libc_version}
 %endif
 %if %{build_check}
 BuildRequires:	%{cross_prefix}glibc-static-devel
 BuildRequires:	autogen
+%endif
+%if %{system_compiler}
+Obsoletes:	gcc%{branch}
+Provides:	gcc%{branch} = %{version}-%{release}
 %endif
 %if %{build_pdf_doc}
 BuildRequires:	tetex, tetex-dvips, tetex-latex
@@ -538,11 +517,6 @@ If you have multiple versions of GCC installed on your system, it is
 preferred to type "gcc-$(gcc%{branch}-version)" (without double quotes) in
 order to use the GNU C compiler version %{version}.
 
-%if %{include_core}
-
-####################################################################
-# GCC libraries
-
 %package -n %{libgcc_name}
 Summary:	GNU C library
 Group:		System/Libraries
@@ -561,96 +535,17 @@ AutoProv:	false
 The %{libgcc_name} package contains GCC shared libraries for gcc %{branch}
 
 ####################################################################
-# C Compiler
-
-%package -n %{gcc_name}
-Summary: 	C compiler
-Group:		Development/C
-Requires:	%{cross_prefix}binutils >= %{binutils_version}
-# Make sure gdb will understand DW_FORM_strp
-Conflicts:	gdb < 5.1.1
-Requires:	%{gcc_name}-cpp = %{version}-%{release}
-%if %{libc_shared} && !%{build_monolithic}
-Requires:	%{libgcc_name_orig} >= 3.3.2-5mdk
-%endif
-# FIXME: We need a libgcc with 3.4 symbols
-Requires(post): update-alternatives
-Requires(postun): update-alternatives
-Requires:	%{cross_prefix}%{libc}-devel >= %{libc_version}
-%if "%{gcc_name}" != "%{cross_prefix}gcc%{branch}"
-Obsoletes:	%{cross_prefix}gcc%{branch}
-Provides:	%{cross_prefix}gcc%{branch} = %{version}-%{release}
-%endif
-%if "%{_real_vendor}" == "manbo"
-Requires:	manbo-files-gcc = %{version}
-%endif
-
-%description -n %{gcc_name}
-This package contains GNU C compiler.
-
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "gcc-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU C compiler version %{version}.
-
-####################################################################
-# Preprocessor
-
-%package -n %{gcc_name}-cpp
-Summary:	The C Preprocessor
-Group:		Development/C
-%if %{system_compiler}
-Obsoletes:	gcc%{branch}-cpp
-Provides:	gcc%{branch}-cpp = %{version}-%{release}
-%endif
-Requires(post): update-alternatives
-Requires(postun): update-alternatives
-
-%description -n %{gcc_name}-cpp
-The C preprocessor is a 'macro processor' which is used automatically
-by the C compiler to transform your program before actual
-compilation. It is called a macro processor because it allows
-you to define 'macros,' which are abbreviations for longer
-constructs.
-
-The C preprocessor provides four separate facilities that you can use as
-you see fit:
-
-* Inclusion of header files. These are files of declarations that can be
-  substituted into your program.
-* Macro expansion. You can define 'macros,' which are abbreviations for 
-  arbitrary fragments of C code, and then the C preprocessor will replace
-  the macros with their definitions throughout the program.
-* Conditional compilation. Using special preprocessing directives,
-  you can include or exclude parts of the program according to various
-  conditions.
-* Line control. If you use a program to combine or rearrange source files
-  into an intermediate file which is then compiled, you can use line
-  control to inform the compiler about where each source line originated.
-
-You should install this package if you are a programmer who is searching for
-such a macro processor.
-
-If you have multiple versions of GCC installed on your system, you
-will have to type "cpp -V%{version}" or "cpp-%{version}" (without double quotes)
-in order to use the GNU C Preprocessor version %{version}.
-
-%endif # include_core
-
-%if %{include_other}
-
-####################################################################
 # C++ Compiler
 
-%package -n %{gcc_name}-c++
+%package c++
 Summary:	C++ support for gcc
 Group:		Development/C++
 %if %{system_compiler}
 Obsoletes:	gcc%{branch}-c++
 Provides:	gcc%{branch}-c++ = %{version}-%{release}
 %endif
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 # some day, rpm will be smart enough: %if (%{system_compiler} || %{build_cross}) && !%{build_monolithic}
 %if %{libc_shared}
 Requires:	%{libstdcxx_name} = %{version}
@@ -677,7 +572,7 @@ AutoProv:	false
 Requires(post): update-alternatives
 Requires(postun): update-alternatives
 
-%description -n %{gcc_name}-c++
+%description c++
 This package adds C++ support to the GNU C compiler. It includes support
 for most of the current C++ specification, including templates and
 exception handling. It does include the static standard C++
@@ -714,9 +609,6 @@ project to implement the ISO/IEC 14882:1998 Standard C++ library.
 %package -n %{libstdcxx_name_orig}-devel
 Summary:	Header files and libraries for C++ development
 Group:		Development/C++
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
 %if %{libc_shared}
 Requires:	%{libstdcxx_name} = %{version}-%{release}
 %endif
@@ -737,9 +629,6 @@ development.
 %package -n %{libstdcxx_name_orig}-static-devel
 Summary:	Static libraries for C++ development
 Group:		Development/C++
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
 Requires:	%{libstdcxx_name_orig}-devel = %{version}-%{release}
 Obsoletes:	%{libstdcxx_name_orig}%{branch}-static-devel
 Provides:	%{libstdcxx_name_orig}%{branch}-static-devel = %{version}-%{release}
@@ -757,15 +646,14 @@ package includes the static libraries needed for C++ development.
 ####################################################################
 # Objective C Compiler
 
-%package -n %{gcc_name}-objc
+%package objc
 Summary:	Objective C support for gcc
 Group:		Development/Other
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-objc
 Provides:	gcc%{branch}-objc = %{version}-%{release}
 %endif
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared} && !%{build_monolithic}
 Requires:	%{libobjc_name} = %{version}-%{release}
 %endif
@@ -774,7 +662,7 @@ AutoReq:	false
 AutoProv:	false
 %endif
 
-%description -n %{gcc_name}-objc
+%description objc
 This package adds Objective C support to the GNU C compiler. Objective
 C is an object oriented derivative of the C language, mainly used on
 systems running NeXTSTEP. This package does not include the standard
@@ -783,22 +671,21 @@ Objective C object library.
 ####################################################################
 # Objective C++ Compiler
 
-%package -n %{gcc_name}-objc++
+%package objc++
 Summary:	Objective C++ support for gcc
 Group:		Development/Other
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-objc++
 Provides:	gcc%{branch}-objc++ = %{version}-%{release}
 %endif
-Requires:	%{gcc_name}-objc = %{version}-%{release}
-Requires:	%{gcc_name}-c++ = %{version}-%{release}
+Requires:	%{name}-objc = %{version}-%{release}
+Requires:	%{name}-c++ = %{version}-%{release}
 %if %{build_cross}
 AutoReq:	false
 AutoProv:	false
 %endif
 
-%description -n %{gcc_name}-objc++
+%description objc++
 This package adds Objective C++ support to the GNU C++ compiler.
 
 ####################################################################
@@ -812,7 +699,7 @@ Provides:	%{libobjc_name_orig} = %{version}-%{release}
 Provides:	%{libobjc_name_orig}3.0 = %{version}-%{release}
 Provides:	%{libobjc_name_orig}3.1 = %{version}-%{release}
 %if !%{system_compiler}
-Conflicts:	%{gcc_name}-objc < %{branch}
+Conflicts:	%{name}-objc < %{branch}
 %endif
 %if %{build_cross}
 AutoReq:	false
@@ -825,21 +712,20 @@ Runtime libraries for the GNU Objective C Compiler.
 ####################################################################
 # Pascal Compiler
 
-%package -n %{gcc_name}-gpc
+%package gpc
 Summary:	Pascal support for gcc
 Group:		Development/Other
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-gpc
 Provides:	gcc%{branch}-gpc = %{version}-%{release}
 %endif
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{build_cross}
 AutoReq:	false
 AutoProv:	false
 %endif
 
-%description -n %{gcc_name}-gpc
+%description gpc
 The GNU Pascal Compiler (GPC) is, as the name says, the Pascal
 compiler of the GNU family.  The compiler supports the following
 language standards and quasi-standards:
@@ -856,16 +742,15 @@ order to use the GNU Pascal compiler version %{version}.
 ####################################################################
 # Fortran 95 Compiler
 
-%package -n %{gcc_name}-gfortran
+%package gfortran
 Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-gfortran
 Provides:	gcc%{branch}-gfortran = %{version}-%{release}
 %endif
 Obsoletes:	gcc%{branch}-g77
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared} && !%{build_monolithic}
 Requires:	%{libgfortran_name} = %{version}-%{release}
 %endif
@@ -878,7 +763,7 @@ AutoReq:	false
 AutoProv:	false
 %endif
 
-%description -n %{gcc_name}-gfortran
+%description gfortran
 This package adds support for compiling Fortran 95 programs with the GNU
 compiler.
 
@@ -908,20 +793,19 @@ Fortran 95 dynamically linked programs.
 ####################################################################
 # Ada 95 Compiler
 
-%package -n %{gcc_name}-gnat
+%package gnat
 Summary:	Ada 95 support for gcc
 Group:		Development/Other
 Requires:	%{libgnat_name} = %{version}-%{release}
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-gnat
 Provides:	gcc%{branch}-gnat = %{version}-%{release}
 %endif
 Obsoletes:	%{cross_prefix}gnat
 Provides:	%{cross_prefix}gnat = %{version}-%{release}
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 
-%description -n %{gcc_name}-gnat
+%description gnat
 This package contains an Ada95 compiler and associated development
 tools based on the GNU gcc technology. Ada95 is the object oriented
 successor of the Ada83 language. To build this package from sources
@@ -948,22 +832,21 @@ Posix 1003.5 Binding (Florist).
 ####################################################################
 # Java Compiler
 
-%package -n %{gcc_name}-java
+%package java
 Summary:	Java support for gcc
 Group:		Development/Java
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	gcc%{branch}-java
 Provides:	gcc%{branch}-java = %{version}-%{release}
 %endif
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 Requires:	%{GCJ_TOOLS} = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
 Requires:	%{libgcj_devel_name} >= %{version}
 Requires(post): update-alternatives
 Requires(postun): update-alternatives
 
-%description -n %{gcc_name}-java
+%description java
 This package adds experimental support for compiling Java(tm) programs
 and bytecode into native code. To use this you will also need the
 libgcj package.
@@ -1062,7 +945,6 @@ Requires:	%{libgcj_name} = %{version}-%{release}
 Provides:	%{libgcj_name_orig}%{branch}-devel = %{version}-%{release}
 Provides:	%{libgcj_name_orig}-devel = %{version}-%{release}
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	libgcj3-devel
 Obsoletes:	libgcj4-devel
 Obsoletes:	libgcj5-devel
@@ -1082,7 +964,6 @@ Requires:	%{libgcj_devel_name} = %{version}-%{release}
 Provides:	%{libgcj_name_orig}%{branch}-static-devel = %{version}-%{release}
 Provides:	%{libgcj_name_orig}-static-devel = %{version}-%{release}
 %if %{system_compiler}
-Requires(pre):	manbo-files-gcc
 Obsoletes:	libgcj3-static-devel
 Obsoletes:	libgcj4-static-devel
 Obsoletes:	libgcj5-static-devel
@@ -1127,9 +1008,6 @@ for FFI support.
 %package -n %{libffi_name_orig}-devel
 Summary:	Development headers and static library for FFI
 Group:		Development/C
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
 Requires:	%{libffi_name} = %{version}-%{release}
 Provides:	%{libffi_name_orig}%{branch}-devel = %{version}-%{release}
 Provides:	%{libffi_name_orig}4-devel
@@ -1166,10 +1044,7 @@ Refer to the documentation for -fmudflap and -fmudflapth.
 %package -n %{libmudflap_name_orig}-devel
 Summary:	GCC mudflap support
 Group:		Development/C
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
+Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared}
 Requires:	%{libmudflap_name} = %{version}-%{release}
 %endif
@@ -1197,10 +1072,7 @@ for SSP support.
 %package -n %{libssp_name_orig}-devel
 Summary:	GCC SSP support
 Group:		Development/C
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
-Requires:	%{cross_prefix}gcc%{branch} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared}
 Requires:	%{libssp_name} = %{version}-%{release}
 %endif
@@ -1225,10 +1097,7 @@ for OpenMP support.
 %package -n %{libgomp_name_orig}-devel
 Summary:	GCC OpenMP support
 Group:		Development/C
-%if %{system_compiler}
-Requires(pre):	manbo-files-gcc
-%endif
-Requires:	%{gcc_name} >= %{version}-%{base_release}
+Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared}
 Requires:	%{libgomp_name} = %{version}-%{release}
 %endif
@@ -1236,6 +1105,48 @@ Requires:	%{libgomp_name} = %{version}-%{release}
 %description -n %{libgomp_name_orig}-devel
 This package contains headers and static libraries for building 
 programs that use OpenMP.
+
+####################################################################
+# Preprocessor
+
+%package cpp
+Summary:	The C Preprocessor
+Group:		Development/C
+%if %{system_compiler}
+Obsoletes:	gcc%{branch}-cpp
+Provides:	gcc%{branch}-cpp = %{version}-%{release}
+%endif
+Requires(post): update-alternatives
+Requires(postun): update-alternatives
+
+%description cpp
+The C preprocessor is a 'macro processor' which is used automatically
+by the C compiler to transform your program before actual
+compilation. It is called a macro processor because it allows
+you to define 'macros,' which are abbreviations for longer
+constructs.
+
+The C preprocessor provides four separate facilities that you can use as
+you see fit:
+
+* Inclusion of header files. These are files of declarations that can be
+  substituted into your program.
+* Macro expansion. You can define 'macros,' which are abbreviations for 
+  arbitrary fragments of C code, and then the C preprocessor will replace
+  the macros with their definitions throughout the program.
+* Conditional compilation. Using special preprocessing directives,
+  you can include or exclude parts of the program according to various
+  conditions.
+* Line control. If you use a program to combine or rearrange source files
+  into an intermediate file which is then compiled, you can use line
+  control to inform the compiler about where each source line originated.
+
+You should install this package if you are a programmer who is searching for
+such a macro processor.
+
+If you have multiple versions of GCC installed on your system, you
+will have to type "cpp -V%{version}" or "cpp-%{version}" (without double quotes)
+in order to use the GNU C Preprocessor version %{version}.
 
 ####################################################################
 # SPU compilers
@@ -1261,7 +1172,7 @@ This package contains the C++ compiler for Cell SPU.
 ####################################################################
 # Documentation
 
-%package -n %{gcc_name}-doc
+%package doc
 Summary:	GCC documentation
 Group:		Development/Other
 %if %{system_compiler}
@@ -1271,13 +1182,13 @@ Provides:	gcc%{branch}-doc = %{version}-%{release}
 Requires(post): info-install
 Requires(preun): info-install
 
-%description -n %{gcc_name}-doc
+%description doc
 GCC is a compiler suite aimed at integrating all the optimizations and
 features necessary for a high-performance and stable development
 environment. This package contains the compiler documentation in INFO
 pages.
 
-%package -n %{gcc_name}-doc-pdf
+%package doc-pdf
 Summary:	GCC documentation
 Group:		Development/Other
 %if %{system_compiler}
@@ -1285,13 +1196,11 @@ Obsoletes:	gcc%{branch}-doc-pdf
 Provides:	gcc%{branch}-doc-pdf = %{version}-%{release}
 %endif
 
-%description -n %{gcc_name}-doc-pdf
+%description doc-pdf
 GCC is a compiler suite aimed at integrating all the optimizations and
 features necessary for a high-performance and stable development
 environment. This package contains the compiler printable
 documentation in PDF.
-
-%endif # include_other
 
 %prep
 %setup -q -n %{source_dir} -a 5
@@ -2026,7 +1935,7 @@ pushd $RPM_BUILD_ROOT%{_mandir}/man1;
 popd
 
 # Fix info pages
-if [[ "%{gcc_name}" = "gcc%{branch}" ]]; then
+if [[ "%{name}" = "gcc%{branch}" ]]; then
   cd $RPM_BUILD_ROOT%{_infodir}/
   for f in cpp cppinternals gcc gpc gpcs gfortran gnat-style gnat_rm gnat_ug gcj; do
     if [[ -f "$f.info" ]]; then
@@ -2037,14 +1946,10 @@ if [[ "%{gcc_name}" = "gcc%{branch}" ]]; then
   cd ..
 fi
 
-files_files=""
-
 %define find_lang /usr/lib/rpm/find-lang.sh %buildroot
-%find_lang %{gcc_name}
+%find_lang %{name}
 %find_lang cpplib
-%if %{include_other}
 %find_lang libstdc++
-%endif
 
 # Remove unpackaged files
 rm  -f $RPM_BUILD_ROOT%{_bindir}/jar
@@ -2091,7 +1996,7 @@ rm  -f $RPM_BUILD_ROOT%{target_libdir}/logging.properties
 
 # In case we are cross-compiling, don't bother to remake symlinks and
 # don't let spec-helper when stripping files either
-%if "%{gcc_name}" != "gcc"
+%if "%{name}" != "gcc"
 export DONT_SYMLINK_LIBS=1
 export DONT_STRIP=1
 %endif
@@ -2126,28 +2031,184 @@ case "$classmap_db" in
 esac
 %endif
 
-files_files="$files_files files.%{gcc_name}-cpp"
-cat <<EOF > files.%{gcc_name}-cpp
-%defattr(-,root,root)
-#
-%{_mandir}/man1/%{program_prefix}cpp%{program_suffix}.1*
-#
-%if !%{build_cross}
-/lib/cpp
-%endif
-%ghost %{_bindir}/%{cross_program_prefix}cpp
-%{_bindir}/%{program_prefix}cpp-%{version}
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1
-EOF
-cat cpplib.lang >> files.%{gcc_name}-cpp
+%clean
+rm -rf $RPM_BUILD_ROOT
 
-files_files="$files_files files.%{gcc_name}"
-cat <<EOF > files.%{gcc_name}
+%post
+/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gcc %{cross_program_prefix}gcc %{_bindir}/%{program_prefix}gcc-%{version} %{alternative_priority}
+[ -e %{_bindir}/%{cross_program_prefix}gcc ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}gcc
+
+%postun
+if [ ! -f %{_bindir}/%{cross_program_prefix}gcc-%{version} ]; then
+  /usr/sbin/update-alternatives --remove %{cross_program_prefix}gcc %{_bindir}/%{program_prefix}gcc-%{version}
+fi
+
+%if %{build_cxx}
+%post c++
+/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}g++ %{cross_program_prefix}g++ %{_bindir}/%{program_prefix}g++-%{version} %{alternative_priority} --slave %{_bindir}/%{cross_program_prefix}c++ %{cross_program_prefix}c++ %{_bindir}/%{program_prefix}g++-%{version}
+[ -e %{_bindir}/%{cross_program_prefix}g++ ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}g++
+
+%postun c++
+if [ ! -f %{_bindir}/%{cross_program_prefix}g++-%{version} ]; then
+  /usr/sbin/update-alternatives --remove %{cross_program_prefix}g++ %{_bindir}/%{program_prefix}g++-%{version}
+fi
+%endif
+
+%if %{build_libstdcxx}
+%post -n %{libstdcxx_name} -p /sbin/ldconfig
+%postun -n %{libstdcxx_name} -p /sbin/ldconfig
+%endif
+
+%post -n %{libgcc_name} -p /sbin/ldconfig
+%postun -n %{libgcc_name} -p /sbin/ldconfig
+
+%post -n %{libmudflap_name} -p /sbin/ldconfig
+%postun -n %{libmudflap_name} -p /sbin/ldconfig
+
+%if %{build_libssp}
+%post -n %{libssp_name} -p /sbin/ldconfig
+%postun -n %{libssp_name} -p /sbin/ldconfig
+%endif
+
+%post -n %{libgomp_name} -p /sbin/ldconfig
+%postun -n %{libgomp_name} -p /sbin/ldconfig
+
+%post cpp
+/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}cpp %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version} %{alternative_priority} --slave /lib/%{cross_program_prefix}cpp %{cross_program_prefix}lib_cpp %{_bindir}/%{program_prefix}cpp-%{version}
+[ -e %{_bindir}/%{cross_program_prefix}cpp ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}cpp
+
+%postun cpp
+if [ ! -f %{_bindir}/%{cross_program_prefix}cpp-%{version} ]; then
+  /usr/sbin/update-alternatives --remove %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version}
+fi
+
+%if %{build_pascal}
+%post gpc
+/usr/sbin/update-alternatives --install %{_bindir}/gpc gpc %{_bindir}/%{program_prefix}gpc-%{version} %{alternative_priority} --slave %{_bindir}/gpidump gpidump %{_bindir}/%{program_prefix}gpidump-%{version}
+[ -e %{_bindir}/gpc ] || /usr/sbin/update-alternatives --auto gpc
+
+%postun gpc
+if [ ! -f %{_bindir}/gpc-%{version} ]; then
+  /usr/sbin/update-alternatives --remove gpc %{_bindir}/%{program_prefix}gpc-%{version}
+fi
+%endif
+
+%if %{build_fortran}
+%post gfortran
+/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gfortran %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version} %{alternative_priority} --slave %{_bindir}/f95 f95 %{_bindir}/%{program_prefix}gfortran-%{version}
+[ -e %{_bindir}/%{cross_program_prefix}gfortran ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}gfortran
+
+%postun gfortran
+if [ ! -f %{_bindir}/%{cross_program_prefix}gfortran-%{version} ]; then
+  /usr/sbin/update-alternatives --remove %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version}
+fi
+%endif
+
+%if %{build_java}
+%post java
+/usr/sbin/update-alternatives --install %{_bindir}/gcj gcj %{_bindir}/gcj-%{version} %{alternative_priority}
+[ -e %{_bindir}/gcj ] || /usr/sbin/update-alternatives --auto gcj
+
+%postun java
+if [ ! -f %{_bindir}/gcj-%{version} ]; then
+  /usr/sbin/update-alternatives --remove gcj %{_bindir}/gcj-%{version}
+fi
+%endif
+
+%if %{build_java}
+%post -n %{GCJ_TOOLS}
+for app in %{gcj_alternative_programs}; do
+  # Remove binaries if not alternativeszificated yet
+  [ ! -L %{_bindir}/$app ] && /bin/rm -f %{_bindir}/$app
+  # Build slaves list
+  slaves="$slaves --slave %{_bindir}/$app $app %{_bindir}/$app-%{version}"
+done
+/usr/sbin/update-alternatives --install %{_bindir}/gij gij %{_bindir}/gij-%{version} %{gcj_alternative_priority} $slaves
+%endif
+
+%if %{build_java}
+%postun -n %{GCJ_TOOLS}
+if [ ! -f "%{_bindir}/gij-%{version}" ]; then
+  /usr/sbin/update-alternatives --remove gij %{_bindir}/gij-%{version}
+fi
+%endif
+
+%if %{build_java}
+%post -n %{libgcj_devel_name}
+/usr/sbin/update-alternatives --install %{_includedir}/libgcj libgcj %{_includedir}/libgcj-%{version} %{gcj_alternative_priority}
+%endif
+
+%if %{build_java}
+%postun -n %{libgcj_devel_name}
+if [ ! -d %{_includedir}/libgcj-%{version} ]; then
+  /usr/sbin/update-alternatives --remove libgcj %{_includedir}/libgcj-%{version}
+fi
+%endif
+
+%if %{build_java}
+%post -n %{libgcj_name} -p /sbin/ldconfig
+%postun -n %{libgcj_name} -p /sbin/ldconfig
+%endif
+
+%if %{build_objc}
+%post -n %{libobjc_name} -p /sbin/ldconfig
+%postun -n %{libobjc_name} -p /sbin/ldconfig
+%endif
+
+%if %{build_fortran}
+%post -n %{libgfortran_name} -p /sbin/ldconfig
+%postun -n %{libgfortran_name} -p /sbin/ldconfig
+%endif
+
+%if %{build_ada}
+%post -n %{libgnat_name} -p /sbin/ldconfig
+%postun -n %{libgnat_name} -p /sbin/ldconfig
+%endif
+
+%post doc
+%_install_info gcc%{_package_suffix}.info
+%_install_info cpp%{_package_suffix}.info
+%if %{build_pascal}
+%_install_info gpc%{_package_suffix}.info
+%_install_info gpcs%{_package_suffix}.info
+%endif
+%if %{build_fortran}
+%_install_info gfortran%{_package_suffix}.info
+%endif
+%if %{build_ada}
+%_install_info gnat-style%{_package_suffix}.info
+%_install_info gnat_rm%{_package_suffix}.info
+%_install_info gnat_ug%{_package_suffix}.info
+%endif
+%if %{build_java}
+%_install_info gcj%{_package_suffix}_ug.info
+%endif
+
+%preun doc
+if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info.bz2 --dir=%{_infodir}/dir --remove;fi;
+%_remove_install_info cpp%{_package_suffix}.info
+%if %{build_pascal}
+%_remove_install_info gpc%{_package_suffix}.info
+%_remove_install_info gpcs%{_package_suffix}.info
+%endif
+%if %{build_fortran}
+%_remove_install_info gfortran%{_package_suffix}.info
+%endif
+%if %{build_ada}
+%_remove_install_info gnat-style%{_package_suffix}.info
+%_remove_install_info gnat_rm%{_package_suffix}.info
+%_remove_install_info gnat_ug%{_package_suffix}.info
+%endif
+%if %{build_java}
+%_remove_install_info gcj%{_package_suffix}.info
+%endif
+
+%files -f %{name}.lang
 %defattr(-,root,root)
 #
 %doc gcc/README*
 %{_mandir}/man1/%{program_prefix}gcc%{program_suffix}.1*
-%if "%{gcc_name}" == "gcc%{package_suffix}"
+%if "%{name}" == "gcc%{package_suffix}"
 %{_mandir}/man1/gcov%{program_suffix}.1*
 %endif
 #
@@ -2156,7 +2217,7 @@ cat <<EOF > files.%{gcc_name}
 %{_bindir}/%{gcc_target_platform}-gcc%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %{_bindir}/gccbug
-%if "%{gcc_name}" == "gcc%{package_suffix}"
+%if "%{name}" == "gcc%{package_suffix}"
 %{_bindir}/protoize%{program_suffix}
 %{_bindir}/unprotoize%{program_suffix}
 %{_bindir}/gcov%{program_suffix}
@@ -2171,7 +2232,7 @@ cat <<EOF > files.%{gcc_name}
 %if !%{build_cross_bootstrap}
 %{target_libdir}/libgcc_s.so
 %endif
-%if "%{gcc_name}" == "gcc%{package_suffix}"
+%if "%{name}" == "gcc%{package_suffix}"
 %if %isarch %{nof_arches}
 %{_libdir}/nof/libgcc_s.so
 %endif
@@ -2194,7 +2255,7 @@ cat <<EOF > files.%{gcc_name}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcov.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc_eh.a
-%if "%{gcc_name}" == "gcc%{package_suffix}"
+%if "%{name}" == "gcc%{package_suffix}"
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/SYSCALLS.c.X
 %if %isarch %{biarches}
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/32
@@ -2265,18 +2326,11 @@ cat <<EOF > files.%{gcc_name}
 %if !%build_libffi && %build_java
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ffi*.h
 %endif
-EOF
-cat %{gcc_name}.lang >> files.%{gcc_name}
 
-%if "%{gcc_name}" == "%{cross_prefix}gcc" && %{libc_shared}
+%if "%{name}" == "%{cross_prefix}gcc" && %{libc_shared}
 %if !%{build_monolithic}
-files_files="$files_files files.%{libgcc_name}"
-rm -f files.%{libgcc_name}
-%define output files.%{libgcc_name}
-%else
-%define output files.%{gcc_name}
+%files -n %{libgcc_name}
 %endif
-cat <<EOF >> %{output}
 %defattr(-,root,root)
 %{target_slibdir}/libgcc_s-%{version}.so.%{libgcc_major}
 %{target_slibdir}/libgcc_s.so.%{libgcc_major}
@@ -2289,213 +2343,8 @@ cat <<EOF >> %{output}
 %{target_slibdir}/nof/libgcc_s-%{version}.so.%{libgcc_major}
 %{target_slibdir}/nof/libgcc_s.so.%{libgcc_major}
 %endif
-EOF
 %endif
 
-%if ! %{include_core} && %{include_other}
-for file in $files_files
-do
-  cat $file | grep -v "^%dir" | sed -e 's/.* //' | while read i
-  do
-    if test -n "$i"
-    then
-      rm -fr $RPM_BUILD_ROOT/$i
-    fi
-  done
-done
-%endif
-
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-%if %{include_core}
-%post -n %{gcc_name}
-/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gcc %{cross_program_prefix}gcc %{_bindir}/%{program_prefix}gcc-%{version} %{alternative_priority}
-[ -e %{_bindir}/%{cross_program_prefix}gcc ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}gcc
-
-%postun -n %{gcc_name}
-if [ ! -f %{_bindir}/%{cross_program_prefix}gcc-%{version} ]; then
-  /usr/sbin/update-alternatives --remove %{cross_program_prefix}gcc %{_bindir}/%{program_prefix}gcc-%{version}
-fi
-
-%post -n %{libgcc_name} -p /sbin/ldconfig
-%postun -n %{libgcc_name} -p /sbin/ldconfig
-
-%post -n %{gcc_name}-cpp
-/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}cpp %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version} %{alternative_priority} --slave /lib/%{cross_program_prefix}cpp %{cross_program_prefix}lib_cpp %{_bindir}/%{program_prefix}cpp-%{version}
-[ -e %{_bindir}/%{cross_program_prefix}cpp ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}cpp
-
-%postun -n %{gcc_name}-cpp
-if [ ! -f %{_bindir}/%{cross_program_prefix}cpp-%{version} ]; then
-  /usr/sbin/update-alternatives --remove %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version}
-fi
-%endif # include_core
-
-%if %{include_other}
-%if %{build_cxx}
-%post -n %{gcc_name}-c++
-/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}g++ %{cross_program_prefix}g++ %{_bindir}/%{program_prefix}g++-%{version} %{alternative_priority} --slave %{_bindir}/%{cross_program_prefix}c++ %{cross_program_prefix}c++ %{_bindir}/%{program_prefix}g++-%{version}
-[ -e %{_bindir}/%{cross_program_prefix}g++ ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}g++
-
-%postun -n %{gcc_name}-c++
-if [ ! -f %{_bindir}/%{cross_program_prefix}g++-%{version} ]; then
-  /usr/sbin/update-alternatives --remove %{cross_program_prefix}g++ %{_bindir}/%{program_prefix}g++-%{version}
-fi
-%endif
-
-%if %{build_libstdcxx}
-%post -n %{libstdcxx_name} -p /sbin/ldconfig
-%postun -n %{libstdcxx_name} -p /sbin/ldconfig
-%endif
-
-%post -n %{libmudflap_name} -p /sbin/ldconfig
-%postun -n %{libmudflap_name} -p /sbin/ldconfig
-
-%if %{build_libssp}
-%post -n %{libssp_name} -p /sbin/ldconfig
-%postun -n %{libssp_name} -p /sbin/ldconfig
-%endif
-
-%post -n %{libgomp_name} -p /sbin/ldconfig
-%postun -n %{libgomp_name} -p /sbin/ldconfig
-
-%if %{build_pascal}
-%post -n %{gcc_name}-gpc
-/usr/sbin/update-alternatives --install %{_bindir}/gpc gpc %{_bindir}/%{program_prefix}gpc-%{version} %{alternative_priority} --slave %{_bindir}/gpidump gpidump %{_bindir}/%{program_prefix}gpidump-%{version}
-[ -e %{_bindir}/gpc ] || /usr/sbin/update-alternatives --auto gpc
-
-%postun -n %{gcc_name}-gpc
-if [ ! -f %{_bindir}/gpc-%{version} ]; then
-  /usr/sbin/update-alternatives --remove gpc %{_bindir}/%{program_prefix}gpc-%{version}
-fi
-%endif
-
-%if %{build_fortran}
-%post -n %{gcc_name}-gfortran
-/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gfortran %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version} %{alternative_priority} --slave %{_bindir}/f95 f95 %{_bindir}/%{program_prefix}gfortran-%{version}
-[ -e %{_bindir}/%{cross_program_prefix}gfortran ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}gfortran
-
-%postun -n %{gcc_name}-gfortran
-if [ ! -f %{_bindir}/%{cross_program_prefix}gfortran-%{version} ]; then
-  /usr/sbin/update-alternatives --remove %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{gcc_name}-java
-/usr/sbin/update-alternatives --install %{_bindir}/gcj gcj %{_bindir}/gcj-%{version} %{alternative_priority}
-[ -e %{_bindir}/gcj ] || /usr/sbin/update-alternatives --auto gcj
-
-%postun -n %{gcc_name}-java
-if [ ! -f %{_bindir}/gcj-%{version} ]; then
-  /usr/sbin/update-alternatives --remove gcj %{_bindir}/gcj-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{GCJ_TOOLS}
-for app in %{gcj_alternative_programs}; do
-  # Remove binaries if not alternativeszificated yet
-  [ ! -L %{_bindir}/$app ] && /bin/rm -f %{_bindir}/$app
-  # Build slaves list
-  slaves="$slaves --slave %{_bindir}/$app $app %{_bindir}/$app-%{version}"
-done
-/usr/sbin/update-alternatives --install %{_bindir}/gij gij %{_bindir}/gij-%{version} %{gcj_alternative_priority} $slaves
-%endif
-
-%if %{build_java}
-%postun -n %{GCJ_TOOLS}
-if [ ! -f "%{_bindir}/gij-%{version}" ]; then
-  /usr/sbin/update-alternatives --remove gij %{_bindir}/gij-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{libgcj_devel_name}
-/usr/sbin/update-alternatives --install %{_includedir}/libgcj libgcj %{_includedir}/libgcj-%{version} %{gcj_alternative_priority}
-%endif
-
-%if %{build_java}
-%postun -n %{libgcj_devel_name}
-if [ ! -d %{_includedir}/libgcj-%{version} ]; then
-  /usr/sbin/update-alternatives --remove libgcj %{_includedir}/libgcj-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{libgcj_name} -p /sbin/ldconfig
-%postun -n %{libgcj_name} -p /sbin/ldconfig
-%endif
-
-%if %{build_objc}
-%post -n %{libobjc_name} -p /sbin/ldconfig
-%postun -n %{libobjc_name} -p /sbin/ldconfig
-%endif
-
-%if %{build_fortran}
-%post -n %{libgfortran_name} -p /sbin/ldconfig
-%postun -n %{libgfortran_name} -p /sbin/ldconfig
-%endif
-
-%if %{build_ada}
-%post -n %{libgnat_name} -p /sbin/ldconfig
-%postun -n %{libgnat_name} -p /sbin/ldconfig
-%endif
-
-%post -n %{gcc_name}-doc
-%_install_info gcc%{_package_suffix}.info
-%_install_info cpp%{_package_suffix}.info
-%if %{build_pascal}
-%_install_info gpc%{_package_suffix}.info
-%_install_info gpcs%{_package_suffix}.info
-%endif
-%if %{build_fortran}
-%_install_info gfortran%{_package_suffix}.info
-%endif
-%if %{build_ada}
-%_install_info gnat-style%{_package_suffix}.info
-%_install_info gnat_rm%{_package_suffix}.info
-%_install_info gnat_ug%{_package_suffix}.info
-%endif
-%if %{build_java}
-%_install_info gcj%{_package_suffix}_ug.info
-%endif
-
-%preun -n %{gcc_name}-doc
-if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info.bz2 --dir=%{_infodir}/dir --remove;fi;
-%_remove_install_info cpp%{_package_suffix}.info
-%if %{build_pascal}
-%_remove_install_info gpc%{_package_suffix}.info
-%_remove_install_info gpcs%{_package_suffix}.info
-%endif
-%if %{build_fortran}
-%_remove_install_info gfortran%{_package_suffix}.info
-%endif
-%if %{build_ada}
-%_remove_install_info gnat-style%{_package_suffix}.info
-%_remove_install_info gnat_rm%{_package_suffix}.info
-%_remove_install_info gnat_ug%{_package_suffix}.info
-%endif
-%if %{build_java}
-%_remove_install_info gcj%{_package_suffix}.info
-%endif
-%endif # include_other
-
-%if %{include_core}
-
-%files -n %{gcc_name}-cpp -f files.%{gcc_name}-cpp
-
-%files -n %{gcc_name} -f files.%{gcc_name}
-
-%if "%{gcc_name}" == "%{cross_prefix}gcc" && %{libc_shared}
-%if !%{build_monolithic}
-%files -n %{libgcc_name} -f files.%{libgcc_name}
-%endif
-%endif
-
-%endif # include_core
-
-%if %{include_other}
 %if %{build_libssp} && %{libc_shared}
 %if !%{build_monolithic}
 %files -n %{libssp_name}
@@ -2592,8 +2441,20 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_prefix}/lib/libgomp.spec
 %endif
 
+%files cpp -f cpplib.lang
+%defattr(-,root,root)
+#
+%{_mandir}/man1/%{program_prefix}cpp%{program_suffix}.1*
+#
+%if !%{build_cross}
+/lib/cpp
+%endif
+%ghost %{_bindir}/%{cross_program_prefix}cpp
+%{_bindir}/%{program_prefix}cpp-%{version}
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1
+
 %if %{build_cxx}
-%files -n %{gcc_name}-c++ -f libstdc++.lang
+%files c++ -f libstdc++.lang
 %defattr(-,root,root)
 #
 %doc gcc/cp/ChangeLog*
@@ -2691,7 +2552,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_objc}
-%files -n %{gcc_name}-objc
+%files objc
 %defattr(-,root,root)
 #
 %doc rpm.doc/objc/*
@@ -2736,14 +2597,14 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_objcp}
-%files -n %{gcc_name}-objc++
+%files objc++
 %defattr(-,root,root)
 %doc rpm.doc/objcp/*
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1objplus
 %endif
 
 %if %{build_pascal}
-%files -n %{gcc_name}-gpc
+%files gpc
 %defattr(-,root,root)
 #
 %doc rpm.doc/gpc/*
@@ -2770,7 +2631,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_fortran}
-%files -n %{gcc_name}-gfortran
+%files gfortran
 %defattr(-,root,root)
 #
 %doc rpm.doc/gfortran/*
@@ -2820,7 +2681,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_java}
-%files -n %{gcc_name}-java
+%files java
 %defattr(-,root,root)
 %doc gcc/java/ChangeLog*
 %{_bindir}/gcj-%{version}
@@ -2968,7 +2829,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_ada}
-%files -n %{gcc_name}-gnat
+%files gnat
 %defattr(-,root,root)
 #
 %{_bindir}/gprmake
@@ -3053,7 +2914,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_doc}
-%files -n %{gcc_name}-doc
+%files doc
 %doc gcc/*ChangeLog*
 %defattr(-,root,root)
 %if %{build_check}
@@ -3084,7 +2945,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 
 %if %{build_pdf_doc}
-%files -n %{gcc_name}-doc-pdf
+%files doc-pdf
 %defattr(-,root,root)
 %doc gcc/doc/cppinternals.pdf
 %doc gcc/doc/gcc.pdf
@@ -3097,4 +2958,5 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %doc gcc/fortran/gfortran.pdf
 %endif
 %endif
-%endif # include_other
+
+
