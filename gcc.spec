@@ -496,6 +496,9 @@ BuildRequires:	autogen
 Obsoletes:	gcc%{branch}
 Provides:	gcc%{branch} = %{version}-%{release}
 %endif
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc = %{version}
+%endif
 %if %{build_pdf_doc}
 BuildRequires:	tetex, tetex-dvips, tetex-latex
 %endif
@@ -609,6 +612,9 @@ project to implement the ISO/IEC 14882:1998 Standard C++ library.
 %package -n %{libstdcxx_name_orig}-devel
 Summary:	Header files and libraries for C++ development
 Group:		Development/C++
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc = %{version}
+%endif
 %if %{libc_shared}
 Requires:	%{libstdcxx_name} = %{version}-%{release}
 %endif
@@ -944,6 +950,9 @@ Requires:	zlib-devel
 Requires:	%{libgcj_name} = %{version}-%{release}
 Provides:	%{libgcj_name_orig}%{branch}-devel = %{version}-%{release}
 Provides:	%{libgcj_name_orig}-devel = %{version}-%{release}
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc = %{version}
+%endif
 %if %{system_compiler}
 Obsoletes:	libgcj3-devel
 Obsoletes:	libgcj4-devel
@@ -1008,6 +1017,9 @@ for FFI support.
 %package -n %{libffi_name_orig}-devel
 Summary:	Development headers and static library for FFI
 Group:		Development/C
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc = %{version}
+%endif
 Requires:	%{libffi_name} = %{version}-%{release}
 Provides:	%{libffi_name_orig}%{branch}-devel = %{version}-%{release}
 Provides:	%{libffi_name_orig}4-devel
