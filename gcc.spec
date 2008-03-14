@@ -266,6 +266,7 @@
 # Allow --with[out] <feature> at rpm command line build
 %{expand: %{?_without_PDF:	%%global build_pdf_doc 0}}
 %{expand: %{?_without_DEBUG:	%%global build_debug 0}}
+%{expand: %{?_without_check:	%%global build_check 0}}
 %{expand: %{?_without_CHECK:	%%global build_check 0}}
 %{expand: %{?_without_MINIMAL:	%%global build_minimal 0}}
 %{expand: %{?_with_PDF:		%%global build_pdf_doc 1}}
