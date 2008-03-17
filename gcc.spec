@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.2.3
 %define snapshot_version	%{branch}-20071128
-%define release			%{manbo_mkrel 5}
+%define release			%{manbo_mkrel 6}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
@@ -548,6 +548,9 @@ Obsoletes:	gcc%{branch}-c++
 Provides:	gcc%{branch}-c++ = %{version}-%{release}
 %endif
 Requires:	%{name} = %{version}-%{release}
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc-c++ = %{version}
+%endif
 %if %{system_compiler}
 # some day, rpm will be smart enough: %if (%{system_compiler} || %{build_cross}) && !%{build_monolithic}
 %if %{libc_shared}
@@ -755,6 +758,9 @@ Group:		Development/Other
 Obsoletes:	gcc%{branch}-gfortran
 Provides:	gcc%{branch}-gfortran = %{version}-%{release}
 %endif
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc-gfortran = %{version}
+%endif
 Obsoletes:	gcc%{branch}-g77
 Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared} && !%{build_monolithic}
@@ -845,6 +851,9 @@ Group:		Development/Java
 Obsoletes:	gcc%{branch}-java
 Provides:	gcc%{branch}-java = %{version}-%{release}
 %endif
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc-java = %{version}
+%endif
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{GCJ_TOOLS} = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
@@ -870,6 +879,9 @@ Group:		Development/Java
 %if %{system_compiler}
 Obsoletes:	%{cross_prefix}gcj%{branch}-tools
 Provides:	%{cross_prefix}gcj%{branch}-tools = %{version}-%{release}
+%endif
+%if "%{_real_vendor}" == "manbo"
+Requires:	manbo-files-gcc-java = %{version}
 %endif
 Provides:	%{cross_prefix}gcj-tools = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
