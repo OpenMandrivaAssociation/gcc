@@ -2246,7 +2246,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/c99
 %endif
 #
-%if %{libc_shared}
+%if %{libc_shared} && %{build_cross} || %{system_compiler}
 %if !%{build_cross_bootstrap}
 %{target_libdir}/libgcc_s.so
 %endif
