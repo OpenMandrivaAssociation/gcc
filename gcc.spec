@@ -924,6 +924,7 @@ Obsoletes:	libgcj4-devel
 Obsoletes:	libgcj5-devel
 Obsoletes:	%{mklibname gcj 6}-devel
 Obsoletes:	%{mklibname gcj 7}-devel
+Obsoletes:	%{mklibname gcj 9}-devel
 %endif
 
 %description -n %{libgcj_devel_name}
@@ -943,6 +944,7 @@ Obsoletes:	libgcj4-static-devel
 Obsoletes:	libgcj5-static-devel
 Obsoletes:	%{mklibname gcj 6}-static-devel
 Obsoletes:	%{mklibname gcj 7}-static-devel
+Obsoletes:	%{mklibname gcj 9}-static-devel
 %endif
 
 %description -n %{libgcj_static_devel_name}
