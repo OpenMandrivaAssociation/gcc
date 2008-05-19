@@ -194,6 +194,7 @@
 %define build_libffi		1
 %define build_java		1
 %define build_debug		0
+%define build_stdcxxheaders	1
 %if %{gcc40_as_system_compiler}
 %define build_libstdcxx		0
 %define build_libmudflap	0
@@ -441,7 +442,9 @@ BuildRequires:	zlib-devel
 %if %{gcc40_as_system_compiler}
 # We need gcc4.0 + its libstdc++ headers
 %define gcc40_version %(gcc4.0-version)
+%if !%{build_stdcxxheaders}
 %define libstdcxx_includedir %{target_prefix}/include/c++/%{gcc40_version}
+%endif
 BuildRequires:	gcc4.0 >= %{gcc40_version}, gcc4.0-c++ >= %{gcc40_version}
 %endif
 %if %{build_ada}
@@ -533,9 +536,12 @@ Requires:	%{libstdcxx_name_orig}-devel = %{version}
 %if %{libc_shared}
 Requires:	%{libstdcxx_name} = %{gcc40_version}
 %endif
+%if !%{build_stdcxxheaders}
 Requires:	%{libstdcxx_name_orig}-devel = %{gcc40_version}
 %endif
 %endif
+%endif
+
 %if %{build_cross}
 AutoReq:	false
 AutoProv:	false
@@ -1373,7 +1379,7 @@ CROSS_FLAGS="--disable-multilib --disable-threads"
 CROSS_FLAGS="$CROSS_FLAGS --with-build-sysroot=$PWD/../sysroot --with-headers"
 %endif
 %endif
-%if !%{system_compiler}
+%if !%{system_compiler} && !%{build_stdcxxheaders}
 LIBSTDCXX_FLAGS="$LIBSTDCXX_FLAGS --with-gxx-include-dir=%{libstdcxx_includedir}"
 %endif
 [[ -n "$CROSS_FLAGS" ]] && CROSS_FLAGS="$CROSS_FLAGS --target=%{gcc_target_platform}"
@@ -2444,6 +2450,12 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1plus
 # symlinks to gcc3.4 stuff
 %if !%{system_compiler}
+#
+%if %{build_stdcxxheaders}
+%dir %{target_prefix}/include/c++
+%{libstdcxx_includedir}
+%endif
+#
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cxxabi.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bits/cxxabi_tweaks.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libstdc++.so
