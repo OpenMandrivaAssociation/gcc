@@ -2464,8 +2464,8 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{_mandir}/man1/%{program_prefix}cpp%{program_suffix}.1*
 #
-%if !%{build_cross}
-/lib/cpp
+%if %build_cross || %system_compiler
+/lib/%{cross_program_prefix}cpp
 %endif
 %ghost %{_bindir}/%{cross_program_prefix}cpp
 %{_bindir}/%{program_prefix}cpp-%{version}
