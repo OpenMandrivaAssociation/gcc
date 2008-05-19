@@ -2045,7 +2045,7 @@ classmap_db=`LD_LIBRARY_PATH=%{buildroot}%{_libdir}:%{buildroot}/%{_lib} \
 case "$classmap_db" in
   # XXX: grmpf, make sure it's at a unique location!?
   %{gcj_libdir}/classmap.db) ;;
-  %{_prefix}/lib/../%{_lib}/gcj-%{version}/classmap.db) ;;
+  %{_prefix}/lib/../%{_lib}/gcj-%{version}-%{libgcj_major}/classmap.db) ;;
   *) echo Unexpected gcj-dbtool%{program_suffix} -p output; exit 1 ;;
 esac
 %endif
