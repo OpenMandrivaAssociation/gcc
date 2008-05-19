@@ -102,13 +102,6 @@
 %else
 %define _package_suffix		-%{package_suffix}
 %endif
-%define gcc34_as_system_compiler 0
-%if %{mdkversion} == 10100
-%define gcc34_as_system_compiler 1
-%endif
-%if %{mdkversion} == 10200
-%define gcc34_as_system_compiler 1
-%endif
 %define gcc40_as_system_compiler 0
 %if %{mdkversion} == 200600
 %define gcc40_as_system_compiler 1
@@ -201,9 +194,6 @@
 %define build_libffi		1
 %define build_java		1
 %define build_debug		0
-%if %{gcc34_as_system_compiler}
-%define build_libstdcxx		0
-%endif
 %if %{gcc40_as_system_compiler}
 %define build_libstdcxx		0
 %define build_libmudflap	0
@@ -448,12 +438,6 @@ BuildRequires:	%{cross_prefix}binutils >= %{binutils_version}
 # Make sure gdb will understand DW_FORM_strp
 Conflicts:	gdb < 5.1.1
 BuildRequires:	zlib-devel
-%if %{gcc34_as_system_compiler}
-# We need gcc3.4 + its libstdc++ headers
-%define gcc34_version %(gcc3.4-version)
-%define libstdcxx_includedir %{target_prefix}/include/c++/%{gcc34_version}
-BuildRequires:	gcc3.4 >= %{gcc34_version}, gcc3.4-c++ >= %{gcc34_version}
-%endif
 %if %{gcc40_as_system_compiler}
 # We need gcc4.0 + its libstdc++ headers
 %define gcc40_version %(gcc4.0-version)
@@ -545,12 +529,6 @@ Requires:	%{libstdcxx_name} = %{version}
 %endif
 Requires:	%{libstdcxx_name_orig}-devel = %{version}
 %else
-%if %{gcc34_as_system_compiler}
-%if %{libc_shared}
-Requires:	%{libstdcxx_name} = %{gcc34_version}
-%endif
-Requires:	%{libstdcxx_name_orig}-devel = %{gcc34_version}
-%endif
 %if %{gcc40_as_system_compiler}
 %if %{libc_shared}
 Requires:	%{libstdcxx_name} = %{gcc40_version}
