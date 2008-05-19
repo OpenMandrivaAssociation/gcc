@@ -53,8 +53,8 @@
 %{expand: %{?cross:		%%global build_cross 1}}
 %{expand: %{?cross_bootstrap:	%%global build_cross_bootstrap 1}}
 
-# System compiler in MDV 2007
-%if %{mdkversion} >= 200700
+# System compiler in MDV 2009
+%if %{mdkversion} >= 200900
 %define system_compiler		1
 %else
 %define system_compiler		0
@@ -102,9 +102,12 @@
 %else
 %define _package_suffix		-%{package_suffix}
 %endif
-%define gcc40_as_system_compiler 0
-%if %{mdkversion} == 200600
-%define gcc40_as_system_compiler 1
+%define gcc42_as_system_compiler 0
+%if %{mdkversion} == 200800
+%define gcc42_as_system_compiler 1
+%endif
+%if %{mdkversion} == 200810
+%define gcc42_as_system_compiler 1
 %endif
 %if !%{system_compiler}
 # XXX even though it's better, we should retain the system behavior
@@ -195,7 +198,7 @@
 %define build_java		1
 %define build_debug		0
 %define build_stdcxxheaders	1
-%if %{gcc40_as_system_compiler}
+%if %{gcc42_as_system_compiler}
 %define build_libstdcxx		0
 %define build_libmudflap	0
 %endif
@@ -439,13 +442,15 @@ BuildRequires:	%{cross_prefix}binutils >= %{binutils_version}
 # Make sure gdb will understand DW_FORM_strp
 Conflicts:	gdb < 5.1.1
 BuildRequires:	zlib-devel
-%if %{gcc40_as_system_compiler}
-# We need gcc4.0 + its libstdc++ headers
-%define gcc40_version %(gcc4.0-version)
+
+%if %{gcc42_as_system_compiler}
+# We need gcc4.2 + its libstdc++ headers
+%define gcc42_version %(gcc4.2-version 2>/dev/null || echo 0)
 %if !%{build_stdcxxheaders}
-%define libstdcxx_includedir %{target_prefix}/include/c++/%{gcc40_version}
+%define libstdcxx_includedir %{target_prefix}/include/c++/%{gcc42_version}
 %endif
-BuildRequires:	gcc4.0 >= %{gcc40_version}, gcc4.0-c++ >= %{gcc40_version}
+BuildRequires:	gcc4.2
+BuildRequires:	gcc4.2-c++
 %endif
 %if %{build_ada}
 # Ada requires Ada to build
@@ -532,12 +537,13 @@ Requires:	%{libstdcxx_name} = %{version}
 %endif
 Requires:	%{libstdcxx_name_orig}-devel = %{version}
 %else
-%if %{gcc40_as_system_compiler}
+
+%if %{gcc42_as_system_compiler}
 %if %{libc_shared}
-Requires:	%{libstdcxx_name} = %{gcc40_version}
+Requires:	%{libstdcxx_name} >= %{gcc42_version}
 %endif
 %if !%{build_stdcxxheaders}
-Requires:	%{libstdcxx_name_orig}-devel = %{gcc40_version}
+Requires:	%{libstdcxx_name_orig}-devel >= %{gcc42_version}
 %endif
 %endif
 %endif
