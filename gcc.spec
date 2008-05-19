@@ -1931,6 +1931,24 @@ if [[ "%{name}" = "gcc%{branch}" ]]; then
   cd ..
 fi
 
+# Sanitize rpath
+for bin in %{buildroot}%{_bindir}/* $FULLPATH/*.so $FULLPATH/ecj1; do
+  oldrpath=$(chrpath -l $bin | awk -F= '{ print $2 }')
+  newrpath=
+  for rpathdir in ${oldrpath//:/ }; do
+    rpathdir=${rpathdir/lib\/..\/lib64/lib64}
+    [[ "$rpathdir" != "%{_libdir}" ]] || continue
+    newrpath=$newrpath:$rpathdir
+  done
+  newrpath=${newrpath#:}
+  [[ "$newrpath" != "$oldrpath" ]] || continue
+  if [[ "$newrpath" == "" ]]; then
+    chrpath -d $bin
+  else
+    chrpath -r $newrpath $bin
+  fi
+done
+
 %define find_lang /usr/lib/rpm/find-lang.sh %buildroot
 %find_lang %{name}
 %find_lang cpplib
