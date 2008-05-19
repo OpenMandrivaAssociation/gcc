@@ -221,6 +221,7 @@
 %define build_pascal		0
 %define build_ada		0
 %define build_libffi		0
+%define build_libgomp		0
 %endif
 %if %{mdkversion} < 1010
 # gcc4 java requires gtk >= 2.4
