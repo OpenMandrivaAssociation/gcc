@@ -197,6 +197,7 @@
 %define build_objcp		1
 %define build_libmudflap	1
 %define build_libgomp           1
+%define build_libgcj_bc		1
 %define build_libffi		1
 %define build_java		1
 %define build_debug		0
@@ -222,6 +223,7 @@
 %define build_ada		0
 %define build_libffi		0
 %define build_libgomp		0
+#define build_libgcj_bc		1
 %endif
 %if %{mdkversion} < 1010
 # gcc4 java requires gtk >= 2.4
@@ -425,6 +427,8 @@ Patch125: gcc4-cell-spu.patch
 Patch128: gcc4-ssse3.patch
 # (cjw) disable building of 'nof' libs on ppc
 Patch129: gcc-4.1.2-ppc-soft-float-64bit-double-libs.patch
+
+Patch132: gcc43-custom-libgcj_bc-rpath.patch
 
 # Red Hat patches
 # allow --disable-libjava-multilib to disable multilib for java
@@ -1257,6 +1261,13 @@ documentation in PDF.
 %patch128 -p1 -b .ssse3
 %patch129 -p1 -b .nonof
 
+%patch132 -p1
+%if %build_libgcj_bc && !%system_compiler
+perl -pi -e 's,\@ADDITIONAL_RPATH\@,-rpath %{target_libdir}/gcj_bc-%{package_suffix},' libjava/Makefile.{am,in}
+%else
+perl -pi -e 's,\@ADDITIONAL_RPATH\@,,' libjava/Makefile.{am,in}
+%endif
+
 # Red Hat patches
 %patch201 -p1 -b .java-nomulti
 %patch202 -p0 -b .ppc64-m32-m64-multilib-only
@@ -1313,6 +1324,10 @@ cd $d
 autoconf
 cd ..
 done
+%endif
+
+%if !%build_libgcj_bc
+perl -pi -e 's,use_libgcj_bc=yes,use_libgcj_bc=no,' libjava/configure.host
 %endif
 
 # Patch version for Mandriva and bug reports
@@ -1761,9 +1776,11 @@ pushd $FULLPATH
 	DispatchLibs libgcj			%{libgcj_major}.0.0
 	DispatchLibs libgij			%{libgcj_major}.0.0
 	DispatchLibs libgcj-tools		%{libgcj_major}.0.0
+	%if %build_libgcj_bc
 	# Do not dispatch libgcj_bc, libgcj_bc.so and libgcj_bc.so.1.0.0
 	# are different libraries intentionally. We move it manually:
 	mv ../../../../..%{target_libdir}/libgcj_bc.{so,a} .
+	%endif
 	%endif
 	%if %{build_objc}
 	DispatchLibs libobjc	%{libobjc_major}.0.0
@@ -1917,10 +1934,14 @@ pushd $RPM_BUILD_ROOT%{_prefix}/lib
   ln -sf ../../lib/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{_prefix}/lib/libgcc_s_32.so
 popd
 %if %build_java
-  for lib in libgcj libgij libgcj-tools libgcj_bc; do
-    ln -sf ../../../%{gcc32_target_platform}/%{version}/$lib.a  $FULLPATH/32/$lib.a
-    ln -sf ../../../%{gcc32_target_platform}/%{version}/$lib.so $FULLPATH/32/$lib.so
-  done
+libs="libgcj libgij libgcj-tools"
+%if %build_libgcj_bc
+libs="$libs libgcj_bc"
+%endif
+for lib in $libs; do
+  ln -sf ../../../%{gcc32_target_platform}/%{version}/$lib.a  $FULLPATH/32/$lib.a
+  ln -sf ../../../%{gcc32_target_platform}/%{version}/$lib.so $FULLPATH/32/$lib.so
+done
 %endif
 %endif
 fi
@@ -2767,6 +2788,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcj_libdir}/libjawt.so
 %{gcj_libdir}/libjvm.so
 #
+%if %build_libgcj_bc && !%system_compiler
+%{target_libdir}/gcj_bc-%{package_suffix}
+%endif
+#
 %dir %{gcj_libdir}/classmap.db.d
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{gcj_libdir}/classmap.db
 %endif
@@ -2816,12 +2841,16 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj.so
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgij.so
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj-tools.so
+%if %build_libgcj_bc
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj_bc.so
+%endif
 %if %isarch %{biarches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj.so
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgij.so
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj-tools.so
+%if %build_libgcj_bc
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj_bc.so
+%endif
 %endif
 %if %isarch %{nof_arches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libgcj.so
@@ -2836,13 +2865,17 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgij.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj-tools.a
+%if %build_libgcj_bc
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj_bc.a
+%endif
 %{gcj_libdir}/libjvm.a
 %if %isarch %{biarches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgij.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj-tools.a
+%if %build_libgcj_bc
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libgcj_bc.a
+%endif
 %endif
 %if %isarch %{nof_arches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libgcj.a
