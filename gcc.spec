@@ -884,8 +884,6 @@ BuildRequires:	libjack-devel
 BuildRequires:	dssi-devel
 # for libgjsmalsa:
 BuildRequires:	libalsa-devel
-Requires:	gtk+2.0 >= 2.4.0
-BuildRequires:	libgtk+2.0-devel >= 2.4.0
 Requires:	libglib2.0 >= 2.4.0
 BuildRequires:	libglib2.0-devel >= 2.4.0
 BuildRequires:	libart_lgpl-devel >= 2.1.0
