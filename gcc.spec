@@ -3,11 +3,11 @@
 %define _real_vendor manbo
 
 %define name			%{cross_prefix}gcc%{package_suffix}
-%define branch			4.2
+%define branch			4.3
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.2.3
-%define snapshot		20071128
-%define release			%{manbo_mkrel 6}
+%define version			4.3.1
+%define snapshot		20080515
+%define release			%{manbo_mkrel 0.%{snapshot}}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
@@ -16,9 +16,9 @@
 # Define libraries major versions
 %define libgcc_major		1
 %define libstdcxx_major		6
-%define libstdcxx_minor		9
-%define libgfortran_major	2
-%define libgcj_major		8
+%define libstdcxx_minor		10
+%define libgfortran_major	3
+%define libgcj_major		9
 %define libobjc_major		2
 %define libgnat_major		1
 %define libffi_major		4
@@ -34,8 +34,7 @@
 %define _exclude_files_from_autoprov %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcj_bc.so
 
 #-- JDK version
-# "gcj" implements the JDK 1.4 language, "libgcj" is largely compatible with JDK 1.4
-%define jdk_version	1.4.2
+%define jdk_version	1.5.0
 %define jdk_base	java-%{jdk_version}-gcj
 %define jdk_home	%{_prefix}/lib/jvm/%{jdk_base}-%{jdk_version}.0/jre
 
@@ -145,7 +144,7 @@
 %endif
 %define isarch()		%(case " %* " in (*" %{arch} "*) echo 1;; (*) echo 0;; esac)
 %define gcc_libdir		%{_prefix}/lib/gcc
-%define gcj_libdir		%{target_libdir}/gcj-%{version}
+%define gcj_libdir		%{target_libdir}/gcj-%{version}-%{libgcj_major}
 
 %define target_lib             lib
 %if %isarch ppc64 sparc64 x86_64
@@ -364,7 +363,7 @@ Group:		Development/C
 
 # Main source:	(CVS)
 URL:		http://gcc.gnu.org/
-Source0:	%{source_package}.tar.lzma
+Source0:	%{source_package}.tar.bz2
 Source1:	lsb-headers-3.1.1.tar.bz2
 Source5:	gcc35-gpc-%{gpc_snapshot}.tar.bz2
 # FIXME: unless we get proper help2man package
@@ -389,7 +388,6 @@ Patch113: gcc33-pr11631.patch
 # ada
 Patch105: gcc35-ada-link.patch
 Patch106: gcc40-ada-makefile.patch
-Patch117: gcc40-ada-64bit-hack.patch
 # gnu pascal
 Patch111: gcc34-gpc-fixes.patch
 Patch112: gcc33-gpc-serialize-build.patch
@@ -398,21 +396,15 @@ Patch112: gcc33-gpc-serialize-build.patch
 Patch115: gcc40-linux32.patch
 # ?
 Patch116: gcc40-linux32-build-env.patch
-# ?
-Patch118: gcc4-libtool1.4-lib64.patch
-# java fix
-Patch120: gcc4-gjavah-jint32.patch
-# libffi
-Patch121: gcc4-libffi_a-with-pic.patch
-# cell arch
-Patch123: gcc4-cell-ppu-sched.patch
-Patch125: gcc4-cell-spu.patch
-# SSSE3 support
-Patch128: gcc4-ssse3.patch
 # (cjw) disable building of 'nof' libs on ppc
 Patch129: gcc-4.1.2-ppc-soft-float-64bit-double-libs.patch
 
+# Load property.files from /usr/lib, not /usr/lib64, so that
+# they can be shared with other classpath jvms (asked by dwalluck)
+Patch130: gcc43-no-multilib-propertydir.patch
 Patch132: gcc43-custom-libgcj_bc-rpath.patch
+
+Patch133: gcc43-db-pathtail.patch
 
 # Red Hat patches
 # allow --disable-libjava-multilib to disable multilib for java
@@ -423,7 +415,7 @@ Patch202: gcc4-ppc64-m32-m64-multilib-only.patch
 Patch207: gcc4-libltdl-multilib.patch
 
 # use hash style gnu (faster dynamic linking, cf http://lwn.net/Articles/192624/)
-Patch211: gcc42-hash-style-gnu.patch
+Patch211: gcc43-hash-style-gnu.patch
 
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
@@ -440,6 +432,7 @@ BuildRequires:	%{cross_prefix}binutils >= %{binutils_version}
 # Make sure gdb will understand DW_FORM_strp
 Conflicts:	gdb < 5.1.1
 BuildRequires:	zlib-devel
+BuildRequires:	chrpath
 
 %if %{gcc42_as_system_compiler}
 # We need gcc4.2 + its libstdc++ headers
@@ -821,6 +814,7 @@ Requires:	%{name} = %{version}-%{release}
 Requires:	%{GCJ_TOOLS} = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
 Requires:	%{libgcj_devel_name} >= %{version}
+Requires:	libecj-java
 Requires(post): update-alternatives
 Requires(postun): update-alternatives
 
@@ -854,12 +848,21 @@ This package includes Java related tools built from gcc %{version}:
 
    * gij: a Java ByteCode Interpreter
    * gcjh: generate header files from class files
-   * gjnih: generate JNI header files from class files
-   * jv-scan: print information about source files
    * jcf-dump: print information about class files
    * gcj-dbtool: tool for manipulating class file databases
    * grmic: generate stubs for Remote Method Invocation
    * grmiregistry: the remote object registry
+   * gappletviewer
+   * gc-analyze
+   * gjar
+   * gjarsigner
+   * gjavah
+   * gkeytool
+   * gnative2ascii
+   * gorbd
+   * grmid
+   * gtnameserv
+   * gserialver
 
 ####################################################################
 # Java Libraries
@@ -867,13 +870,13 @@ This package includes Java related tools built from gcc %{version}:
 %package -n %{libgcj_name}
 Summary:	GNU Java runtime libraries
 Group:		System/Libraries
-Requires:	zip >= 2.1
 Obsoletes:	%{cross_prefix}gcc-libgcj
 Provides:	%{cross_prefix}gcc-libgcj = %{version}-%{release}
 Obsoletes:	%{libgcj_name_orig}%{branch}
 Provides:	%{libgcj_name_orig}%{branch} = %{version}-%{release}
 %if %{build_java}
 BuildRequires:	libxt-devel, libxtst-devel
+BuildRequires:  jpackage-utils
 # needed for cairo support (Graphics2D)
 Requires:	gtk+2.0 >= 2.8.0
 BuildRequires:	libgtk+2.0-devel >= 2.8.0
@@ -885,6 +888,7 @@ BuildRequires:	libalsa-devel
 Requires:	libglib2.0 >= 2.4.0
 BuildRequires:	libglib2.0-devel >= 2.4.0
 BuildRequires:	libart_lgpl-devel >= 2.1.0
+BuildRequires:	eclipse-ecj
 BuildRequires:	zip
 %endif
 Obsoletes:	libgcj3, libgcj4
@@ -892,6 +896,7 @@ Obsoletes:	libgcj3, libgcj4
 Obsoletes:	libgcj5
 Obsoletes:	%{mklibname gcj 6}
 %endif
+Conflicts:	%{mklibname gcj 8}
 Requires:	%{libgcj_name_base}-base = %{version}
 %if %isarch %{biarches}
 Conflicts:	libgcj6 < 4.0.1-4mdk, lib64gcj6 < 4.0.1-4mdk
@@ -1191,14 +1196,10 @@ documentation in PDF.
 %patch113 -p1 -b .pr11631-testcase
 %patch115 -p1 -b .linux32
 %patch116 -p1 -b .linux32-build-env
-%patch117 -p1 -b .ada-64bit-hack
-%patch118 -p1 -b .libtool1.4-lib64
-%patch120 -p1 -b .gjavah-jint32
-%patch121 -p1 -b .libffi_a-with-pic
-%patch123 -p1 -b .cell-ppu-sched
-%patch125 -p1 -b .cell-spu
-%patch128 -p1 -b .ssse3
 %patch129 -p1 -b .nonof
+
+%patch130 -p1
+perl -pi -e 's,\@PROPERTYFILES\@,"%{_prefix}/lib",' libjava/gnu/classpath/natSystemProperties.cc
 
 %patch132 -p1
 %if %build_libgcj_bc && !%system_compiler
@@ -1207,12 +1208,14 @@ perl -pi -e 's,\@ADDITIONAL_RPATH\@,-rpath %{target_libdir}/gcj_bc-%{package_suf
 perl -pi -e 's,\@ADDITIONAL_RPATH\@,,' libjava/Makefile.{am,in}
 %endif
 
+%patch133 -p0
+
 # Red Hat patches
 %patch201 -p1 -b .java-nomulti
 %patch202 -p0 -b .ppc64-m32-m64-multilib-only
 %patch207 -p0 -b .libltdl-multilib
 %if %{use_hash_style_gnu}
-%patch211 -p1 -b .hash-style-gnu
+%patch211 -p0 -b .hash-style-gnu
 %endif
 
 # Integrate GNU Pascal compiler
@@ -1352,7 +1355,7 @@ glibc)		LIBSTDCXX_FLAGS="$LIBSTDCXX_FLAGS --enable-clocale=gnu";;
 esac
 %endif
 %if %{build_java}
-LIBJAVA_FLAGS="--enable-java-awt=gtk --with-java-home=%{jdk_home}"
+LIBJAVA_FLAGS="--enable-java-awt=gtk --with-java-home=%{jdk_home} --with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar"
 LIBJAVA_FLAGS="$LIBJAVA_FLAGS --enable-gtk-cairo"
 LIBJAVA_FLAGS="$LIBJAVA_FLAGS --disable-libjava-multilib"
 %else
@@ -1539,9 +1542,7 @@ rm -rf %{buildroot}
 # Fix HTML docs for libstdc++-v3
 perl -pi -e \
   's~href="l(ibstdc|atest)~href="http://gcc.gnu.org/onlinedocs/libstdc++/l\1~' \
-  libstdc++-v3/docs/html/documentation.html
-ln -sf documentation.html libstdc++-v3/docs/html/index.html
-find libstdc++-v3/docs/html -name CVS | xargs rm -rf
+  libstdc++-v3/doc/html/api.html
 
 # Create some directories, just to make sure (e.g. ColorGCC)
 mkdir -p %{buildroot}%{_bindir}
@@ -1769,7 +1770,7 @@ mv %{buildroot}%{_prefix}/lib/libgcj.spec $FULLPATH/libgcj.spec
 # is primary compiler (aka don't have the -<version> extension)
 %if %{build_java}
 pushd %{buildroot}%{_bindir}
-  for app in %{gcj_alternative_programs} gappletviewer gjarsigner gkeytool; do
+  for app in %{gcj_alternative_programs} gappletviewer gc-analyze gjar gjarsigner gjavah gkeytool gnative2ascii gorbd grmid gserialver gtnameserv; do
     [[ -f $app ]] && mv -f $app $app-%{version} || :
     [[ -f $app-%{version} ]] || { echo "Missing $app"; exit 1; }
   done
@@ -1982,20 +1983,10 @@ rm  -f %{buildroot}%{spu_prefix}/lib/*.la
 rm -fr %{buildroot}/%{_datadir}/info/
 %endif
 
-# the list of files below depend on the files installed on the system.
-# only keeping a fixed list:
-pushd %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}
-  mv include include-other
-  mkdir include 
-  for i in README altivec.h cxxabi.h emmintrin.h ffi.h ffitarget.h float.h gpc-in-c.h \
-    ia64intrin.h iso646.h jawt.h jawt_md.h jni.h jni_md.h jvmpi.h limits.h       \
-    math-68881.h mf-runtime.h mm3dnow.h mm_malloc.h mmintrin.h omp.h pmmintrin.h \
-    ppc-asm.h spe.h spu_internals.h spu_intrinsics.h spu_mfcio.h stdarg.h        \
-    stdbool.h stddef.h syslimits.h tmmintrin.h unwind.h varargs.h vec_types.h    \
-    vmx2spu.h xmmintrin.h bits gcj libgcj objc ssp                               \
-  ; do mv include-other/$i include 2>/dev/null ||: ; done
-  rm -rf include-other
-popd
+# limits.h and syslimits.h are needed in includedir
+mv %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include-fixed/{sys,}limits.h \
+	%{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include
+rm -r %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include-fixed
 
 %if %build_java
 # Handled by jpackage-utils, see #23693
@@ -2016,6 +2007,7 @@ rm -f %{buildroot}%{_infodir}/gccinstall.info*
 rm -f %{buildroot}%{_infodir}/gccint.info*
 rm -rf %{buildroot}%{_datadir}/locale
 %endif
+rm -f %{buildroot}%{_infodir}/cp-tools.info
 
 # In case we are cross-compiling, don't bother to remake symlinks and
 # don't let spec-helper when stripping files either
@@ -2307,6 +2299,9 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/float.h
 %if %isarch %{ix86} x86_64
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ammintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/nmmintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/smmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mm3dnow.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mm_malloc.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mmintrin.h
@@ -2344,7 +2339,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/syslimits.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/unwind.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/varargs.h
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/README
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bmmintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cpuid.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mmintrin-common.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdfix.h
 
 %if !%build_libffi && %build_java
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ffi*.h
@@ -2533,7 +2531,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %defattr(-,root,root)
 #
-%doc libstdc++-v3/ChangeLog* libstdc++-v3/README* libstdc++-v3/docs/html/
+%doc libstdc++-v3/ChangeLog* libstdc++-v3/README* libstdc++-v3/doc/html/
 #
 %dir %{libstdcxx_includedir}
 %{libstdcxx_includedir}/*
@@ -2717,6 +2715,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %doc gcc/java/ChangeLog*
 %{_bindir}/gcj-%{version}
 %{_bindir}/%{gcc_target_platform}-gcj
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/ecj1
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/jc1
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/jvgenmain
 %{_mandir}/man1/%{program_prefix}gcj%{program_suffix}.1*
@@ -2732,23 +2731,38 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %ghost %{_bindir}/grmic
 %ghost %{_bindir}/grmiregistry
 %{_bindir}/gappletviewer-%{version}
+%{_bindir}/gc-analyze-%{version}
+%{_bindir}/gjar-%{version}
 %{_bindir}/gjarsigner-%{version}
+%{_bindir}/gjavah-%{version}
 %{_bindir}/gkeytool-%{version}
+%{_bindir}/gnative2ascii-%{version}
+%{_bindir}/gorbd-%{version}
+%{_bindir}/grmid-%{version}
+%{_bindir}/gserialver-%{version}
+%{_bindir}/gtnameserv-%{version}
 %{_bindir}/gcj-dbtool%{program_suffix}
 %{_bindir}/gcjh%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcjh
-%{_bindir}/gjnih%{program_suffix}
 %{_bindir}/jcf-dump%{program_suffix}
-%{_bindir}/jv-scan%{program_suffix}
 #
 %{_mandir}/man1/gij*.1*
 %{_mandir}/man1/gcjh*.1*
-%{_mandir}/man1/gjnih*.1*
 %{_mandir}/man1/grmic*.1*
 %{_mandir}/man1/grmiregistry*.1*
 %{_mandir}/man1/gcj-dbtool*.1*
-%{_mandir}/man1/jv-scan*.1*
 %{_mandir}/man1/jcf-dump*.1*
+%{_mandir}/man1/gappletviewer*.1*
+%{_mandir}/man1/gc-analyze*.1*
+%{_mandir}/man1/gjar*.1*
+%{_mandir}/man1/gjavah*.1*
+%{_mandir}/man1/gkeytool*.1*
+%{_mandir}/man1/gnative2ascii*.1*
+%{_mandir}/man1/gorbd*.1*
+%{_mandir}/man1/grmid*.1*
+%{_mandir}/man1/gserialver*.1*
+%{_mandir}/man1/gtnameserv*.1*
+%{_mandir}/man1/jv-convert*.1*
 %endif
 
 %if %{build_java}
@@ -2877,7 +2891,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %files gnat
 %defattr(-,root,root)
 #
-%{_bindir}/gprmake
 %{_bindir}/gnat*
 %config(noreplace) %{_sysconfdir}/bash_completion.d/gnatmake
 #
@@ -2890,6 +2903,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/g-trasym.o
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgccprefix.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgmem.a
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgnala.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgnat.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgnarl.a
 %if %{libc_shared}
