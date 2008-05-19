@@ -1370,7 +1370,7 @@ MUDFLAP_FLAGS="--disable-libmudflap"
 %if !%{build_libgomp}
 LIBGOMP_FLAGS="--disable-libgomp"
 %endif
-%if !%{build_libffi}
+%if !%{build_libffi} && !%{build_java}
 LIBFFI_FLAGS="--disable-libffi"
 %endif
 %if %{build_cross}
@@ -1977,6 +1977,13 @@ popd
 # Handled by jpackage-utils, see #23693
 rm  -f %{buildroot}%{target_libdir}/security/classpath.security
 rm  -f %{buildroot}%{target_libdir}/logging.properties
+%endif
+
+%if %build_java && !%build_libffi
+rm %{buildroot}%{target_libdir}/libffi.*
+%if %isarch %biarches
+rm %{buildroot}%{target_libdir}/../lib/libffi.*
+%endif
 %endif
 
 %if !%{system_compiler}
