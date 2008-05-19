@@ -225,10 +225,6 @@
 %define build_libgomp		0
 #define build_libgcj_bc		1
 %endif
-%if %{mdkversion} < 1010
-# gcc4 java requires gtk >= 2.4
-%define build_java		0
-%endif
 %define use_hash_style_gnu	0
 
 # Define C library to use
@@ -362,11 +358,7 @@
 %define libgomp_name		%{libgomp_name_orig}%{libgomp_major}
 
 # Extract Mandriva Linux name and version
-%if %{mdkversion} >= 1010
 %define mdk_distro_version_file	/etc/release
-%else
-%define mdk_distro_version_file	/etc/mandriva-release
-%endif
 %define mdk_distro_version	%(perl -ne '/^([.\\w\\s]+) \\(.+\\).+/ and print $1' < %{mdk_distro_version_file})
 
 Summary:	GNU Compiler Collection
@@ -447,17 +439,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 %if %{build_cross}
 Conflicts:	gcc-cpp < 3.2.2-4mdk
 %endif
-# We want -pie support
-%define binutils_version 2.14.90.0.5-1mdk
-%if %{mdkversion} >= 1010
-%define binutils_version 2.15.90.0.3-1mdk
-%endif
-%if %{mdkversion} >= 1020
-%define binutils_version 2.15.92.0.2-1mdk
-%endif
-%if %{mdkversion} >= 200600
 %define binutils_version 2.16.91.0.2-2mdk
-%endif
 %if %{use_hash_style_gnu}
 %define binutils_version 2.16.91.0.7-6mdk
 %endif
@@ -903,15 +885,10 @@ Provides:	%{cross_prefix}gcc-libgcj = %{version}-%{release}
 Obsoletes:	%{libgcj_name_orig}%{branch}
 Provides:	%{libgcj_name_orig}%{branch} = %{version}-%{release}
 %if %{build_java}
-%if %{mdkversion} >= 200700
-# needed for split X.org
 BuildRequires:	libxt-devel, libxtst-devel
-%endif
-%if %{mdkversion} >= 200600
 # needed for cairo support (Graphics2D)
 Requires:	gtk+2.0 >= 2.8.0
 BuildRequires:	libgtk+2.0-devel >= 2.8.0
-%endif
 # for libgjsmdssi:
 BuildRequires:	libjack-devel
 BuildRequires:	dssi-devel
@@ -1387,9 +1364,7 @@ esac
 %endif
 %if %{build_java}
 LIBJAVA_FLAGS="--enable-java-awt=gtk --with-java-home=%{jdk_home}"
-%if %{mdkversion} >= 200600
 LIBJAVA_FLAGS="$LIBJAVA_FLAGS --enable-gtk-cairo"
-%endif
 LIBJAVA_FLAGS="$LIBJAVA_FLAGS --disable-libjava-multilib"
 %else
 LIBJAVA_FLAGS="--disable-libgcj"
