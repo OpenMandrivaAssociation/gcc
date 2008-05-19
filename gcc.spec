@@ -1632,14 +1632,15 @@ fi
 # Dispatch libraries to the right directories
 DispatchLibs() {
 	libname=$1 libversion=$2
-	rm -f $libname.so $libname.a
 	[[ -f ../../../../..%{target_libdir}/$libname.so.$libversion ]] && {
 	$STRIP_DEBUG ../../../../..%{target_libdir}/$libname.so.$libversion
+	rm -f $libname.so
 	ln -s ../../../../..%{target_libdir}/$libname.so.$libversion $libname.so
 	rm -f ../../../../..%{target_libdir}/$libname.so
 	} || :
 	[[ -f ../../../../..%{target_libdir}/$libname.a ]] && {
 	$STRIP_DEBUG ../../../../..%{target_libdir}/$libname.a
+	rm -f $libname.a
 	cp -f ../../../../..%{target_libdir}/$libname.a $libname.a
 	rm -f ../../../../..%{target_libdir}/$libname.a
 	} || :
@@ -1648,7 +1649,7 @@ DispatchLibs() {
 	pushd 32
 	mkdir -p %{buildroot}%{_prefix}/lib
 	skip32=
-	[[ -z "$skip32" ]] && {
+	[[ -z "$skip32" ]] && [[ -f ../../../../$libname.so.$libversion ]] && {
 	$STRIP_DEBUG ../../../../$libname.so.$libversion
 	ln -s ../../../../$libname.so.$libversion $libname.so
 	rm -f ../../../../$libname.so
