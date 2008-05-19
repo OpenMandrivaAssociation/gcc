@@ -1413,8 +1413,9 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	../configure --prefix=%{_prefix} --libexecdir=%{_prefix}/lib --with-slibdir=%{target_slibdir} \
 	--mandir=%{_mandir} --infodir=%{_infodir} --enable-checking=release \
 	--enable-languages="$LANGUAGES" $PROGRAM_PREFIX $PROGRAM_SUFFIX \
-	--host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
-	--with-system-zlib $LIBC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS $MUDFLAP_FLAGS $LIBFFI_FLAGS $LIBGOMP_FLAGS
+	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
+	--with-system-zlib $LIBC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS $MUDFLAP_FLAGS $LIBFFI_FLAGS \
+	--disable-werror $LIBGOMP_FLAGS
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 %make
