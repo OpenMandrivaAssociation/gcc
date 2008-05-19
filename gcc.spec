@@ -1413,6 +1413,9 @@ ppc)		TARGET_FLAGS="--with-cpu=750 --with-long-double-128";;
 ppc32|ppc64)	TARGET_FLAGS="--with-cpu=power4 --with-long-double-128";;
 sparc|sparcv9)	TARGET_FLAGS="--with-long-double-128";;
 esac
+# (anssi) building with external jar fails
+export JAR="no"
+export FASTJAR="no"
 CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFLAGS="$OPT_FLAGS" \
 	../configure --prefix=%{_prefix} --libexecdir=%{_prefix}/lib --with-slibdir=%{target_slibdir} \
 	--mandir=%{_mandir} --infodir=%{_infodir} --enable-checking=release \
