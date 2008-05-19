@@ -2537,8 +2537,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %exclude %{libstdcxx_includedir}/spu/bits/*
 %endif
 %if %{system_compiler}
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cxxabi.h
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bits/cxxabi_tweaks.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bits
 %endif
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libsupc++.a
@@ -2790,6 +2792,8 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{_libdir}/pkgconfig/libgcj*.pc
 #
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/gcj
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/libgcj
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/jni.h
@@ -2903,6 +2907,8 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %files -n %{libffi_name_orig}-devel
 %defattr(-,root,root)
 %doc libffi/README libffi/LICENSE libffi/ChangeLog*
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ffi*.h
 %{_libdir}/libffi.a
 %{_libdir}/libffi.so
