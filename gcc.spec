@@ -6,7 +6,7 @@
 %define branch			4.2
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.2.3
-%define snapshot_version	%{branch}-20071128
+%define snapshot		20071128
 %define release			%{manbo_mkrel 6}
 %define nof_arches		noarch
 %define spu_arches		ppc64
@@ -119,8 +119,13 @@
 %define gcj_alternative_priority 15
 %endif
 
+%if %{?snapshot}
+%define source_package		gcc-%{branch}-%{snapshot}
+%define source_dir		gcc-%{branch}-%{snapshot}
+%else
 %define source_package		gcc-%{version}
 %define source_dir		gcc-%{version}
+%endif
 
 # Define GCC target platform, and arch we built for
 %if %{build_cross}
