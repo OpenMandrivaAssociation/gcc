@@ -2493,7 +2493,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cxxabi.h
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bits/cxxabi_tweaks.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bits
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libstdc++.so
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libsupc++.a
 %if %isarch %{biarches}
