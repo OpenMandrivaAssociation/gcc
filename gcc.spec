@@ -525,10 +525,6 @@ necessary for a high-performance and stable development environment.
 This package is required for all other GCC compilers, namely C++,
 Fortran 95, Objective C, Java and Ada 95.
 
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "gcc-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU C compiler version %{version}.
-
 %package -n %{libgcc_name}
 Summary:	GNU C library
 Group:		System/Libraries
@@ -593,10 +589,6 @@ for most of the current C++ specification, including templates and
 exception handling. It does include the static standard C++
 library and C++ header files; the library for dynamically linking
 programs is available separately.
-
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "g++-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU C++ compiler version %{version}.
 
 ####################################################################
 # C++ Libraries
@@ -753,10 +745,6 @@ language standards and quasi-standards:
   * Borland Pascal 7.0,
   * parts of Borland Delphi, Mac Pascal and Pascal-SC (PXSC). 
 
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "gpc-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU Pascal compiler version %{version}.
-
 ####################################################################
 # Fortran 95 Compiler
 
@@ -787,10 +775,6 @@ AutoProv:	false
 %description gfortran
 This package adds support for compiling Fortran 95 programs with the GNU
 compiler.
-
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "gfortran-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU Fortran 95 compiler version %{version}.
 
 ####################################################################
 # Fortran 95 Libraries
@@ -875,10 +859,6 @@ This package adds experimental support for compiling Java(tm) programs
 and bytecode into native code. To use this you will also need the
 libgcj package.
 
-If you have multiple versions of GCC installed on your system, it is
-preferred to type "gcj-$(gcc%{branch}-version)" (without double quotes) in
-order to use the GNU Java compiler version %{version}.
-
 ####################################################################
 # Java Runtime Tools
 
@@ -910,10 +890,6 @@ This package includes Java related tools built from gcc %{version}:
    * gcj-dbtool: tool for manipulating class file databases
    * grmic: generate stubs for Remote Method Invocation
    * grmiregistry: the remote object registry
-
-If you have multiple versions of GCC installed on your system, the
-above-mentioned tools are called as follows: "<gcj_tool>-$(gcc%{branch}-version)"
-(without double quotes).
 
 ####################################################################
 # Java Libraries
@@ -1176,10 +1152,6 @@ you see fit:
 
 You should install this package if you are a programmer who is searching for
 such a macro processor.
-
-If you have multiple versions of GCC installed on your system, you
-will have to type "cpp -V%{version}" or "cpp-%{version}" (without double quotes)
-in order to use the GNU C Preprocessor version %{version}.
 
 ####################################################################
 # SPU compilers
