@@ -386,8 +386,6 @@ Patch2: gcc33-pr9929-testcase.patch
 Patch102: gcc32-pr7434-testcase.patch
 Patch103: gcc33-pr8213-testcase.patch
 Patch113: gcc33-pr11631.patch
-# ?
-Patch104: gcc40-cross-build-fixes.patch
 # ada
 Patch105: gcc35-ada-link.patch
 Patch106: gcc40-ada-makefile.patch
@@ -1228,7 +1226,6 @@ patch -p1 < gcc/p/diffs/gcc-3.5.0.diff
 
 # Setup files for cross-compilation
 # XXX embed uClibc / dietlibc sources? [ia64 checks for __GLIBC__]
-%patch104 -p1 -b .cross-build-fixes
 %ifarch %{spu_arches}
 sysroot=%{_prefix}/spu
 %endif
