@@ -947,7 +947,9 @@ Group: Development/Java
 # For /usr/lib/logging.properties and /usr/lib/security/classpath.security:
 Requires: jpackage-utils
 Conflicts: %{mklibname gcj 6} < 4.0.1-4mdk
+%if %{system_compiler}
 Obsoletes: libgcj6-base
+%endif
 
 %description -n %{libgcj_name_base}-base
 The Java(tm) runtime library classes.
@@ -956,7 +958,9 @@ The Java(tm) runtime library classes.
 Summary: Java library sources
 Group: Development/Java
 Requires: %{libgcj_name} = %{version}-%{release}
+%if %{system_compiler}
 Obsoletes: libgcj6-src
+%endif
 
 %description -n %{libgcj_name_base}-src
 The Java(tm) runtime library sources.
@@ -1973,6 +1977,13 @@ popd
 # Handled by jpackage-utils, see #23693
 rm  -f %{buildroot}%{target_libdir}/security/classpath.security
 rm  -f %{buildroot}%{target_libdir}/logging.properties
+%endif
+
+%if !%{system_compiler}
+rm %{buildroot}%{_bindir}/cc
+rm -f %{buildroot}%{_infodir}/gccinstall.info*
+rm -f %{buildroot}%{_infodir}/gccint.info*
+rm -rf %{buildroot}%{_datadir}/locale
 %endif
 
 # In case we are cross-compiling, don't bother to remake symlinks and
