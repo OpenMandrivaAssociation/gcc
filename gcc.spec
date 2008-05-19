@@ -37,7 +37,6 @@
 # "gcj" implements the JDK 1.4 language, "libgcj" is largely compatible with JDK 1.4
 %define jdk_version	1.4.2
 %define jdk_base	java-%{jdk_version}-gcj
-%define jdk_package	%{jdk_base}-compat
 %define jdk_home	%{_prefix}/lib/jvm/%{jdk_base}-%{jdk_version}.0/jre
 
 #-- Alternatives for Java tools
