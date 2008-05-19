@@ -1594,7 +1594,7 @@ cd ..
 echo ====================TESTING END=====================
  
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 # Fix HTML docs for libstdc++-v3
 perl -pi -e \
@@ -1604,10 +1604,10 @@ ln -sf documentation.html libstdc++-v3/docs/html/index.html
 find libstdc++-v3/docs/html -name CVS | xargs rm -rf
 
 # Create some directories, just to make sure (e.g. ColorGCC)
-mkdir -p $RPM_BUILD_ROOT%{_bindir}
-mkdir -p $RPM_BUILD_ROOT%{_mandir}
-mkdir -p $RPM_BUILD_ROOT%{_infodir}
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
+mkdir -p %{buildroot}%{_bindir}
+mkdir -p %{buildroot}%{_mandir}
+mkdir -p %{buildroot}%{_infodir}
+mkdir -p %{buildroot}%{_sysconfdir}
 
 %ifarch %{spu_arches}
 %makeinstall_std -C objs-spu
@@ -1619,64 +1619,64 @@ pushd obj-%{gcc_target_platform};
   %makeinstall_std -C %{gcc_target_platform}/libjava install-src.zip
   %endif
   %if %{build_ada}
-  for f in $RPM_BUILD_ROOT%{_infodir}/gnat_ugn_unw.info*; do
+  for f in %{buildroot}%{_infodir}/gnat_ugn_unw.info*; do
     sed -e "s/gnat_ugn_unw/gnat_ug/g" $f > ${f/gnat_ugn_unw/gnat_ug}
   done
-  chmod 644 $RPM_BUILD_ROOT%{_infodir}/gnat*
+  chmod 644 %{buildroot}%{_infodir}/gnat*
   %endif
 popd
 
-FULLVER=`$RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gcc%{program_suffix} --version | head -n 1 | cut -d' ' -f3`
-FULLPATH=$(dirname $RPM_BUILD_ROOT%{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1)
+FULLVER=`%{buildroot}%{_bindir}/%{gcc_target_platform}-gcc%{program_suffix} --version | head -n 1 | cut -d' ' -f3`
+FULLPATH=$(dirname %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1)
 
 # Create /usr/bin/%{program_prefix}gcc%{branch}-version that contains the full version of gcc
-cat >$RPM_BUILD_ROOT%{_bindir}/%{program_prefix}gcc%{branch}-version <<EOF
+cat >%{buildroot}%{_bindir}/%{program_prefix}gcc%{branch}-version <<EOF
 #!/bin/sh
 echo "$FULLVER"
 EOF
-chmod 0755 $RPM_BUILD_ROOT%{_bindir}/%{program_prefix}gcc%{branch}-version
+chmod 0755 %{buildroot}%{_bindir}/%{program_prefix}gcc%{branch}-version
 
-mv $RPM_BUILD_ROOT%{_bindir}/cpp $RPM_BUILD_ROOT%{_bindir}/cpp-%{version}
-mv $RPM_BUILD_ROOT%{_bindir}/gcc $RPM_BUILD_ROOT%{_bindir}/gcc-%{version}
+mv %{buildroot}%{_bindir}/cpp %{buildroot}%{_bindir}/cpp-%{version}
+mv %{buildroot}%{_bindir}/gcc %{buildroot}%{_bindir}/gcc-%{version}
 %if %{build_cxx}
-mv $RPM_BUILD_ROOT%{_bindir}/g++ $RPM_BUILD_ROOT%{_bindir}/g++-%{version}
+mv %{buildroot}%{_bindir}/g++ %{buildroot}%{_bindir}/g++-%{version}
 %endif
 %if %{build_fortran}
-mv $RPM_BUILD_ROOT%{_bindir}/gfortran $RPM_BUILD_ROOT%{_bindir}/gfortran-%{version}
+mv %{buildroot}%{_bindir}/gfortran %{buildroot}%{_bindir}/gfortran-%{version}
 %endif
 %if %{build_java}
-mv $RPM_BUILD_ROOT%{_bindir}/gcj $RPM_BUILD_ROOT%{_bindir}/gcj-%{version}
-mv $RPM_BUILD_ROOT%{_bindir}/gij $RPM_BUILD_ROOT%{_bindir}/gij-%{version}
+mv %{buildroot}%{_bindir}/gcj %{buildroot}%{_bindir}/gcj-%{version}
+mv %{buildroot}%{_bindir}/gij %{buildroot}%{_bindir}/gij-%{version}
 %endif
 
 # replacing hardlinks with symlinks
-ln -sf gcc-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gcc
-ln -sf gcc-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gcc-%{version}
+ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc
+ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %if %{build_cxx}
-ln -sf g++-%{version} $RPM_BUILD_ROOT%{_bindir}/c++-%{version}
-ln -sf g++-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-c++
-ln -sf g++-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-g++
+ln -sf g++-%{version} %{buildroot}%{_bindir}/c++-%{version}
+ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-c++
+ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++
 %endif
 %if %{build_fortran}
-ln -sf gfortran-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gfortran
+ln -sf gfortran-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran
 %endif
 %if %{build_java}
-ln -sf gcj-%{version} $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gcj
-ln -sf gcjh $RPM_BUILD_ROOT%{_bindir}/%{gcc_target_platform}-gcjh
+ln -sf gcj-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj
+ln -sf gcjh %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh
 %endif
 
-ln -s gcc $RPM_BUILD_ROOT%{_bindir}/cc
+ln -s gcc %{buildroot}%{_bindir}/cc
 
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
+rm -f %{buildroot}%{_infodir}/dir
 
 # Dispatch Ada 95 libraries (special case)
 %if %{build_ada} && %{libc_shared}
 pushd $FULLPATH/adalib
   rm -f libgnarl.so* libgnat.so*
-  mv -f libgnarl-*.so.* $RPM_BUILD_ROOT%{_libdir}/
+  mv -f libgnarl-*.so.* %{buildroot}%{_libdir}/
   ln -s ../../../../../%{_lib}/libgnarl-*.so.* libgnarl-%{branch}.so
   ln -s libgnarl-%{branch}.so libgnarl.so
-  mv -f libgnat-*.so.* $RPM_BUILD_ROOT%{_libdir}/
+  mv -f libgnat-*.so.* %{buildroot}%{_libdir}/
   ln -s ../../../../../%{_lib}/libgnat-*.so.* libgnat-%{branch}.so
   ln -s libgnat-%{branch}.so libgnat.so
 popd
@@ -1710,7 +1710,7 @@ DispatchLibs() {
 	%if %isarch %{biarches}
 	[ -d 32 ] || mkdir 32
 	pushd 32
-	mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib
+	mkdir -p %{buildroot}%{_prefix}/lib
 	skip32=
 	[[ -z "$skip32" ]] && {
 	$STRIP_DEBUG ../../../../$libname.so.$libversion
@@ -1799,21 +1799,21 @@ popd
 # Move Java headers to /usr/include/libgcj-<version>
 %if %{build_java}
 if [ "%{libjava_includedir}" != "%{_includedir}" ]; then
-  mkdir -p $RPM_BUILD_ROOT%{libjava_includedir}
+  mkdir -p %{buildroot}%{libjava_includedir}
   for dir in gcj gnu java javax org; do
-    mkdir -p $RPM_BUILD_ROOT%{libjava_includedir}/$dir
-    mv $RPM_BUILD_ROOT%{libstdcxx_includedir}/$dir/* $RPM_BUILD_ROOT%{libjava_includedir}/$dir/
-    rmdir $RPM_BUILD_ROOT%{libstdcxx_includedir}/$dir
+    mkdir -p %{buildroot}%{libjava_includedir}/$dir
+    mv %{buildroot}%{libstdcxx_includedir}/$dir/* %{buildroot}%{libjava_includedir}/$dir/
+    rmdir %{buildroot}%{libstdcxx_includedir}/$dir
   done
 
   # include <libgcj/XXX.h> should lead to <libgcj-VERSION/XXX.h>
-  ln -s %{libjava_includedir} $RPM_BUILD_ROOT%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/libgcj
+  ln -s %{libjava_includedir} %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/libgcj
 
   # fix pkgconfig files
-  perl -pi -e 's,^(includedir=).+,\1%{libjava_includedir},' $RPM_BUILD_ROOT%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc
+  perl -pi -e 's,^(includedir=).+,\1%{libjava_includedir},' %{buildroot}%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc
 %if %isarch %{biarches}
-  mkdir -p $RPM_BUILD_ROOT%{_libdir}/pkgconfig
-  perl -pe '/^libdir=/ and s,/lib,/%{target_lib},' $RPM_BUILD_ROOT%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc > $RPM_BUILD_ROOT%{_libdir}/pkgconfig/libgcj-%{branch}.pc
+  mkdir -p %{buildroot}%{_libdir}/pkgconfig
+  perl -pe '/^libdir=/ and s,/lib,/%{target_lib},' %{buildroot}%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc > %{buildroot}%{_libdir}/pkgconfig/libgcj-%{branch}.pc
   rm %{buildroot}%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc
 %endif
 fi
@@ -1821,13 +1821,13 @@ fi
 
 # Move libgcj.spec to compiler-specific directories
 %if %{build_java}
-mv $RPM_BUILD_ROOT%{_prefix}/lib/libgcj.spec $FULLPATH/libgcj.spec
+mv %{buildroot}%{_prefix}/lib/libgcj.spec $FULLPATH/libgcj.spec
 %endif
 
 # Rename jar because it could clash with Kaffe/classpath's if this gcc
 # is primary compiler (aka don't have the -<version> extension)
 %if %{build_java}
-pushd $RPM_BUILD_ROOT%{_bindir}
+pushd %{buildroot}%{_bindir}
   for app in %{gcj_alternative_programs} gappletviewer gjarsigner gkeytool; do
     [[ -f $app ]] && mv -f $app $app-%{version} || :
     [[ -f $app-%{version} ]] || { echo "Missing $app"; exit 1; }
@@ -1838,8 +1838,8 @@ popd
 # Move <cxxabi.h> to compiler-specific directories
 %if %{build_cxx}
 mkdir -p $FULLPATH/include/bits/
-mv $RPM_BUILD_ROOT%{libstdcxx_includedir}/cxxabi.h $FULLPATH/include/
-mv $RPM_BUILD_ROOT%{libstdcxx_includedir}/%{gcc_target_platform}/bits/cxxabi_tweaks.h $FULLPATH/include/bits/
+mv %{buildroot}%{libstdcxx_includedir}/cxxabi.h $FULLPATH/include/
+mv %{buildroot}%{libstdcxx_includedir}/%{gcc_target_platform}/bits/cxxabi_tweaks.h $FULLPATH/include/bits/
 %endif
 
 # Ship with biarch c++config.h headers
@@ -1856,7 +1856,7 @@ for i in `find %{gcc_target_platform}/[36]*/libstdc++-v3/include -name c++config
     { [[ -f "$file_32" ]] && [[ -f "$file_64" ]]; } ||
       { echo "c++config.h dispatch error"; exit 1; }
 
-    cat > $RPM_BUILD_ROOT%{libstdcxx_includedir}/%{gcc_target_platform}/bits/c++config.h <<EOF
+    cat > %{buildroot}%{libstdcxx_includedir}/%{gcc_target_platform}/bits/c++config.h <<EOF
 #ifndef _CPP_CPPCONFIG_WRAPPER
 #define _CPP_CPPCONFIG_WRAPPER 1
 #include <bits/wordsize.h>
@@ -1875,7 +1875,7 @@ popd
 
 # Link gnatgcc to gcc
 %if %{build_ada}
-ln -sf gcc $RPM_BUILD_ROOT%{_bindir}/gnatgcc
+ln -sf gcc %{buildroot}%{_bindir}/gnatgcc
 %endif
 
 # Create an empty file with perms 0755
@@ -1888,50 +1888,50 @@ FakeAlternatives() {
 }
 
 # Alternatives provide /lib/cpp and %{_bindir}/cpp
-(cd $RPM_BUILD_ROOT%{_bindir}; FakeAlternatives cpp)
+(cd %{buildroot}%{_bindir}; FakeAlternatives cpp)
 %if !%{build_cross}
-(mkdir -p $RPM_BUILD_ROOT/lib; cd $RPM_BUILD_ROOT/lib; ln -sf %{_bindir}/cpp cpp)
+(mkdir -p %{buildroot}/lib; cd %{buildroot}/lib; ln -sf %{_bindir}/cpp cpp)
 %endif
 
 # Alternatives provide /usr/bin/{gfortran,f95}
 %if %{build_fortran}
-(cd $RPM_BUILD_ROOT%{_bindir}; FakeAlternatives gfortran f95)
+(cd %{buildroot}%{_bindir}; FakeAlternatives gfortran f95)
 %endif
 
 # Alternatives provide /usr/bin/c++
 %if %{build_cxx}
-(cd $RPM_BUILD_ROOT%{_bindir}; FakeAlternatives c++)
+(cd %{buildroot}%{_bindir}; FakeAlternatives c++)
 %endif
 
 # Alternatives provide java programs
 %if %{build_java}
-(cd $RPM_BUILD_ROOT%{_bindir}; FakeAlternatives gij %{gcj_alternative_programs})
+(cd %{buildroot}%{_bindir}; FakeAlternatives gij %{gcj_alternative_programs})
 %endif
 
 if [[ -z "%{?cross_bootstrap:1}" ]] && [[ "%{libc_shared}" = "1" ]]; then
 # Move libgcc_s.so* to /%{_lib}
-pushd $RPM_BUILD_ROOT%{_prefix}/%{target_lib}
+pushd %{buildroot}%{_prefix}/%{target_lib}
   chmod 0755 libgcc_s.so.%{libgcc_major}
-  mkdir -p $RPM_BUILD_ROOT%{target_slibdir}
-  mv -f  libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_slibdir}/libgcc_s-%{version}.so.%{libgcc_major}
-  ln -sf libgcc_s-%{version}.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_slibdir}/libgcc_s.so.%{libgcc_major}
-  ln -sf %{target_slibdir}/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_libdir}/libgcc_s.so
+  mkdir -p %{buildroot}%{target_slibdir}
+  mv -f  libgcc_s.so.%{libgcc_major} %{buildroot}%{target_slibdir}/libgcc_s-%{version}.so.%{libgcc_major}
+  ln -sf libgcc_s-%{version}.so.%{libgcc_major} %{buildroot}%{target_slibdir}/libgcc_s.so.%{libgcc_major}
+  ln -sf %{target_slibdir}/libgcc_s.so.%{libgcc_major} %{buildroot}%{target_libdir}/libgcc_s.so
 %if %isarch %{nof_arches}
   chmod 0755 nof/libgcc_s.so.%{libgcc_major}
-  mkdir -p $RPM_BUILD_ROOT%{target_slibdir}/nof
-  mv -f  nof/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_slibdir}/nof/libgcc_s-%{version}.so.%{libgcc_major}
-  ln -sf libgcc_s-%{version}.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_slibdir}/nof/libgcc_s.so.%{libgcc_major}
-  ln -sf %{target_slibdir}/nof/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{target_libdir}/nof/libgcc_s.so
+  mkdir -p %{buildroot}%{target_slibdir}/nof
+  mv -f  nof/libgcc_s.so.%{libgcc_major} %{buildroot}%{target_slibdir}/nof/libgcc_s-%{version}.so.%{libgcc_major}
+  ln -sf libgcc_s-%{version}.so.%{libgcc_major} %{buildroot}%{target_slibdir}/nof/libgcc_s.so.%{libgcc_major}
+  ln -sf %{target_slibdir}/nof/libgcc_s.so.%{libgcc_major} %{buildroot}%{target_libdir}/nof/libgcc_s.so
 %endif
 popd
 %if %isarch %{biarches}
-pushd $RPM_BUILD_ROOT%{_prefix}/lib
+pushd %{buildroot}%{_prefix}/lib
   chmod 0755 libgcc_s.so.%{libgcc_major}
-  mkdir -p $RPM_BUILD_ROOT/lib
-  mv -f  libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT/lib/libgcc_s-%{version}.so.%{libgcc_major}
-  ln -sf libgcc_s-%{version}.so.%{libgcc_major} $RPM_BUILD_ROOT/lib/libgcc_s.so.%{libgcc_major}
-  ln -sf ../../lib/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{_prefix}/lib/libgcc_s.so
-  ln -sf ../../lib/libgcc_s.so.%{libgcc_major} $RPM_BUILD_ROOT%{_prefix}/lib/libgcc_s_32.so
+  mkdir -p %{buildroot}/lib
+  mv -f  libgcc_s.so.%{libgcc_major} %{buildroot}/lib/libgcc_s-%{version}.so.%{libgcc_major}
+  ln -sf libgcc_s-%{version}.so.%{libgcc_major} %{buildroot}/lib/libgcc_s.so.%{libgcc_major}
+  ln -sf ../../lib/libgcc_s.so.%{libgcc_major} %{buildroot}%{_prefix}/lib/libgcc_s.so
+  ln -sf ../../lib/libgcc_s.so.%{libgcc_major} %{buildroot}%{_prefix}/lib/libgcc_s_32.so
 popd
 %if %build_java
 libs="libgcj libgij libgcj-tools"
@@ -1948,7 +1948,7 @@ fi
 
 # Create c89 and c99 wrappers
 %if %{system_compiler}
-cat > $RPM_BUILD_ROOT%{_prefix}/bin/c89 <<"EOF"
+cat > %{buildroot}%{_prefix}/bin/c89 <<"EOF"
 #!/bin/sh
 fl="-std=c89"
 for opt; do
@@ -1960,7 +1960,7 @@ for opt; do
 done
 exec %{_bindir}/gcc-%{version} $fl ${1+"$@"}
 EOF
-cat > $RPM_BUILD_ROOT%{_prefix}/bin/c99 <<"EOF"
+cat > %{buildroot}%{_prefix}/bin/c99 <<"EOF"
 #!/bin/sh
 fl="-std=c99"
 for opt; do
@@ -1972,11 +1972,11 @@ for opt; do
 done
 exec %{_bindir}/gcc-%{version} $fl ${1+"$@"}
 EOF
-chmod 755 $RPM_BUILD_ROOT%{_prefix}/bin/c?9
+chmod 755 %{buildroot}%{_prefix}/bin/c?9
 %endif
 
 # FIXME: cpp, gcov manpages names
-pushd $RPM_BUILD_ROOT%{_mandir}/man1;
+pushd %{buildroot}%{_mandir}/man1;
   if [[ -n "%{program_prefix}%{program_suffix}" ]]; then
     for f in gcov cpp gcc g++ gfortran gpc; do
       [[ -f "$f.1" ]] && mv $f.1 %{program_prefix}$f%{program_suffix}.1 || :
@@ -1986,7 +1986,7 @@ popd
 
 # Fix info pages
 if [[ "%{name}" = "gcc%{branch}" ]]; then
-  cd $RPM_BUILD_ROOT%{_infodir}/
+  cd %{buildroot}%{_infodir}/
   for f in cpp cppinternals gcc gpc gpcs gfortran gnat-style gnat_rm gnat_ug gcj; do
     if [[ -f "$f.info" ]]; then
       perl -pe "/^START-INFO-DIR-ENTRY/ .. /^END-INFO-DIR-ENTRY/ and s/($f)/\${1}-%{branch}/ig" $f.info > ${f}-%{branch}.info
@@ -2002,30 +2002,30 @@ fi
 %find_lang libstdc++
 
 # Remove unpackaged files
-rm  -f $RPM_BUILD_ROOT%{_bindir}/jar
-rm  -f $RPM_BUILD_ROOT%{_bindir}/addr2name.awk
-rm -rf $RPM_BUILD_ROOT%{_prefix}/doc
-rm -rf $RPM_BUILD_ROOT%{_mandir}/man7
-rm  -f $RPM_BUILD_ROOT%{_libdir}/*.la
-rm  -f $RPM_BUILD_ROOT%{gcj_libdir}/*.la
-rm  -f $RPM_BUILD_ROOT%{_prefix}/lib/libiberty.a
-rm  -f $RPM_BUILD_ROOT%{target_libdir}/libiberty.a
+rm  -f %{buildroot}%{_bindir}/jar
+rm  -f %{buildroot}%{_bindir}/addr2name.awk
+rm -rf %{buildroot}%{_prefix}/doc
+rm -rf %{buildroot}%{_mandir}/man7
+rm  -f %{buildroot}%{_libdir}/*.la
+rm  -f %{buildroot}%{gcj_libdir}/*.la
+rm  -f %{buildroot}%{_prefix}/lib/libiberty.a
+rm  -f %{buildroot}%{target_libdir}/libiberty.a
 %if %isarch %{biarches}
-rm  -f $RPM_BUILD_ROOT%{_prefix}/lib/*.la
-rm  -f $RPM_BUILD_ROOT%{_prefix}/lib/32/libiberty.a
+rm  -f %{buildroot}%{_prefix}/lib/*.la
+rm  -f %{buildroot}%{_prefix}/lib/32/libiberty.a
 %endif
-rm -rf $RPM_BUILD_ROOT%{gcc_libdir}/%{gcc_target_platform}/%{version}/install-tools
+rm -rf %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/install-tools
 %ifarch %{spu_arches}
-rm -rf $RPM_BUILD_ROOT%{_prefix}/lib/gcc/spu/%{version}/install-tools
-rm  -f $RPM_BUILD_ROOT%{spu_prefix}/lib/*.la
+rm -rf %{buildroot}%{_prefix}/lib/gcc/spu/%{version}/install-tools
+rm  -f %{buildroot}%{spu_prefix}/lib/*.la
 %endif
 %if !%{build_doc}
-rm -fr $RPM_BUILD_ROOT/%{_datadir}/info/
+rm -fr %{buildroot}/%{_datadir}/info/
 %endif
 
 # the list of files below depend on the files installed on the system.
 # only keeping a fixed list:
-pushd $RPM_BUILD_ROOT%{gcc_libdir}/%{gcc_target_platform}/%{version}
+pushd %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}
   mv include include-other
   mkdir include 
   for i in README altivec.h cxxabi.h emmintrin.h ffi.h ffitarget.h float.h gpc-in-c.h \
@@ -2040,8 +2040,8 @@ popd
 
 %if %build_java
 # Handled by jpackage-utils, see #23693
-rm  -f $RPM_BUILD_ROOT%{target_libdir}/security/classpath.security
-rm  -f $RPM_BUILD_ROOT%{target_libdir}/logging.properties
+rm  -f %{buildroot}%{target_libdir}/security/classpath.security
+rm  -f %{buildroot}%{target_libdir}/logging.properties
 %endif
 
 # In case we are cross-compiling, don't bother to remake symlinks and
@@ -2058,21 +2058,21 @@ export DONT_STRIP=1
 
 %if %{build_ada}
 # gnatmake bash completion
-install -d -m 755 $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d
-install -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d/gnatmake
+install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
+install -m 644 %{SOURCE7} %{buildroot}%{_sysconfdir}/bash_completion.d/gnatmake
 %endif
 
 %if %{build_java}
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/java/gcj-endorsed \
-         $RPM_BUILD_ROOT%{gcj_libdir}/classmap.db.d
-chmod 755 $RPM_BUILD_ROOT%{_datadir}/java/gcj-endorsed \
-          $RPM_BUILD_ROOT%{gcj_libdir} \
-          $RPM_BUILD_ROOT%{gcj_libdir}/classmap.db.d
-touch $RPM_BUILD_ROOT%{gcj_libdir}/classmap.db
+mkdir -p %{buildroot}%{_datadir}/java/gcj-endorsed \
+         %{buildroot}%{gcj_libdir}/classmap.db.d
+chmod 755 %{buildroot}%{_datadir}/java/gcj-endorsed \
+          %{buildroot}%{gcj_libdir} \
+          %{buildroot}%{gcj_libdir}/classmap.db.d
+touch %{buildroot}%{gcj_libdir}/classmap.db
 
 # check if gcj-dbtool hasn't been incorrectly relinked.  rh#165781
-classmap_db=`LD_LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir}:$RPM_BUILD_ROOT/%{_lib} \
-             $RPM_BUILD_ROOT%{_bindir}/gcj-dbtool%{program_suffix} -p`
+classmap_db=`LD_LIBRARY_PATH=%{buildroot}%{_libdir}:%{buildroot}/%{_lib} \
+             %{buildroot}%{_bindir}/gcj-dbtool%{program_suffix} -p`
 case "$classmap_db" in
   # XXX: grmpf, make sure it's at a unique location!?
   %{gcj_libdir}/classmap.db) ;;
@@ -2082,7 +2082,7 @@ esac
 %endif
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %post
 /usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gcc %{cross_program_prefix}gcc %{_bindir}/%{program_prefix}gcc-%{version} %{alternative_priority}
