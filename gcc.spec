@@ -1988,7 +1988,7 @@ rm -rf %{buildroot}%{_datadir}/locale
 
 # In case we are cross-compiling, don't bother to remake symlinks and
 # don't let spec-helper when stripping files either
-%if "%{name}" != "gcc"
+%if %build_cross
 export DONT_SYMLINK_LIBS=1
 export DONT_STRIP=1
 %endif
