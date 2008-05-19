@@ -1414,10 +1414,10 @@ SSP_FLAGS="--enable-ssp --enable-libssp"
 %if %{use_ssp_glibc}
 SSP_FLAGS="--enable-ssp --disable-libssp"
 %endif
-%if ! %{build_libmudflap}
+%if !%{build_libmudflap}
 MUDFLAP_FLAGS="--disable-libmudflap"
 %endif
-%if ! %{build_libgomp}
+%if !%{build_libgomp}
 LIBGOMP_FLAGS="--disable-libgomp"
 %endif
 %if !%{build_libffi}
@@ -1749,7 +1749,7 @@ pushd $FULLPATH
 	%endif
 	%endif
 	# Make it less hard dependent on libstdc++ 3.4 minor changes
-	%if ! %{system_compiler}
+	%if !%{system_compiler}
 	[[ -f  ../../../../..%{target_libdir}/libstdc++.so.%{libstdcxx_major} ]] &&
 	ln -sf ../../../../..%{target_libdir}/libstdc++.so.%{libstdcxx_major} libstdc++.so || :
 	%if %isarch %{biarches}
@@ -1998,7 +1998,7 @@ rm -rf $RPM_BUILD_ROOT%{gcc_libdir}/%{gcc_target_platform}/%{version}/install-to
 rm -rf $RPM_BUILD_ROOT%{_prefix}/lib/gcc/spu/%{version}/install-tools
 rm  -f $RPM_BUILD_ROOT%{spu_prefix}/lib/*.la
 %endif
-%if ! %{build_doc}
+%if !%{build_doc}
 rm -fr $RPM_BUILD_ROOT/%{_datadir}/info/
 %endif
 
