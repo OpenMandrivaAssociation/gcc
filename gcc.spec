@@ -38,13 +38,6 @@
 %define jdk_base	java-%{jdk_version}-gcj
 %define jdk_home	%{_prefix}/lib/jvm/%{jdk_base}-%{jdk_version}.0/jre
 
-#-- Alternatives for Java tools
-#       Sun JDK         40
-#       Kaffe           30
-#       Gcj 3.2         20
-%define gcj_alternative_priority 20
-%define gcj_alternative_programs grmic grmiregistry
-
 # Define if building a cross compiler
 # FIXME: assume user does not define both cross and cross_bootstrap variables
 %define build_cross		0
@@ -107,11 +100,6 @@
 %endif
 %if %{mdkversion} == 200810
 %define gcc42_as_system_compiler 1
-%endif
-%if !%{system_compiler}
-# XXX even though it's better, we should retain the system behavior
-# and let the user decide
-%define gcj_alternative_priority 15
 %endif
 
 %if %{?snapshot}
@@ -815,8 +803,6 @@ Requires:	%{GCJ_TOOLS} = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
 Requires:	%{libgcj_devel_name} >= %{version}
 Requires:	libecj-java
-Requires(post): update-alternatives
-Requires(postun): update-alternatives
 
 %description java
 This package adds experimental support for compiling Java(tm) programs
@@ -840,8 +826,7 @@ Provides:	%{cross_prefix}gcj-tools = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
 Requires:	%{libgcj_devel_name} >= %{version}
 Conflicts:	kaffe < 1.0.7-3mdk
-Requires(post): update-alternatives
-Requires(postun): update-alternatives
+Conflicts:	classpath < 0.97.1-2
 
 %description -n %{GCJ_TOOLS}
 This package includes Java related tools built from gcc %{version}:
@@ -1584,13 +1569,6 @@ mv %{buildroot}%{_bindir}/gcc %{buildroot}%{_bindir}/gcc-%{version}
 %if %{build_cxx}
 mv %{buildroot}%{_bindir}/g++ %{buildroot}%{_bindir}/g++-%{version}
 %endif
-%if %{build_fortran}
-mv %{buildroot}%{_bindir}/gfortran %{buildroot}%{_bindir}/gfortran-%{version}
-%endif
-%if %{build_java}
-mv %{buildroot}%{_bindir}/gcj %{buildroot}%{_bindir}/gcj-%{version}
-mv %{buildroot}%{_bindir}/gij %{buildroot}%{_bindir}/gij-%{version}
-%endif
 
 # replacing hardlinks with symlinks
 ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc
@@ -1768,17 +1746,6 @@ fi
 mv %{buildroot}%{_prefix}/lib/libgcj.spec $FULLPATH/libgcj.spec
 %endif
 
-# Rename jar because it could clash with Kaffe/classpath's if this gcc
-# is primary compiler (aka don't have the -<version> extension)
-%if %{build_java}
-pushd %{buildroot}%{_bindir}
-  for app in %{gcj_alternative_programs} gappletviewer gc-analyze gjar gjarsigner gjavah gkeytool gnative2ascii gorbd grmid gserialver gtnameserv; do
-    [[ -f $app ]] && mv -f $app $app-%{version} || :
-    [[ -f $app-%{version} ]] || { echo "Missing $app"; exit 1; }
-  done
-popd
-%endif
-
 # Move <cxxabi.h> to compiler-specific directories
 %if %{build_cxx}
 mkdir -p $FULLPATH/include/bits/
@@ -1837,19 +1804,9 @@ FakeAlternatives() {
 (mkdir -p %{buildroot}/lib; cd %{buildroot}/lib; ln -sf %{_bindir}/cpp cpp)
 %endif
 
-# Alternatives provide /usr/bin/{gfortran,f95}
-%if %{build_fortran}
-(cd %{buildroot}%{_bindir}; FakeAlternatives gfortran f95)
-%endif
-
 # Alternatives provide /usr/bin/c++
 %if %{build_cxx}
 (cd %{buildroot}%{_bindir}; FakeAlternatives c++)
-%endif
-
-# Alternatives provide java programs
-%if %{build_java}
-(cd %{buildroot}%{_bindir}; FakeAlternatives gij %{gcj_alternative_programs})
 %endif
 
 if [[ -z "%{?cross_bootstrap:1}" ]] && [[ "%{libc_shared}" = "1" ]]; then
@@ -2098,69 +2055,6 @@ fi
 if [ ! -f %{_bindir}/%{cross_program_prefix}cpp-%{version} ]; then
   /usr/sbin/update-alternatives --remove %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version}
 fi
-
-%if %{build_pascal}
-%post gpc
-/usr/sbin/update-alternatives --install %{_bindir}/gpc gpc %{_bindir}/%{program_prefix}gpc-%{version} %{alternative_priority} --slave %{_bindir}/gpidump gpidump %{_bindir}/%{program_prefix}gpidump-%{version}
-[ -e %{_bindir}/gpc ] || /usr/sbin/update-alternatives --auto gpc
-
-%postun gpc
-if [ ! -f %{_bindir}/gpc-%{version} ]; then
-  /usr/sbin/update-alternatives --remove gpc %{_bindir}/%{program_prefix}gpc-%{version}
-fi
-%endif
-
-%if %{build_fortran}
-%post gfortran
-/usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}gfortran %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version} %{alternative_priority} --slave %{_bindir}/f95 f95 %{_bindir}/%{program_prefix}gfortran-%{version}
-[ -e %{_bindir}/%{cross_program_prefix}gfortran ] || /usr/sbin/update-alternatives --auto %{cross_program_prefix}gfortran
-
-%postun gfortran
-if [ ! -f %{_bindir}/%{cross_program_prefix}gfortran-%{version} ]; then
-  /usr/sbin/update-alternatives --remove %{cross_program_prefix}gfortran %{_bindir}/%{program_prefix}gfortran-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post java
-/usr/sbin/update-alternatives --install %{_bindir}/gcj gcj %{_bindir}/gcj-%{version} %{alternative_priority}
-[ -e %{_bindir}/gcj ] || /usr/sbin/update-alternatives --auto gcj
-
-%postun java
-if [ ! -f %{_bindir}/gcj-%{version} ]; then
-  /usr/sbin/update-alternatives --remove gcj %{_bindir}/gcj-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{GCJ_TOOLS}
-for app in %{gcj_alternative_programs}; do
-  # Remove binaries if not alternativeszificated yet
-  [ ! -L %{_bindir}/$app ] && /bin/rm -f %{_bindir}/$app
-  # Build slaves list
-  slaves="$slaves --slave %{_bindir}/$app $app %{_bindir}/$app-%{version}"
-done
-/usr/sbin/update-alternatives --install %{_bindir}/gij gij %{_bindir}/gij-%{version} %{gcj_alternative_priority} $slaves
-%endif
-
-%if %{build_java}
-%postun -n %{GCJ_TOOLS}
-if [ ! -f "%{_bindir}/gij-%{version}" ]; then
-  /usr/sbin/update-alternatives --remove gij %{_bindir}/gij-%{version}
-fi
-%endif
-
-%if %{build_java}
-%post -n %{libgcj_devel_name}
-/usr/sbin/update-alternatives --install %{_includedir}/libgcj libgcj %{_includedir}/libgcj-%{version} %{gcj_alternative_priority}
-%endif
-
-%if %{build_java}
-%postun -n %{libgcj_devel_name}
-if [ ! -d %{_includedir}/libgcj-%{version} ]; then
-  /usr/sbin/update-alternatives --remove libgcj %{_includedir}/libgcj-%{version}
-fi
-%endif
 
 %if %{build_java}
 %post -n %{libgcj_name} -p /sbin/ldconfig
@@ -2644,10 +2538,8 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{_bindir}/gpc-run
 %{_bindir}/binobj
-%ghost %{_bindir}/gpc
-%ghost %{_bindir}/gpidump
-%{_bindir}/%{program_prefix}gpc-%{version}
-%{_bindir}/%{program_prefix}gpidump-%{version}
+%{_bindir}/%{program_prefix}gpc%{program_suffix}
+%{_bindir}/%{program_prefix}gpidump%{program_suffix}
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/gpc1
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/gpcpp
@@ -2668,9 +2560,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %doc rpm.doc/gfortran/*
 %{_mandir}/man1/%{program_prefix}gfortran%{program_suffix}.1*
 #
-%ghost %{_bindir}/%{cross_program_prefix}gfortran
-%ghost %{_bindir}/%{cross_program_prefix}f95
-%{_bindir}/%{program_prefix}gfortran-%{version}
+%{_bindir}/%{program_prefix}gfortran%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gfortran%{program_suffix}
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/f951
@@ -2715,7 +2605,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %files java
 %defattr(-,root,root)
 %doc gcc/java/ChangeLog*
-%{_bindir}/gcj-%{version}
+%{_bindir}/gcj%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcj
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/ecj1
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/jc1
@@ -2726,23 +2616,20 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_java}
 %files -n %{GCJ_TOOLS}
 %defattr(-,root,root)
-%{_bindir}/gij-%{version}
-%{_bindir}/grmic-%{version}
-%{_bindir}/grmiregistry-%{version}
-%ghost %{_bindir}/gij
-%ghost %{_bindir}/grmic
-%ghost %{_bindir}/grmiregistry
-%{_bindir}/gappletviewer-%{version}
-%{_bindir}/gc-analyze-%{version}
-%{_bindir}/gjar-%{version}
-%{_bindir}/gjarsigner-%{version}
-%{_bindir}/gjavah-%{version}
-%{_bindir}/gkeytool-%{version}
-%{_bindir}/gnative2ascii-%{version}
-%{_bindir}/gorbd-%{version}
-%{_bindir}/grmid-%{version}
-%{_bindir}/gserialver-%{version}
-%{_bindir}/gtnameserv-%{version}
+%{_bindir}/gij%{program_suffix}
+%{_bindir}/grmic%{program_suffix}
+%{_bindir}/grmiregistry%{program_suffix}
+%{_bindir}/gappletviewer%{program_suffix}
+%{_bindir}/gc-analyze%{program_suffix}
+%{_bindir}/gjar%{program_suffix}
+%{_bindir}/gjarsigner%{program_suffix}
+%{_bindir}/gjavah%{program_suffix}
+%{_bindir}/gkeytool%{program_suffix}
+%{_bindir}/gnative2ascii%{program_suffix}
+%{_bindir}/gorbd%{program_suffix}
+%{_bindir}/grmid%{program_suffix}
+%{_bindir}/gserialver%{program_suffix}
+%{_bindir}/gtnameserv%{program_suffix}
 %{_bindir}/gcj-dbtool%{program_suffix}
 %{_bindir}/gcjh%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcjh
