@@ -2033,23 +2033,43 @@ fi
 %endif
 
 %if %{build_libstdcxx}
+%if %mdkversion < 200900
 %post -n %{libstdcxx_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libstdcxx_name} -p /sbin/ldconfig
 %endif
-
-%post -n %{libgcc_name} -p /sbin/ldconfig
-%postun -n %{libgcc_name} -p /sbin/ldconfig
-
-%post -n %{libmudflap_name} -p /sbin/ldconfig
-%postun -n %{libmudflap_name} -p /sbin/ldconfig
-
-%if %{build_libssp}
-%post -n %{libssp_name} -p /sbin/ldconfig
-%postun -n %{libssp_name} -p /sbin/ldconfig
 %endif
 
+%if %mdkversion < 200900
+%post -n %{libgcc_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
+%postun -n %{libgcc_name} -p /sbin/ldconfig
+%endif
+
+%if %mdkversion < 200900
+%post -n %{libmudflap_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
+%postun -n %{libmudflap_name} -p /sbin/ldconfig
+%endif
+
+%if %{build_libssp}
+%if %mdkversion < 200900
+%post -n %{libssp_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
+%postun -n %{libssp_name} -p /sbin/ldconfig
+%endif
+%endif
+
+%if %mdkversion < 200900
 %post -n %{libgomp_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libgomp_name} -p /sbin/ldconfig
+%endif
 
 %post cpp
 /usr/sbin/update-alternatives --install %{_bindir}/%{cross_program_prefix}cpp %{cross_program_prefix}cpp %{_bindir}/%{program_prefix}cpp-%{version} %{alternative_priority} --slave /lib/%{cross_program_prefix}cpp %{cross_program_prefix}lib_cpp %{_bindir}/%{program_prefix}cpp-%{version}
@@ -2061,23 +2081,39 @@ if [ ! -f %{_bindir}/%{cross_program_prefix}cpp-%{version} ]; then
 fi
 
 %if %{build_java}
+%if %mdkversion < 200900
 %post -n %{libgcj_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libgcj_name} -p /sbin/ldconfig
+%endif
 %endif
 
 %if %{build_objc}
+%if %mdkversion < 200900
 %post -n %{libobjc_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libobjc_name} -p /sbin/ldconfig
+%endif
 %endif
 
 %if %{build_fortran}
+%if %mdkversion < 200900
 %post -n %{libgfortran_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libgfortran_name} -p /sbin/ldconfig
+%endif
 %endif
 
 %if %{build_ada}
+%if %mdkversion < 200900
 %post -n %{libgnat_name} -p /sbin/ldconfig
+%endif
+%if %mdkversion < 200900
 %postun -n %{libgnat_name} -p /sbin/ldconfig
+%endif
 %endif
 
 %post doc
