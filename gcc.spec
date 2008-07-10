@@ -1575,19 +1575,19 @@ mv %{buildroot}%{_bindir}/g++ %{buildroot}%{_bindir}/g++-%{version}
 %endif
 
 # replacing hardlinks with symlinks
-ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc
+ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc%{program_prefix}
 ln -sf gcc-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %if %{build_cxx}
 ln -sf g++-%{version} %{buildroot}%{_bindir}/c++-%{version}
-ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-c++
-ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++
+ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-c++%{program_prefix}
+ln -sf g++-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++%{program_prefix}
 %endif
 %if %{build_fortran}
-ln -sf gfortran-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran
+ln -sf gfortran-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran%{program_prefix}
 %endif
 %if %{build_java}
-ln -sf gcj-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj
-ln -sf gcjh %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh
+ln -sf gcj-%{version} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj%{program_prefix}
+ln -sf gcjh %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh%{program_prefix}
 %endif
 
 ln -s gcc %{buildroot}%{_bindir}/cc
@@ -1804,7 +1804,7 @@ FakeAlternatives() {
 
 # Alternatives provide /lib/cpp and %{_bindir}/cpp
 (cd %{buildroot}%{_bindir}; FakeAlternatives cpp)
-%if !%{build_cross}
+%if !%{build_cross} && %{system_compiler}
 (mkdir -p %{buildroot}/lib; cd %{buildroot}/lib; ln -sf %{_bindir}/cpp cpp)
 %endif
 
@@ -1944,6 +1944,18 @@ rm  -f %{buildroot}%{spu_prefix}/lib/*.la
 %endif
 %if !%{build_doc}
 rm -fr %{buildroot}/%{_datadir}/info/
+%endif
+
+%if !%system_compiler && !%build_cross && %libc_shared
+rm %{buildroot}%{target_slibdir}/libgcc_s-%{version}.so.%{libgcc_major}
+rm %{buildroot}%{target_slibdir}/libgcc_s.so.%{libgcc_major}
+rm %{buildroot}%{target_libdir}/libgcc_s.so
+%if %isarch %{biarches}
+rm %{buildroot}%{target_slibdir32}/libgcc_s-%{version}.so.%{libgcc_major}
+rm %{buildroot}%{target_slibdir32}/libgcc_s.so.%{libgcc_major}
+rm %{buildroot}%{target_libdir}/../lib/libgcc_s.so
+rm %{buildroot}%{target_libdir}/../lib/libgcc_s_32.so
+%endif
 %endif
 
 # limits.h and syslimits.h are needed in includedir
@@ -2167,7 +2179,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/%{program_prefix}gcc-%{version}
 %{_bindir}/%{gcc_target_platform}-gcc%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcc-%{version}
-%{_bindir}/gccbug
+%{_bindir}/gccbug%{program_suffix}
 %if "%{name}" == "gcc%{package_suffix}"
 %{_bindir}/protoize%{program_suffix}
 %{_bindir}/unprotoize%{program_suffix}
@@ -2377,6 +2389,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %endif
 
+%if %{build_libgomp}
 %files -n %{libgomp_name}
 %{target_libdir}/libgomp.so.%{libgomp_major}
 %{target_libdir}/libgomp.so.%{libgomp_major}.0.0
@@ -2396,6 +2409,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{target_libdir}/libgomp.spec
 %if %isarch %{biarches}
 %{_prefix}/lib/libgomp.spec
+%endif
 %endif
 
 %files cpp -f cpplib.lang
