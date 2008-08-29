@@ -5,9 +5,9 @@
 %define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.3
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.3.1
-%define snapshot		20080626
-%define release			%{manbo_mkrel 2}
+%define version			4.3.2
+%define snapshot		%nil
+%define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
@@ -391,8 +391,6 @@ Patch129: gcc-4.1.2-ppc-soft-float-64bit-double-libs.patch
 # they can be shared with other classpath jvms (asked by dwalluck)
 Patch130: gcc43-no-multilib-propertydir.patch
 Patch132: gcc43-custom-libgcj_bc-rpath.patch
-
-Patch133: gcc43-db-pathtail.patch
 
 # Red Hat patches
 # allow --disable-libjava-multilib to disable multilib for java
@@ -1197,8 +1195,6 @@ perl -pi -e 's,\@ADDITIONAL_RPATH\@,-rpath %{target_libdir}/gcj_bc-%{package_suf
 %else
 perl -pi -e 's,\@ADDITIONAL_RPATH\@,,' libjava/Makefile.{am,in}
 %endif
-
-%patch133 -p0
 
 # Red Hat patches
 %patch201 -p1 -b .java-nomulti
