@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.3.2
 %define snapshot		%nil
-%define release			%{manbo_mkrel 1}
+%define release			%{manbo_mkrel 2}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
@@ -971,19 +971,21 @@ Group:		System/Libraries
 This package contains GCC shared support library which is needed
 for FFI support.
 
-%package -n %{libffi_name_orig}-devel
+%package -n %{libffi_name}-devel
 Summary:	Development headers and static library for FFI
 Group:		Development/C
 %if "%{_real_vendor}" == "manbo"
 Requires:	manbo-files-gcc = %{version}
 %endif
 Requires:	%{libffi_name} = %{version}-%{release}
-Provides:	%{libffi_name_orig}%{branch}-devel = %{version}-%{release}
-Provides:	%{libffi_name_orig}4-devel
-Obsoletes:	%{libffi_name_orig}4-devel
+Provides:	%{libffi_name_orig}-devel = %{version}-%{release}
+Obsoletes:	%{libffi_name_orig}-devel = 4.3.2
+Obsoletes:	%{libffi_name_orig}-devel = 4.3.1
+Obsoletes:	%{libffi_name_orig}-devel = 4.2.3
+Obsoletes:	%{libffi_name_orig}-devel = 4.2.2
 Provides:	ffi-devel = %{version}-%{release}
 
-%description -n %{libffi_name_orig}-devel
+%description -n %{libffi_name}-devel
 This package contains the development headers and the static library
 for libffi. The libffi library provides a portable, high level
 programming interface to various calling conventions. This allows a
@@ -2863,7 +2865,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_prefix}/lib/libffi.so.%{libffi_major}.0.1
 %endif
 
-%files -n %{libffi_name_orig}-devel
+%files -n %{libffi_name}-devel
 %defattr(-,root,root)
 %doc libffi/README libffi/LICENSE libffi/ChangeLog*
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}
