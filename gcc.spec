@@ -1590,10 +1590,10 @@ ln -sf g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-c
 ln -sf g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++%{program_suffix}
 %endif
 %if %{build_fortran}
-ln -sf gfortran%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran%{program_suffix}
+ln -sf gfortran%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran%{program_suffix}
 %endif
 %if %{build_java}
-ln -sf gcj%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj%{program_suffix}
+ln -sf gcj%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj%{program_suffix}
 ln -sf gcjh%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh%{program_suffix}
 %endif
 
