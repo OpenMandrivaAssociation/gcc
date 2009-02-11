@@ -1581,27 +1581,30 @@ EOF
 chmod 0755 %{buildroot}%{_bindir}/%{program_prefix}gcc%{branch}-version
 
 %if "%{program_suffix}" == ""
-mv %{buildroot}%{_bindir}/cpp %{buildroot}%{_bindir}/cpp-%{version}
-mv %{buildroot}%{_bindir}/gcc %{buildroot}%{_bindir}/gcc-%{version}
+mv %{buildroot}%{_bindir}/%{program_prefix}cpp %{buildroot}%{_bindir}/%{program_prefix}cpp-%{version}
+mv %{buildroot}%{_bindir}/%{program_prefix}gcc %{buildroot}%{_bindir}/%{program_prefix}gcc-%{version}
 %if %{build_cxx}
-mv %{buildroot}%{_bindir}/g++ %{buildroot}%{_bindir}/g++-%{version}
+mv %{buildroot}%{_bindir}/%{program_prefix}g++ %{buildroot}%{_bindir}/%{program_prefix}g++-%{version}
 %endif
 %endif
 
 # replacing hardlinks with symlinks
-ln -sf gcc%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc%{program_suffix}
-ln -sf gcc%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc-%{version}
+ln -sf %{program_prefix}gcc%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc%{program_suffix}
+# TODO: cleanups?
+%if "%{program_prefix}" != "%{gcc_target_platform}-"
+ln -sf %{program_prefix}gcc%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcc-%{version}
+%endif
 %if %{build_cxx}
-ln -sf g++%{program_long_suffix} %{buildroot}%{_bindir}/c++%{program_long_suffix}
-ln -sf g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-c++%{program_suffix}
-ln -sf g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++%{program_suffix}
+ln -sf %{program_prefix}g++%{program_long_suffix} %{buildroot}%{_bindir}/c++%{program_long_suffix}
+ln -sf %{program_prefix}g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-c++%{program_suffix}
+ln -sf %{program_prefix}g++%{program_long_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-g++%{program_suffix}
 %endif
 %if %{build_fortran}
-ln -sf gfortran%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran%{program_suffix}
+ln -sf %{program_prefix}gfortran%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gfortran%{program_suffix}
 %endif
 %if %{build_java}
-ln -sf gcj%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj%{program_suffix}
-ln -sf gcjh%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh%{program_suffix}
+ln -sf %{program_prefix}gcj%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcj%{program_suffix}
+ln -sf %{program_prefix}gcjh%{program_suffix} %{buildroot}%{_bindir}/%{gcc_target_platform}-gcjh%{program_suffix}
 %endif
 
 %if %{system_compiler}
@@ -1951,7 +1954,7 @@ rm -rf %{buildroot}%{_prefix}/doc
 rm -rf %{buildroot}%{_mandir}/man7
 rm  -f %{buildroot}%{_libdir}/*.la
 rm  -f %{buildroot}%{gcj_libdir}/*.la
-rm  -f %{buildroot}%{_prefix}/lib/libiberty.a
+rm  -f %{buildroot}%{_prefix}/lib*/libiberty.a
 rm  -f %{buildroot}%{target_libdir}/libiberty.a
 %if %isarch %{biarches}
 rm  -f %{buildroot}%{_prefix}/lib/*.la
@@ -1965,6 +1968,12 @@ rm  -f %{buildroot}%{spu_prefix}/lib/*.la
 %if !%{build_doc}
 rm -fr %{buildroot}/%{_datadir}/info/
 %endif
+
+%if %{build_cross}
+rm %{buildroot}%{_mandir}/man1/%{program_prefix}gcov%{program_suffix}.1*
+rm %{buildroot}%{_bindir}/%{program_prefix}gcov%{program_suffix}
+%endif
+
 
 %if !%system_compiler && !%build_cross && %libc_shared
 rm %{buildroot}%{target_slibdir}/libgcc_s-%{version}.so.%{libgcc_major}
@@ -2198,7 +2207,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/%{program_prefix}gcc%{program_long_suffix}
 %{_bindir}/%{gcc_target_platform}-gcc%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcc-%{version}
-%{_bindir}/gccbug%{program_suffix}
+%{_bindir}/%{program_prefix}gccbug%{program_suffix}
 %if "%{name}" == "gcc%{package_suffix}"
 %{_bindir}/protoize%{program_suffix}
 %{_bindir}/unprotoize%{program_suffix}
@@ -2236,7 +2245,9 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcov.a
+%if !%isarch mips mipsel mips64 mips64el
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc_eh.a
+%endif
 %if "%{name}" == "gcc%{package_suffix}"
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/SYSCALLS.c.X
 %if %isarch %{biarches}
@@ -2306,9 +2317,11 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/syslimits.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/unwind.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/varargs.h
+%if %isarch i386 x86_64
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cpuid.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mmintrin-common.h
+%endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdfix.h
 
 %if !%build_libffi && %build_java
@@ -2436,7 +2449,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{_mandir}/man1/%{program_prefix}cpp%{program_suffix}.1*
 #
-%if %build_cross || %system_compiler
+%if %{build_cross} && !%{build_cross_bootstrap}|| %{system_compiler}
 /lib/%{cross_program_prefix}cpp
 %endif
 %ghost %{_bindir}/%{cross_program_prefix}cpp
