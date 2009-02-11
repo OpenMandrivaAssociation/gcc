@@ -1246,10 +1246,11 @@ ln -s $sysroot/lib64 lib64
 [[ -L usr/include ]] || {
 mkdir -p usr/include
 tar jxf %{SOURCE1} -C usr/include
+cd usr
 %patch999 -p0
 %patch1000 -p0 -b .mips~
 }
-cd ..
+cd ../..
 fi
 
 # We can actually link binaries at this stage
