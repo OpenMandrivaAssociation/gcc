@@ -1424,6 +1424,10 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--disable-werror $LIBGOMP_FLAGS
 touch ../gcc/c-gperf.h
 %if %{build_cross}
+# (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
+# by adding a symlink to the headers since xgcc already passes -isystem ./include
+mkdir -p %{target_cpu}-linux/libgcc
+ln -sf $PWD/../sysroot/usr/include %{target_cpu}-linux/libgcc/include
 %make
 %else
 # bootstrap-lean is similar to bootstrap except "object files from the stage1
