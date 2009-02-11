@@ -10,7 +10,7 @@
 %define release			%{manbo_mkrel 6}
 %define nof_arches		noarch
 %define spu_arches		ppc64
-%define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x
+%define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
 %define biarches		x86_64 ppc64
 
 # Define libraries major versions
@@ -138,7 +138,7 @@
 %define gcj_libdir		%{target_libdir}/gcj-%{version}-%{libgcj_major}
 
 %define target_lib             lib
-%if %isarch ppc64 sparc64 x86_64
+%if %isarch ppc64 sparc64 x86_64 mips64 mips64el
 %define target_lib             lib64
 %endif
 
@@ -365,6 +365,7 @@ Source8:	build_cross_gcc4.sh
 # Mandriva patches + backports from trunk
 # LSB compliant headers (for cross compiling without (glibc?) headers)
 Patch999: lsb-headers-3.1.1-misc.patch
+Patch1000: lsb-headers-3.1.1-mips-support.patch
 # slibdir is either /lib or /lib64
 Patch101: gcc33-pass-slibdir.patch
 # pass libdir around
@@ -1236,16 +1237,17 @@ mkdir sysroot
 cd sysroot
 [[ -d $sysroot/bin ]] &&
 ln -s $sysroot/bin bin
-[[ -f $sysroot/include/stdio.h ]] &&
-ln -s $sysroot/include include
+[[ -f $sysroot/usr/include/stdio.h ]] &&
+ln -s $sysroot/usr/include include
 [[ -f $sysroot/lib/crti.o ]] &&
 ln -s $sysroot/lib lib
 [[ -f $sysroot/lib64/crti.o ]] &&
 ln -s $sysroot/lib64 lib64
-[[ -L include ]] || {
-mkdir include
-tar jxf %{SOURCE1} -C include
+[[ -L usr/include ]] || {
+mkdir -p usr/include
+tar jxf %{SOURCE1} -C usr/include
 %patch999 -p0
+%patch1000 -p0 -b .mips~
 }
 cd ..
 fi
