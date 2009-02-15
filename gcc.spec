@@ -2972,7 +2972,9 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_infodir}/gcc%{_package_suffix}.info*
 %{_infodir}/gccinstall%{_package_suffix}.info*
 %{_infodir}/gccint%{_package_suffix}.info*
+%if %{build_libgomp}
 %{_infodir}/libgomp%{_package_suffix}.info*
+%endif
 %if %{build_ada}
 %{_infodir}/gnat-style%{_package_suffix}.info*
 %{_infodir}/gnat_rm%{_package_suffix}.info*
