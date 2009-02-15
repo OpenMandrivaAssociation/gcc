@@ -11,7 +11,7 @@
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
-%define biarches		x86_64 ppc64
+%define biarches		x86_64 ppc64 mips64 mips64el
 
 # Define libraries major versions
 %define libgcc_major		1
@@ -151,6 +151,12 @@
 %if %isarch sparc64
 %define multilib_32_arch	sparc
 %endif
+%if %isarch mips64
+%define	multilib_32_arch	mips
+%endif
+%if %isarch mips64el
+%define	multilib_32_arch	mipsel
+%endif
 %if %isarch %{biarches}
 %define gcc32_target_platform	%{multilib_32_arch}-%{_real_vendor}-%{_target_os}%{?_gnu}
 %endif
@@ -243,8 +249,8 @@
 %endif
 %endif
 
-%if %isarch spu
-# spu port doesn't support the following languages yet
+%if %isarch spu mips mipsel mips64 mips64el
+# spu & mips port doesn't support the following languages yet
 %define build_fortran		0
 %define build_libssp		0
 %define use_ssp_glibc		0
@@ -409,6 +415,10 @@ Patch208: gcc43-pr33763.patch
 
 # use hash style gnu (faster dynamic linking, cf http://lwn.net/Articles/192624/)
 Patch211: gcc43-hash-style-gnu.patch
+
+# mips patches from the gdium tree
+Patch301: gcc-mips-libjava-interp.patch
+Patch302: gcc_mips_gcc_testsuite_fix_loop.patch
 
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
@@ -1223,6 +1233,8 @@ patch -p1 < gcc/p/diffs/gcc-3.5.0.diff
 %patch111 -p1 -b .gpc-fixes
 %patch112 -p1 -b .gpc-serialize-build
 %endif
+%patch301 -p0 -b .mips_java
+%patch302 -p1 -b .mips-testsuite-addr
 
 # Setup files for cross-compilation
 # XXX embed uClibc / dietlibc sources? [ia64 checks for __GLIBC__]
@@ -1411,6 +1423,7 @@ i?86|athlon)	TARGET_FLAGS="--with-cpu=generic";;
 ppc)		TARGET_FLAGS="--with-cpu=750 --with-long-double-128";;
 ppc32|ppc64)	TARGET_FLAGS="--with-cpu=power4 --with-long-double-128";;
 sparc|sparcv9)	TARGET_FLAGS="--with-long-double-128";;
+mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64";;
 esac
 # (anssi) building with external jar fails
 export JAR="no"
