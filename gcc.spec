@@ -488,6 +488,8 @@ BuildRequires:	dejagnu
 AutoReq:	false
 AutoProv:	false
 %endif
+BuildRequires:	libgmp-devel
+BuildRequires:	libmpfr-devel
 
 %description
 A compiler aimed at integrating all the optimizations and features
@@ -732,10 +734,6 @@ Obsoletes:	gcc%{branch}-g77
 Requires:	%{name} = %{version}-%{release}
 %if %{libc_shared} && !%{build_monolithic}
 Requires:	%{libgfortran_name} = %{version}-%{release}
-%endif
-%if %{build_fortran}
-BuildRequires:	libgmp-devel
-BuildRequires:	libmpfr-devel
 %endif
 %if %{build_cross}
 AutoReq:	false
