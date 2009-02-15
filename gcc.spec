@@ -2256,7 +2256,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcov.a
-%if !%isarch mips mipsel mips64 mips64el
+%if !%{build_cross_bootstrap}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc_eh.a
 %endif
 %if "%{name}" == "gcc%{package_suffix}"
