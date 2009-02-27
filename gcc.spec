@@ -5,7 +5,7 @@
 %define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.3
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.3.2
+%define version			4.3.3
 %define snapshot		%nil
 %define release			%{manbo_mkrel 6}
 %define nof_arches		noarch
