@@ -1321,10 +1321,6 @@ case " $OPT_FLAGS " in
   ;;
 esac
 
-# update config.{sub,guess} scripts
-%{?__cputoolize: %{__cputoolize} -c .}
-%{?__cputoolize: %{__cputoolize} -c ./boehm-gc}
-
 # Force a seperate object dir
 rm -fr obj-%{gcc_target_platform}
 mkdir obj-%{gcc_target_platform}
