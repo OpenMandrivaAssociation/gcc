@@ -390,6 +390,9 @@ Patch106: gcc40-ada-makefile.patch
 Patch111: gcc34-gpc-fixes.patch
 Patch112: gcc33-gpc-serialize-build.patch
 
+# -Wformat=security fixes
+Patch114: gcc-4.3.3-wformat-fixes.patch
+
 # build 32 bits code when running through linux32
 Patch115: gcc40-linux32.patch
 # ?
@@ -1200,6 +1203,7 @@ documentation in PDF.
 
 %patch107 -p1 -b .multi-do-libdir
 %patch113 -p1 -b .pr11631-testcase
+%patch114 -p1 -b .wformat
 %patch115 -p1 -b .linux32
 %patch116 -p1 -b .linux32-build-env
 %patch129 -p1 -b .nonof
