@@ -180,7 +180,7 @@
 %define build_pascal		1
 %endif
 %if %isarch %{ix86} x86_64 ia64
-%define build_ada		1
+%define build_ada		0
 %endif
 %define build_cxx		1
 %define build_libstdcxx		%{build_cxx}
