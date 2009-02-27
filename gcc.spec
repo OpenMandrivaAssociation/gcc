@@ -1220,11 +1220,11 @@ perl -pi -e 's,\@ADDITIONAL_RPATH\@,,' libjava/Makefile.{am,in}
 
 # Red Hat patches
 %patch201 -p1 -b .java-nomulti
-%patch202 -p0 -b .ppc64-m32-m64-multilib-only
-%patch207 -p0 -b .libltdl-multilib
-%patch208 -p0 -b .pr33763
+%patch202 -p1 -b .ppc64-m32-m64-multilib-only
+%patch207 -p1 -b .libltdl-multilib
+%patch208 -p1 -b .pr33763
 %if %{use_hash_style_gnu}
-%patch211 -p0 -b .hash-style-gnu
+%patch211 -p1 -b .hash-style-gnu
 %endif
 
 # Integrate GNU Pascal compiler
@@ -1235,7 +1235,7 @@ patch -p1 < gcc/p/diffs/gcc-3.5.0.diff
 %patch111 -p1 -b .gpc-fixes
 %patch112 -p1 -b .gpc-serialize-build
 %endif
-%patch301 -p0 -b .mips_java
+%patch301 -p1 -b .mips_java
 %patch302 -p1 -b .mips-testsuite-addr
 
 # Setup files for cross-compilation
