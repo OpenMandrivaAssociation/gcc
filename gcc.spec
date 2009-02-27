@@ -1317,7 +1317,7 @@ OPT_FLAGS=`echo $OPT_FLAGS|sed -e 's/-fomit-frame-pointer//g'`
 # don't build crt files with -fasynchronous-unwind-tables
 case " $OPT_FLAGS " in
 *" -fasynchronous-unwind-tables "*)
-  perl -pi -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables/' gcc/Makefile.in
+  perl -pi -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables /' gcc/Makefile.in
   ;;
 esac
 
