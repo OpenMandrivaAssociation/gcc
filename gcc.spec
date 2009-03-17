@@ -839,13 +839,13 @@ Group:		Development/Java
 %if %{system_compiler}
 Obsoletes:	%{cross_prefix}gcj%{branch}-tools
 Provides:	%{cross_prefix}gcj%{branch}-tools = %{version}-%{release}
+Requires:	%{libgcj_bc_name} >= %{version}
 %endif
 %if "%{_real_vendor}" == "manbo"
 Requires:	manbo-files-gcc-java%{program_suffix} = %{version}
 %endif
 Provides:	%{cross_prefix}gcj-tools = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
-Requires:	%{libgcj_bc_name} >= %{version}
 Conflicts:	kaffe < 1.0.7-3mdk
 Conflicts:	classpath < 0.97.1-2
 
