@@ -334,6 +334,7 @@
 %define libgcj_devel_name	%{cross_prefix}%{mklibname gcj -d}
 %define libgcj_static_devel_name %{cross_prefix}%{mklibname gcj -d -s}
 %define libgcj_name_base	%{libgcj_name_orig}%{libgcj_major}
+%define libgcj_bc_name		%{cross_prefix}%{mklibname gcj_bc %{libgcj_bc_major}}
 %define libobjc_name_orig	%{cross_prefix}libobjc
 %define libobjc_name		%{libobjc_name_orig}%{libobjc_major}
 %define libgnat_name_orig	%{cross_prefix}libgnat
@@ -844,7 +845,7 @@ Requires:	manbo-files-gcc-java%{program_suffix} = %{version}
 %endif
 Provides:	%{cross_prefix}gcj-tools = %{version}-%{release}
 Requires:	%{libgcj_name} >= %{version}
-Requires:	%{libgcj_devel_name} >= %{version}
+Requires:	%{libgcj_bc_name} >= %{version}
 Conflicts:	kaffe < 1.0.7-3mdk
 Conflicts:	classpath < 0.97.1-2
 
@@ -901,7 +902,6 @@ Obsoletes:	libgcj3, libgcj4
 Obsoletes:	libgcj5
 Obsoletes:	%{mklibname gcj 6}
 %endif
-Conflicts:	%{mklibname gcj 8}
 Requires:	%{libgcj_name_base}-base = %{version}
 %if %isarch %{biarches}
 Conflicts:	libgcj6 < 4.0.1-4mdk, lib64gcj6 < 4.0.1-4mdk
@@ -978,6 +978,19 @@ Obsoletes: libgcj6-src
 
 %description -n %{libgcj_name_base}-src
 The Java(tm) runtime library sources.
+
+%package -n %{libgcj_bc_name}
+Summary:	GNU Java runtime bytecode wrapper library
+Group:		System/Libraries
+%if %{system_compiler}
+Conflicts:	%{mklibname gcj 8}
+Conflicts:	%{mklibname gcj 9} < 4.3.3
+%endif
+Requires:	%{libgcj_name}
+
+%description -n %{libgcj_bc_name}
+Runtime wrapper library for applications using the bytecode interpreter
+API of libgcj.
 
 ####################################################################
 # FFI headers and libraries
@@ -2003,6 +2016,13 @@ mv %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include-fixed/{sy
 	%{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 rm -r %{buildroot}%{gcc_libdir}/%{gcc_target_platform}/%{version}/include-fixed
 
+%if %build_libgcj_bc && !%system_compiler
+# moved away, otherwise conflicts with system compiler libgcj
+mkdir -p %{buildroot}%{target_libdir}/gcj_bc-%{libgcj_major}
+mv %{buildroot}%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0 %{buildroot}%{target_libdir}/gcj_bc-%{libgcj_major}
+mv %{buildroot}%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major} %{buildroot}%{target_libdir}/gcj_bc-%{libgcj_major}
+%endif
+
 %if %build_java
 # Handled by jpackage-utils, see #23693
 rm  -f %{buildroot}%{target_libdir}/security/classpath.security
@@ -2760,8 +2780,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{target_libdir}/libgij.so.%{libgcj_major}.0.0
 %{target_libdir}/libgcj-tools.so.%{libgcj_major}
 %{target_libdir}/libgcj-tools.so.%{libgcj_major}.0.0
-%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}
-%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0
 %dir %{gcj_libdir}
 %{gcj_libdir}/libgjsmalsa.so
 %{gcj_libdir}/libgjsmdssi.so
@@ -2769,8 +2787,13 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcj_libdir}/libjawt.so
 %{gcj_libdir}/libjvm.so
 #
-%if %build_libgcj_bc && !%system_compiler
-%{target_libdir}/gcj_bc-%{package_suffix}
+%if %build_libgcj_bc
+%if %system_compiler
+%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}
+%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0
+%else
+%{target_libdir}/gcj_bc-%{libgcj_major}
+%endif
 %endif
 #
 %dir %{gcj_libdir}/classmap.db.d
@@ -2871,6 +2894,13 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %defattr(-,root,root)
 %dir %{_datadir}/java
 %{_datadir}/java/src*.zip
+%endif
+
+%if %{build_java} && %{system_compiler}
+%files -n %{libgcj_bc_name}
+%defattr(-,root,root)
+%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}
+%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0
 %endif
 
 %if %{build_ada}
