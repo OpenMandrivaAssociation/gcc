@@ -1226,7 +1226,7 @@ perl -pi -e 's,\@PROPERTYFILES\@,"%{_prefix}/lib",' libjava/gnu/classpath/natSys
 
 %patch132 -p1
 %if %build_libgcj_bc && !%system_compiler
-perl -pi -e 's,\@ADDITIONAL_RPATH\@,-rpath %{target_libdir}/gcj_bc-%{package_suffix},' libjava/Makefile.{am,in}
+perl -pi -e 's,\@ADDITIONAL_RPATH\@,-rpath %{target_libdir}/gcj_bc-%{libgcj_major},' libjava/Makefile.{am,in}
 %else
 perl -pi -e 's,\@ADDITIONAL_RPATH\@,,' libjava/Makefile.{am,in}
 %endif
