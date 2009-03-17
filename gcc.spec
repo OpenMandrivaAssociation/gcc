@@ -924,6 +924,7 @@ Provides:	%{libgcj_name_orig}-devel = %{version}-%{release}
 Requires:	manbo-files-gcc%{program_suffix} = %{version}
 %endif
 %if %{system_compiler}
+Requires:	%{libgcj_bc_name} >= %{version}-%{release}
 Obsoletes:	libgcj3-devel
 Obsoletes:	libgcj4-devel
 Obsoletes:	libgcj5-devel
