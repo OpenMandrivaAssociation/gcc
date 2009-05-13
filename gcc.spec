@@ -3,9 +3,9 @@
 %define _real_vendor manbo
 
 %define name			%{cross_prefix}gcc%{package_suffix}
-%define branch			4.3
+%define branch			4.4
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.3.3
+%define version			4.4.0
 %define snapshot		%nil
 %define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
@@ -16,7 +16,7 @@
 # Define libraries major versions
 %define libgcc_major		1
 %define libstdcxx_major		6
-%define libstdcxx_minor		10
+%define libstdcxx_minor		11
 %define libgfortran_major	3
 %define libgcj_major		9
 %define libobjc_major		2
@@ -172,7 +172,7 @@
 %define build_monolithic	0
 %define build_doc		1
 %define build_pdf_doc		1
-%define build_check		1
+%define build_check		0
 %define build_ada		0
 %define gpc_snapshot		20040516
 %define build_pascal		0
@@ -189,9 +189,9 @@
 %define build_objcp		1
 %define build_libmudflap	1
 %define build_libgomp           1
-%define build_libgcj_bc		1
+%define build_libgcj_bc		0
 %define build_libffi		1
-%define build_java		1
+%define build_java		0
 %define build_debug		0
 %define build_stdcxxheaders	1
 %if %{gcc42_as_system_compiler}
@@ -2319,6 +2319,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/pmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/emmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/tmmintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/avxintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/immintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/wmmintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/x86intrin.h
 %endif
 %if %isarch ppc ppc64
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/spe.h
@@ -2344,6 +2348,9 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/iso646.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/limits.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdarg.h
+%if %isarch %{ix86} x86_64
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cross-stdarg.h
+%endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdbool.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stddef.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/syslimits.h
