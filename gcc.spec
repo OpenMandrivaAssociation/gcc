@@ -189,9 +189,9 @@
 %define build_objcp		1
 %define build_libmudflap	1
 %define build_libgomp           1
-%define build_libgcj_bc		0
+%define build_libgcj_bc		1
 %define build_libffi		1
-%define build_java		0
+%define build_java		1
 %define build_debug		0
 %define build_stdcxxheaders	1
 %if %{gcc42_as_system_compiler}
