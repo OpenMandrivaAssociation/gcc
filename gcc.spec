@@ -18,7 +18,7 @@
 %define libstdcxx_major		6
 %define libstdcxx_minor		11
 %define libgfortran_major	3
-%define libgcj_major		9
+%define libgcj_major		10
 %define libobjc_major		2
 %define libgnat_major		1
 %define libffi_major		4
@@ -858,6 +858,7 @@ This package includes Java related tools built from gcc %{version}:
    * gcj-dbtool: tool for manipulating class file databases
    * grmic: generate stubs for Remote Method Invocation
    * grmiregistry: the remote object registry
+   * aot-compile: ahead-of-time compiler
    * gappletviewer
    * gc-analyze
    * gjar
@@ -1437,7 +1438,9 @@ ppc32|ppc64)	TARGET_FLAGS="--with-cpu=power4 --with-long-double-128";;
 sparc|sparcv9)	TARGET_FLAGS="--with-long-double-128";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64";;
 esac
+
 # (anssi) building with external jar fails
+%define python_dir %(echo "%{py_puresitedir}" | sed 's!^%{_prefix}!!g')
 export JAR="no"
 export FASTJAR="no"
 CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFLAGS="$OPT_FLAGS" \
@@ -1446,7 +1449,8 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--enable-languages="$LANGUAGES" $PROGRAM_PREFIX $PROGRAM_SUFFIX \
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
 	--with-system-zlib $LIBC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS $MUDFLAP_FLAGS $LIBFFI_FLAGS \
-	--disable-werror $LIBGOMP_FLAGS
+	--disable-werror $LIBGOMP_FLAGS \
+	--with-python-dir=%{python_dir}
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 # (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
@@ -2741,6 +2745,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_java}
 %files -n %{GCJ_TOOLS}
 %defattr(-,root,root)
+%{_bindir}/aot-compile%{program_suffix}
 %{_bindir}/gij%{program_suffix}
 %{_bindir}/grmic%{program_suffix}
 %{_bindir}/grmiregistry%{program_suffix}
@@ -2759,7 +2764,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/gcjh%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcjh
 %{_bindir}/jcf-dump%{program_suffix}
+%{_bindir}/rebuild-gcj-db%{program_suffix}
+
 #
+%{_mandir}/man1/aot-compile*.1*
 %{_mandir}/man1/gij*.1*
 %{_mandir}/man1/gcjh*.1*
 %{_mandir}/man1/grmic*.1*
@@ -2770,6 +2778,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_mandir}/man1/gc-analyze*.1*
 %{_mandir}/man1/gjar*.1*
 %{_mandir}/man1/gjavah*.1*
+%{_mandir}/man1/gjdoc*.1*
 %{_mandir}/man1/gkeytool*.1*
 %{_mandir}/man1/gnative2ascii*.1*
 %{_mandir}/man1/gorbd*.1*
@@ -2777,6 +2786,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_mandir}/man1/gserialver*.1*
 %{_mandir}/man1/gtnameserv*.1*
 %{_mandir}/man1/jv-convert*.1*
+%{_mandir}/man1/rebuild-gcj-db*.1*
+
+%{py_puresitedir}/aotcompile.py
+%{py_puresitedir}/classfile.py
 %endif
 
 %if %{build_java}
@@ -2792,6 +2805,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcj_libdir}/libgjsmalsa.so
 %{gcj_libdir}/libgjsmdssi.so
 %{gcj_libdir}/libgtkpeer.so
+%{gcj_libdir}/libjavamath.so
 %{gcj_libdir}/libjawt.so
 %{gcj_libdir}/libjvm.so
 #
