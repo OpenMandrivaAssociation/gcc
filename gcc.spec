@@ -1553,8 +1553,8 @@ done)
 (cd gcc/ada;
   texi2dvi -p -t @afourpaper -t @finalout -I ../doc/include -I ../../obj-%{gcc_target_platform}/gcc gnat_rm.texi)
 (cd obj-%{gcc_target_platform}/gcc/doc;
-  texi2dvi -p -t @afourpaper -t @finalout -I ../../../gcc/doc/include -I .. gnat_ugn_unw.texi
-  mv gnat_ugn_unw.pdf ../../../gcc/ada/gnat_ug.pdf)
+  texi2dvi -p -t @afourpaper -t @finalout -I ../../../gcc/doc/include -I .. gnat_ugn.texi
+  mv gnat_ugn.pdf ../../../gcc/ada/gnat_ugn.pdf)
 %endif
 
 # Run tests
@@ -1590,12 +1590,6 @@ pushd obj-%{gcc_target_platform};
   %makeinstall_std
   %if %{build_java}
   %makeinstall_std -C %{gcc_target_platform}/libjava install-src.zip
-  %endif
-  %if %{build_ada}
-  for f in %{buildroot}%{_infodir}/gnat_ugn_unw.info*; do
-    sed -e "s/gnat_ugn_unw/gnat_ug/g" $f > ${f/gnat_ugn_unw/gnat_ug}
-  done
-  chmod 644 %{buildroot}%{_infodir}/gnat*
   %endif
 popd
 
@@ -1940,7 +1934,7 @@ popd
 # Fix info pages
 if [[ "%{name}" = "gcc%{branch}" ]]; then
   pushd %{buildroot}%{_infodir}/
-  for f in cpp cppinternals gcc gpc gpcs gfortran gnat-style gnat_rm gnat_ug gcj; do
+  for f in cpp cppinternals gcc gpc gpcs gfortran gnat-style gnat_rm gnat_ugn gcj; do
     if [[ -f "$f.info" ]]; then
       perl -pe "/^START-INFO-DIR-ENTRY/ .. /^END-INFO-DIR-ENTRY/ and s/($f)/\${1}-%{branch}/ig" $f.info > ${f}-%{branch}.info
       rm -f $f.info
@@ -2205,7 +2199,7 @@ fi
 %if %{build_ada}
 %_install_info gnat-style%{_package_suffix}.info
 %_install_info gnat_rm%{_package_suffix}.info
-%_install_info gnat_ug%{_package_suffix}.info
+%_install_info gnat_ugn%{_package_suffix}.info
 %endif
 %if %{build_java}
 %_install_info gcj%{_package_suffix}_ug.info
@@ -2224,7 +2218,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_ada}
 %_remove_install_info gnat-style%{_package_suffix}.info
 %_remove_install_info gnat_rm%{_package_suffix}.info
-%_remove_install_info gnat_ug%{_package_suffix}.info
+%_remove_install_info gnat_ugn%{_package_suffix}.info
 %endif
 %if %{build_java}
 %_remove_install_info gcj%{_package_suffix}.info
@@ -3030,8 +3024,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_ada}
 %{_infodir}/gnat-style%{_package_suffix}.info*
 %{_infodir}/gnat_rm%{_package_suffix}.info*
-%{_infodir}/gnat_ug%{_package_suffix}.info*
-%{_infodir}/gnat_ugn_unw%{_package_suffix}.info*
+%{_infodir}/gnat_ugn%{_package_suffix}.info*
 %endif
 %if %{build_java}
 %{_infodir}/gcj%{_package_suffix}.info*
@@ -3053,7 +3046,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %doc gcc/doc/cpp.pdf
 %if %{build_ada}
 %doc gcc/ada/gnat_rm.pdf
-%doc gcc/ada/gnat_ug.pdf
+%doc gcc/ada/gnat_ugn.pdf
 %endif
 %if %{build_fortran}
 %doc gcc/fortran/gfortran.pdf
