@@ -1302,7 +1302,6 @@ perl -pi -e 's,use_libgcj_bc=yes,use_libgcj_bc=no,' libjava/configure.host
 # Patch version for Mandriva and bug reports
 echo "%{version}" > gcc/BASE-VER
 perl -pi -e '/^\#define VERSUFFIX/ and s/""/" (%{version}-%{release})"/' gcc/version.c
-perl -pi -e "/bug_report_url/ and s/\"[^\"]+\"/\"<URL:https:\/\/qa.mandriva.com\/>\"/;" gcc/version.c
 
 # Fix java-ext path
 sed -i -e 's,\$(jardir)/ext,$(jardir)-ext,g' libjava/Makefile.{am,in}
@@ -1445,6 +1444,7 @@ export JAR="no"
 export FASTJAR="no"
 CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFLAGS="$OPT_FLAGS" \
 	../configure --prefix=%{_prefix} --libexecdir=%{_prefix}/lib --with-slibdir=%{target_slibdir} \
+	--with-bugurl=https://qa.mandriva.com/ \
 	--mandir=%{_mandir} --infodir=%{_infodir} --enable-checking=release \
 	--enable-languages="$LANGUAGES" $PROGRAM_PREFIX $PROGRAM_SUFFIX \
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
