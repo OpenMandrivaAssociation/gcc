@@ -216,6 +216,7 @@
 #define build_libgcj_bc		1
 %endif
 %define use_hash_style_gnu	0
+%define build_cloog		0
 
 # Define C library to use
 %define libc glibc
@@ -453,6 +454,12 @@ BuildRequires:	gcc4.2-c++
 %if %{build_ada}
 # Ada requires Ada to build
 BuildRequires:	%{name}-gnat >= 3.1, %{libgnat_name} >= 3.1
+%endif
+# cloog is used for Graphite support (optimizations)
+# see http://gcc.gnu.org/wiki/Graphite
+%if %build_cloog}
+BuildRequires: ppl >= 0.10, ppl-devel >= 0.10, cloog-ppl >= 0.15, cloog-ppl-devel >= 0.15
+Requires: cloog-ppl >= 0.15
 %endif
 Requires:	%{name}-cpp = %{version}-%{release}
 # FIXME: We need a libgcc with 3.4 symbols
@@ -1397,6 +1404,9 @@ MUDFLAP_FLAGS="--disable-libmudflap"
 %if !%{build_libgomp}
 LIBGOMP_FLAGS="--disable-libgomp"
 %endif
+%if %{build_cloog}
+CLOOG_FLAGS="--with-ppl --with-cloog"
+%endif
 %if !%{build_libffi} && !%{build_java}
 LIBFFI_FLAGS="--disable-libffi"
 %endif
@@ -1450,7 +1460,7 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
 	--with-system-zlib $LIBC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS $MUDFLAP_FLAGS $LIBFFI_FLAGS \
 	--disable-werror $LIBGOMP_FLAGS \
-	--with-python-dir=%{python_dir}
+	$CLOOG_FLAGS --with-python-dir=%{python_dir}
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 # (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
