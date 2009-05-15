@@ -457,7 +457,7 @@ BuildRequires:	%{name}-gnat >= 3.1, %{libgnat_name} >= 3.1
 %endif
 # cloog is used for Graphite support (optimizations)
 # see http://gcc.gnu.org/wiki/Graphite
-%if %build_cloog}
+%if %{build_cloog}
 BuildRequires: ppl >= 0.10, ppl-devel >= 0.10, cloog-ppl >= 0.15, cloog-ppl-devel >= 0.15
 Requires: cloog-ppl >= 0.15
 %endif
