@@ -1560,11 +1560,13 @@ unset TEXINPUTS
 done)
 (cd gcc/fortran;
   texi2dvi -p -t @afourpaper -t @finalout -I ../doc/include -I ../../obj-%{gcc_target_platform}/gcc gfortran.texi)
+%if %{build_ada}
 (cd gcc/ada;
   texi2dvi -p -t @afourpaper -t @finalout -I ../doc/include -I ../../obj-%{gcc_target_platform}/gcc gnat_rm.texi)
 (cd obj-%{gcc_target_platform}/gcc/doc;
   texi2dvi -p -t @afourpaper -t @finalout -I ../../../gcc/doc/include -I .. gnat_ugn.texi
   mv gnat_ugn.pdf ../../../gcc/ada/gnat_ugn.pdf)
+%endif
 %endif
 
 # Run tests
