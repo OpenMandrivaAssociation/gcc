@@ -29,7 +29,6 @@
 
 # Disable -Werror because there's a format string warning in gcc/cp/parser.c 
 # around line 2300 that a comment says is intentional :( 
-## bluh bloh  define Werror_cflags %nil
 %define Werror_cflags %nil
 
 # Package holding Java tools (gij, jv-convert, etc.)
