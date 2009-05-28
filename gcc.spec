@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.4.0
 %define snapshot		%nil
-%define release			%{manbo_mkrel 1}
+%define release			%{manbo_mkrel 2}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -26,6 +26,11 @@
 %define libssp_major		0
 %define libgomp_major		1
 %define libgcj_bc_major		1
+
+# Disable -Werror because there's a format string warning in gcc/cp/parser.c 
+# around line 2300 that a comment says is intentional :( 
+## bluh bloh  define Werror_cflags %nil
+%define Werror_cflags %nil
 
 # Package holding Java tools (gij, jv-convert, etc.)
 %define GCJ_TOOLS		%{cross_prefix}gcj%{package_suffix}-tools
@@ -173,14 +178,14 @@
 %define build_doc		1
 %define build_pdf_doc		1
 %define build_check		0
-%define build_ada		0
+%define build_ada		1
 %define gpc_snapshot		20040516
 %define build_pascal		0
 %ifarch noarch
 %define build_pascal		1
 %endif
 %if %isarch %{ix86} x86_64 ia64
-%define build_ada		0
+%define build_ada		1
 %endif
 %define build_cxx		1
 %define build_libstdcxx		%{build_cxx}
@@ -458,8 +463,8 @@ BuildRequires:	%{name}-gnat >= 3.1, %{libgnat_name} >= 3.1
 # cloog is used for Graphite support (optimizations)
 # see http://gcc.gnu.org/wiki/Graphite
 %if %{build_cloog}
-BuildRequires: ppl >= 0.10, ppl-devel >= 0.10, cloog-ppl >= 0.15, cloog-ppl-devel >= 0.15
-Requires: cloog-ppl >= 0.15
+BuildRequires: ppl-devel >= 0.10, cloog-ppl-devel >= 0.15
+#Requires: libcloog1 >= 0.15
 %endif
 Requires:	%{name}-cpp = %{version}-%{release}
 # FIXME: We need a libgcc with 3.4 symbols
@@ -1648,8 +1653,11 @@ ln -s gcc %{buildroot}%{_bindir}/cc
 
 rm -f %{buildroot}%{_infodir}/dir
 
-# Dispatch Ada 95 libraries (special case)
 %if %{build_ada} && %{libc_shared}
+%if %isarch ppc64 sparc64 x86_64 mips64 mips64el
+rm -rf $FULLPATH/32/ada{include,lib}
+%endif
+# Dispatch Ada 95 libraries (special case)
 pushd $FULLPATH/adalib
   rm -f libgnarl.so* libgnat.so*
   mv -f libgnarl-*.so.* %{buildroot}%{_libdir}/
