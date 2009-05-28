@@ -1988,7 +1988,9 @@ done
 %define find_lang /usr/lib/rpm/find-lang.sh %buildroot
 %find_lang %{name}
 %find_lang cpplib
+%if %{build_cxx}
 %find_lang libstdc++
+%endif
 %else
 touch %{name}.lang cpplib.lang libstdc++.lang
 %endif
