@@ -1965,6 +1965,9 @@ fi
 
 # Sanitize rpath
 for bin in %{buildroot}%{_bindir}/* $FULLPATH/*.so $FULLPATH/ecj1; do
+  if [[ ! -f $bin ]]; then
+    continue
+  fi
   oldrpath=$(chrpath -l $bin | awk -F= '{ print $2 }')
   newrpath=
   for rpathdir in ${oldrpath//:/ }; do
