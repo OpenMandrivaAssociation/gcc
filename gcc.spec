@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.4.0
 %define snapshot		%nil
-%define release			%{manbo_mkrel 2}
+%define release			%{manbo_mkrel 3}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -220,7 +220,7 @@
 #define build_libgcj_bc		1
 %endif
 %define use_hash_style_gnu	0
-%define build_cloog		0
+%define build_cloog		1
 
 # Define C library to use
 %define libc glibc
