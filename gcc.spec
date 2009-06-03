@@ -1804,6 +1804,10 @@ if [ "%{libjava_includedir}" != "%{_includedir}" ]; then
   rm %{buildroot}%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc
 %endif
 fi
+rm -rf %{buildroot}%{_bindir}/rebuild-gcj-db%{program_suffix}
+rm -rf %{buildroot}%{_bindir}/aot-compile%{program_suffix}
+rm -rf %{buildroot}%{_mandir}/man1/aot-compile*.1*
+rm -rf %{buildroot}%{_mandir}/man1/rebuild-gcj-db*.1*
 %endif
 
 # Move libgcj.spec to compiler-specific directories
@@ -2763,7 +2767,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_java}
 %files -n %{GCJ_TOOLS}
 %defattr(-,root,root)
-%{_bindir}/aot-compile%{program_suffix}
 %{_bindir}/gij%{program_suffix}
 %{_bindir}/grmic%{program_suffix}
 %{_bindir}/grmiregistry%{program_suffix}
@@ -2782,10 +2785,8 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/gcjh%{program_suffix}
 %{_bindir}/%{gcc_target_platform}-gcjh
 %{_bindir}/jcf-dump%{program_suffix}
-%{_bindir}/rebuild-gcj-db%{program_suffix}
 
 #
-%{_mandir}/man1/aot-compile*.1*
 %{_mandir}/man1/gij*.1*
 %{_mandir}/man1/gcjh*.1*
 %{_mandir}/man1/grmic*.1*
@@ -2804,7 +2805,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_mandir}/man1/gserialver*.1*
 %{_mandir}/man1/gtnameserv*.1*
 %{_mandir}/man1/jv-convert*.1*
-%{_mandir}/man1/rebuild-gcj-db*.1*
 
 %{py_puresitedir}/aotcompile.py
 %{py_puresitedir}/classfile.py
