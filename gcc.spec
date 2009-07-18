@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.4.0
 %define snapshot		%nil
-%define release			%{manbo_mkrel 3}
+%define release			%{manbo_mkrel 4}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -1364,6 +1364,7 @@ LANGUAGES="$LANGUAGES,fortran"
 %endif
 %if %{build_objc}
 LANGUAGES="$LANGUAGES,objc"
+LIBOBJC_FLAGS="--enable-objc-gc"
 %endif
 %if %{build_objcp}
 LANGUAGES="$LANGUAGES,obj-c++"
@@ -1462,8 +1463,8 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--mandir=%{_mandir} --infodir=%{_infodir} --enable-checking=release \
 	--enable-languages="$LANGUAGES" $PROGRAM_PREFIX $PROGRAM_SUFFIX \
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
-	--with-system-zlib $LIBC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS $MUDFLAP_FLAGS $LIBFFI_FLAGS \
-	--disable-werror $LIBGOMP_FLAGS \
+	--with-system-zlib $LIBC_FLAGS $LIBOBJC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS \
+	$MUDFLAP_FLAGS $LIBFFI_FLAGS --disable-werror $LIBGOMP_FLAGS \
 	$CLOOG_FLAGS --with-python-dir=%{python_dir}
 touch ../gcc/c-gperf.h
 %if %{build_cross}
@@ -1771,6 +1772,7 @@ pushd $FULLPATH
 	%endif
 	%if %{build_objc}
 	DispatchLibs libobjc	%{libobjc_major}.0.0
+	DispatchLibs libobjc_gc	%{libobjc_major}.0.0
 	%endif
 	%if %{build_fortran}
 	DispatchLibs libgfortran	%{libgfortran_major}.0.0
@@ -2635,19 +2637,25 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/cc1obj
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libobjc.a
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/libobjc_gc.a
 %if %{libc_shared}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libobjc.so
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/libobjc_gc.so
 %endif
 %if %isarch %{biarches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libobjc.a
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libobjc_gc.a
 %if %{libc_shared}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libobjc.so
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/32/libobjc_gc.so
 %endif
 %endif
 %if %isarch %{nof_arches}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libobjc.a
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libobjc_gc.a
 %if %{libc_shared}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libobjc.so
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/nof/libobjc_gc.so
 %endif
 %endif
 #
@@ -2666,9 +2674,13 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %{target_libdir}/libobjc.so.%{libobjc_major}
 %{target_libdir}/libobjc.so.%{libobjc_major}.0.0
+%{target_libdir}/libobjc_gc.so.%{libobjc_major}
+%{target_libdir}/libobjc_gc.so.%{libobjc_major}.0.0
 %if %isarch %{biarches}
 %{_prefix}/lib/libobjc.so.%{libobjc_major}
 %{_prefix}/lib/libobjc.so.%{libobjc_major}.0.0
+%{_prefix}/lib/libobjc_gc.so.%{libobjc_major}
+%{_prefix}/lib/libobjc_gc.so.%{libobjc_major}.0.0
 %endif
 %endif
 
