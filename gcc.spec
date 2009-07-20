@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.4.0
 %define snapshot		%nil
-%define release			%{manbo_mkrel 4}
+%define release			%{manbo_mkrel 5}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -1806,10 +1806,12 @@ if [ "%{libjava_includedir}" != "%{_includedir}" ]; then
   rm %{buildroot}%{_prefix}/lib/pkgconfig/libgcj-%{branch}.pc
 %endif
 fi
+# In java-1.5.0-gcj(-devel):
 rm -rf %{buildroot}%{_bindir}/rebuild-gcj-db%{program_suffix}
 rm -rf %{buildroot}%{_bindir}/aot-compile%{program_suffix}
 rm -rf %{buildroot}%{_mandir}/man1/aot-compile*.1*
 rm -rf %{buildroot}%{_mandir}/man1/rebuild-gcj-db*.1*
+rm -f %{buildroot}%{py_puresitedir}/{aotcompile,classfile}.py
 %endif
 
 # Move libgcj.spec to compiler-specific directories
@@ -2817,9 +2819,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_mandir}/man1/gserialver*.1*
 %{_mandir}/man1/gtnameserv*.1*
 %{_mandir}/man1/jv-convert*.1*
-
-%{py_puresitedir}/aotcompile.py
-%{py_puresitedir}/classfile.py
 %endif
 
 %if %{build_java}
