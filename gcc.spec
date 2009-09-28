@@ -2840,9 +2840,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %if %build_libgcj_bc
 %if %system_compiler
-%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}
-%{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0
-%else
 %{target_libdir}/gcj_bc-%{libgcj_major}
 %endif
 %endif
