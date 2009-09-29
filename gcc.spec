@@ -2838,6 +2838,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcj_libdir}/libjawt.so
 %{gcj_libdir}/libjvm.so
 #
+%if %build_libgcj_bc && !%system_compiler
+%{target_libdir}/gcj_bc-%{libgcj_major}
+%endif
+#
 %dir %{gcj_libdir}/classmap.db.d
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{gcj_libdir}/classmap.db
 %endif
@@ -2938,17 +2942,11 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_datadir}/java/src*.zip
 %endif
 
-%if %{build_java}
+%if %{build_java} && %{system_compiler}
 %files -n %{libgcj_bc_name}
 %defattr(-,root,root)
-%if %build_libgcj_bc
-%if %system_compiler
 %{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}
 %{target_libdir}/libgcj_bc.so.%{libgcj_bc_major}.0.0
-%else
-%{target_libdir}/gcj_bc-%{libgcj_major}
-%endif
-%endif
 %endif
 
 %if %{build_ada}
