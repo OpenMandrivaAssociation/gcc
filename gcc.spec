@@ -1520,23 +1520,23 @@ mkdir -p rpm.doc/gpc
 
 %if %{build_pascal}
 (cd gcc/p; for i in ChangeLog* README NEWS FAQ; do
-	cp -p $i ../../rpm.doc/gpc/$i
+	ln -f $i ../../rpm.doc/gpc/$i
 done)
 %endif
 %if %{build_fortran}
 (cd gcc/fortran; for i in ChangeLog*; do
-	cp -p $i ../../rpm.doc/gfortran/$i
+	ln -f $i ../../rpm.doc/gfortran/$i
 done)
 (cd libgfortran; for i in ChangeLog*; do
-	cp -p $i ../rpm.doc/gfortran/$i.libgfortran
+	ln -f $i ../rpm.doc/gfortran/$i.libgfortran
 done)
 %endif
 %if %{build_objc}
 (cd gcc/objc; for i in README*; do
-	cp -p $i ../../rpm.doc/objc/$i.objc
+	ln -f $i ../../rpm.doc/objc/$i.objc
 done)
 (cd libobjc; for i in README*; do
-	cp -p $i ../rpm.doc/libobjc/$i.libobjc
+	ln -f $i ../rpm.doc/libobjc/$i.libobjc
 done)
 %endif
 %if %{build_objcp}
@@ -1546,12 +1546,12 @@ done)
 %endif
 %if %{build_java}
 (cd boehm-gc; for i in ChangeLog*; do
-        cp -p $i ../rpm.doc/boehm-gc/$i.gc
+        ln -f $i ../rpm.doc/boehm-gc/$i.gc
 done)
 (cd libjava; for i in README THANKS COPYING ChangeLog; do
-	cp -p $i ../rpm.doc/libjava/$i.libjava
+	ln -f $i ../rpm.doc/libjava/$i.libjava
 done)
-(cd libjava; cp -p LIBGCJ_LICENSE ../rpm.doc/libjava/LICENSE.libjava)
+(cd libjava; ln -f LIBGCJ_LICENSE ../rpm.doc/libjava/LICENSE.libjava)
 %endif
 
 # [ghibo] - build printable documentation
