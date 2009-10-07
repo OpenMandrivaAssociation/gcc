@@ -1586,7 +1586,7 @@ done)
 %endif
 %endif
 
-# Run tests
+%check
 echo ====================TESTING=========================
 %if %{build_check}
 cd obj-%{gcc_target_platform}
