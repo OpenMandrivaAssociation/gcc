@@ -7,7 +7,7 @@
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 %define version			4.4.1
 %define snapshot		%nil
-%define release			%{manbo_mkrel 3}
+%define release			%{manbo_mkrel 4}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -1517,7 +1517,19 @@ mkdir -p rpm.doc/libjava
 mkdir -p rpm.doc/libobjc
 mkdir -p rpm.doc/boehm-gc
 mkdir -p rpm.doc/gpc
+mkdir -p rpm.doc/c++
+mkdir -p rpm.doc/libstdc++
 
+%if %{build_libstdcxx}
+(cd libstdc++-v3; for i in ChangeLog*; do
+	ln -f $i ../rpm.doc/libstdc++/$i
+done)
+%endif
+%if %{build_cxx}
+(cd gcc/cp; for i in ChangeLog*; do
+	ln -f $i ../../rpm.doc/c++/$i
+done)
+%endif
 %if %{build_pascal}
 (cd gcc/p; for i in ChangeLog* README NEWS FAQ; do
 	ln -f $i ../../rpm.doc/gpc/$i
@@ -2529,7 +2541,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %files c++ -f libstdc++.lang
 %defattr(-,root,root)
 #
-%doc gcc/cp/ChangeLog*
 %{_mandir}/man1/%{program_prefix}g++%{program_suffix}.1*
 #
 %ghost %{_bindir}/%{cross_program_prefix}c++
@@ -2582,7 +2593,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %defattr(-,root,root)
 #
-%doc libstdc++-v3/ChangeLog* libstdc++-v3/README* libstdc++-v3/doc/html/
+%doc libstdc++-v3/README*
 #
 %dir %{libstdcxx_includedir}
 %{libstdcxx_includedir}/*
@@ -3039,6 +3050,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %if %{build_doc}
 %files doc
 %doc gcc/*ChangeLog*
+%doc libstdc++-v3/doc/html/
 %defattr(-,root,root)
 %if %{build_check}
 %doc test_summary.log
@@ -3048,6 +3060,12 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_infodir}/gcc%{_package_suffix}.info*
 %{_infodir}/gccinstall%{_package_suffix}.info*
 %{_infodir}/gccint%{_package_suffix}.info*
+%if %{build_libstdcxx}
+%doc rpm.doc/libstdc++/
+%endif
+%if %{build_cxx}
+%doc rpm.doc/c++
+%endif
 %if %{build_libgomp}
 %{_infodir}/libgomp%{_package_suffix}.info*
 %endif
