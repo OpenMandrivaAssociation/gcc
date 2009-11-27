@@ -5,7 +5,7 @@
 %define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.4
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.4.1
+%define version			4.4.2
 %define snapshot		%nil
 %define release			%{manbo_mkrel 4}
 %define nof_arches		noarch
@@ -16,7 +16,7 @@
 # Define libraries major versions
 %define libgcc_major		1
 %define libstdcxx_major		6
-%define libstdcxx_minor		12
+%define libstdcxx_minor		13
 %define libgfortran_major	3
 %define libgcj_major		10
 %define libobjc_major		2
