@@ -431,6 +431,9 @@ Patch302: gcc_mips_gcc_testsuite_fix_loop.patch
 
 Patch303: gcc-4.3.2-CVE-2009-3736.diff
 
+# (proyvind): set interpreter path used by our uclibc for use with -muclibc
+Patch304: gcc-4.4.2-uclibc-ldso-path.patch
+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 # Want updated alternatives priorities
 %if %{build_cross}
@@ -1319,6 +1322,7 @@ perl -pi -e '/^\#define VERSUFFIX/ and s/""/" (%{version}-%{release})"/' gcc/ver
 sed -i -e 's,\$(jardir)/ext,$(jardir)-ext,g' libjava/Makefile.{am,in}
 
 %patch303 -p0 -b .CVE-2009-3736
+%patch304 -p1 -b .uclibc~
 
 %build
 # FIXME: extra tools needed
