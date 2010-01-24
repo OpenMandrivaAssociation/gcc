@@ -5,6 +5,7 @@
 %define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.4
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
+# NOTE! Dont forget to update manbo-files-gcc at the same time, or you will break the BS.
 %define version			4.4.3
 %define snapshot		%nil
 %define release			%{manbo_mkrel 1}
