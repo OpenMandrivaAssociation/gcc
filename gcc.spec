@@ -5,9 +5,9 @@
 %define name			%{cross_prefix}gcc%{package_suffix}
 %define branch			4.4
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
-%define version			4.4.2
+%define version			4.4.3
 %define snapshot		%nil
-%define release			%{manbo_mkrel 5}
+%define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -428,8 +428,6 @@ Patch211: gcc43-hash-style-gnu.patch
 # mips patches from the gdium tree
 Patch301: gcc-mips-libjava-interp.patch
 Patch302: gcc_mips_gcc_testsuite_fix_loop.patch
-
-Patch303: gcc-4.3.2-CVE-2009-3736.diff
 
 # (proyvind): set interpreter path used by our uclibc for use with -muclibc
 Patch304: gcc-4.4.2-uclibc-ldso-path.patch
@@ -1321,7 +1319,6 @@ perl -pi -e '/^\#define VERSUFFIX/ and s/""/" (%{version}-%{release})"/' gcc/ver
 # Fix java-ext path
 sed -i -e 's,\$(jardir)/ext,$(jardir)-ext,g' libjava/Makefile.{am,in}
 
-%patch303 -p0 -b .CVE-2009-3736
 %patch304 -p1 -b .uclibc~
 
 %build
