@@ -3,12 +3,12 @@
 %define _real_vendor manbo
 
 %define name			%{cross_prefix}gcc%{package_suffix}
-%define branch			4.4
+%define branch			4.5
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 # NOTE! Dont forget to update manbo-files-gcc at the same time, or you will break the BS.
-%define version			4.4.3
+%define version			4.5.0
 %define snapshot		%nil
-%define release			%{manbo_mkrel 2}
+%define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -17,9 +17,9 @@
 # Define libraries major versions
 %define libgcc_major		1
 %define libstdcxx_major		6
-%define libstdcxx_minor		13
+%define libstdcxx_minor		14
 %define libgfortran_major	3
-%define libgcj_major		10
+%define libgcj_major		11
 %define libobjc_major		2
 %define libgnat_major		1
 %define libffi_major		4
@@ -508,6 +508,7 @@ AutoProv:	false
 %endif
 BuildRequires:	libgmp-devel
 BuildRequires:	libmpfr-devel
+BuildRequires:	libmpc-devel
 
 %description
 A compiler aimed at integrating all the optimizations and features
@@ -579,6 +580,13 @@ for most of the current C++ specification, including templates and
 exception handling. It does include the static standard C++
 library and C++ header files; the library for dynamically linking
 programs is available separately.
+
+####################################################################
+# gcc Plugins
+%package -n gcc-plugins
+Summary:	Headers to build gcc plugins
+%description -n gcc-plugins
+This package contains the headers needed to build gcc plugins.
 
 ####################################################################
 # C++ Libraries
@@ -1232,7 +1240,7 @@ documentation in PDF.
 
 %patch107 -p1 -b .multi-do-libdir
 %patch113 -p1 -b .pr11631-testcase
-%patch114 -p1 -b .wformat
+#%patch114 -p1 -b .wformat
 %patch115 -p1 -b .linux32
 %patch116 -p1 -b .linux32-build-env
 %patch129 -p1 -b .nonof
@@ -1477,6 +1485,14 @@ touch ../gcc/c-gperf.h
 # by adding a symlink to the headers since xgcc already passes -isystem ./include
 mkdir -p %{target_cpu}-linux/libgcc
 ln -sf $PWD/../sysroot/usr/include %{target_cpu}-linux/libgcc/include
+
+# if TMPDIR or TMP end with a trailing slash (/tmp/), wrong debug info
+# ends up in gserialver, which subsequently causes debugedit to choke, and
+# then the build fails because of that. This is ugly :-/
+# See https://bugzilla.redhat.com/show_bug.cgi?id=304121
+export TMPDIR=/tmp
+export TMP=/tmp
+
 %make
 %else
 # bootstrap-lean is similar to bootstrap except "object files from the stage1
@@ -1486,10 +1502,6 @@ ln -sf $PWD/../sysroot/usr/include %{target_cpu}-linux/libgcc/include
 
 %endif
 
-%if !%{build_cross}
-# Make protoize
-make -C gcc CC="./xgcc -B ./ -O2" proto
-%endif
 cd ..
 
 # Build the SPU compiler
@@ -2288,8 +2300,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %{_bindir}/%{program_prefix}gccbug%{program_suffix}
 %if "%{name}" == "gcc%{package_suffix}"
-%{_bindir}/protoize%{program_suffix}
-%{_bindir}/unprotoize%{program_suffix}
 %{_bindir}/gcov%{program_suffix}
 %endif
 %if %{system_compiler}
@@ -2324,11 +2334,13 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcov.a
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/lto-wrapper
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/lto1
+
 %if !%{build_cross_bootstrap}
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/libgcc_eh.a
 %endif
 %if "%{name}" == "gcc%{package_suffix}"
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/SYSCALLS.c.X
 %if %isarch %{biarches}
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/32
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/32/crt*.o
@@ -2356,7 +2368,9 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/float.h
 %if %isarch %{ix86} x86_64
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/abmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ammintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/nmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/smmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mm3dnow.h
@@ -2370,6 +2384,11 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/immintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/wmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/x86intrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/fma4intrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ia32intrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/lwpintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/popcntintrin.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/xopintrin.h
 %endif
 %if %isarch ppc ppc64
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/spe.h
@@ -2400,13 +2419,13 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdbool.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stddef.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdint-gcc.h
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdint.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/syslimits.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/unwind.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/varargs.h
 %if %isarch i386 x86_64
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/bmmintrin.h
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/cpuid.h
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/include/mmintrin-common.h
 %endif
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/stdfix.h
 
@@ -2574,6 +2593,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %endif
 %endif
 
+%files -n gcc-plugins
+%dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/plugin/include/
+%{gcc_libdir}/%{gcc_target_platform}/%{version}/plugin/include/*
+
 %if %{build_libstdcxx} && %{libc_shared}
 %if !%{build_monolithic}
 %files -n %{libstdcxx_name}
@@ -2602,6 +2625,10 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %dir %{libstdcxx_includedir}
 %{libstdcxx_includedir}/*
+%{target_libdir}/libstdc++.so.%{libstdcxx_major}.0.%{libstdcxx_minor}-gdb.py
+%dir %{_datadir}/gcc-%{version}/python/libstdcxx
+%{_datadir}/gcc-%{version}/python/libstdcxx/*
+
 %ifarch %{spu_arches}
 %exclude %dir %{libstdcxx_includedir}/spu
 %exclude %dir %{libstdcxx_includedir}/spu/bits
@@ -2979,7 +3006,6 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/*.ali
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/g-trasym.o
-%{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgccprefix.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgmem.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgnala.a
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/adalib/libgnat.a
@@ -3005,6 +3031,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %files -n %{libffi_name}-devel
 %defattr(-,root,root)
 %doc libffi/README libffi/LICENSE libffi/ChangeLog*
+%{_mandir}/man3/ffi*.3*
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}
 %dir %{gcc_libdir}/%{gcc_target_platform}/%{version}/include
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/include/ffi*.h
