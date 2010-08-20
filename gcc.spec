@@ -1486,13 +1486,6 @@ touch ../gcc/c-gperf.h
 mkdir -p %{target_cpu}-linux/libgcc
 ln -sf $PWD/../sysroot/usr/include %{target_cpu}-linux/libgcc/include
 
-# if TMPDIR or TMP end with a trailing slash (/tmp/), wrong debug info
-# ends up in gserialver, which subsequently causes debugedit to choke, and
-# then the build fails because of that. This is ugly :-/
-# See https://bugzilla.redhat.com/show_bug.cgi?id=304121
-export TMPDIR=/tmp
-export TMP=/tmp
-
 %make
 %else
 # bootstrap-lean is similar to bootstrap except "object files from the stage1
