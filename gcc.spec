@@ -468,6 +468,8 @@ BuildRequires:	%{name}-gnat >= 3.1, %{libgnat_name} >= 3.1
 BuildRequires: ppl-devel >= 0.10, cloog-ppl-devel >= 0.15
 #Requires: libcloog1 >= 0.15
 %endif
+#needed for lto support
+BuildRequires: elfutils-devel
 Requires:	%{name}-cpp = %{version}-%{release}
 # FIXME: We need a libgcc with 3.4 symbols
 %if %{libc_shared} && !%{build_monolithic}
@@ -1478,7 +1480,7 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
 	--with-system-zlib $LIBC_FLAGS $LIBOBJC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS \
 	$MUDFLAP_FLAGS $LIBFFI_FLAGS --disable-werror $LIBGOMP_FLAGS \
-	$CLOOG_FLAGS --with-python-dir=%{python_dir}
+	$CLOOG_FLAGS --with-python-dir=%{python_dir} --enable-lto
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 # (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
