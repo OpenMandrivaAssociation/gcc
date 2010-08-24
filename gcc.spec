@@ -2136,14 +2136,9 @@ esac
 %endif
 
 %if %{build_libstdcxx}
-mkdir -p %{buildroot}%{_datadir}/gdb/auto-load/%{_libdir}
-mv -f %{buildroot}%{_libdir}/libstdc++.so.%{libstdcxx_major}.0.%{libstdcxx_minor}-gdb.py \
-      %{buildroot}%{_datadir}/gdb/auto-load/%{_libdir}/
-%if %isarch %{biarches}
 mkdir -p %{buildroot}%{_datadir}/gdb/auto-load/%{_prefix}/lib
 mv -f %{buildroot}%{_prefix}/lib/libstdc++.so.%{libstdcxx_major}.0.%{libstdcxx_minor}-gdb.py \
       %{buildroot}%{_datadir}/gdb/auto-load/%{_prefix}/lib/
-%endif
 %endif
 
 %clean
@@ -2631,10 +2626,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 #
 %dir %{libstdcxx_includedir}
 %{libstdcxx_includedir}/*
-%{_datadir}/gdb/auto-load/%{_libdir}/libstdc++.so.%{libstdcxx_major}.0.%{libstdcxx_minor}-gdb.py
-%if %isarch %{biarches}
 %{_datadir}/gdb/auto-load/%{_prefix}/lib/libstdc++.so.%{libstdcxx_major}.0.%{libstdcxx_minor}-gdb.py
-%endif
 %dir %{_datadir}/gcc-%{version}/python/libstdcxx
 %{_datadir}/gcc-%{version}/python/libstdcxx/*
 
