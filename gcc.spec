@@ -587,6 +587,7 @@ programs is available separately.
 # gcc Plugins
 %package -n gcc-plugins
 Summary:	Headers to build gcc plugins
+Group:		Development/C
 %description -n gcc-plugins
 This package contains the headers needed to build gcc plugins.
 
