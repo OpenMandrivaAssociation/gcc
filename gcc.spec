@@ -6,7 +6,7 @@
 %define branch			4.5
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 # NOTE! Dont forget to update manbo-files-gcc at the same time, or you will break the BS.
-%define version			4.5.0
+%define version			4.5.1
 %define snapshot		%nil
 %define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
