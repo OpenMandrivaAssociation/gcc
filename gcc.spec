@@ -1207,6 +1207,7 @@ Provides:	gcc%{branch}-doc = %{version}-%{release}
 %endif
 Requires(post): info-install
 Requires(preun): info-install
+BuildArch: noarch
 
 %description doc
 GCC is a compiler suite aimed at integrating all the optimizations and
