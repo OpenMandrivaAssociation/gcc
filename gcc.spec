@@ -6,7 +6,7 @@
 %define branch			4.5
 %define branch_tag		%(perl -e 'printf "%%02d%%02d", split(/\\./,shift)' %{branch})
 # NOTE! Dont forget to update manbo-files-gcc at the same time, or you will break the BS.
-%define version			4.5.1
+%define version			4.5.2
 %define snapshot		%nil
 %define release			%{manbo_mkrel 1}
 %define nof_arches		noarch
@@ -907,6 +907,7 @@ Provides:	%{cross_prefix}gcc-libgcj = %{version}-%{release}
 Obsoletes:	%{libgcj_name_orig}%{branch}
 Provides:	%{libgcj_name_orig}%{branch} = %{version}-%{release}
 %if %{build_java}
+BuildRequires:	antlr
 BuildRequires:	libxt-devel, libxtst-devel
 BuildRequires:  jpackage-utils
 # needed for cairo support (Graphics2D)
@@ -2843,6 +2844,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %{_bindir}/gjar%{program_suffix}
 %{_bindir}/gjarsigner%{program_suffix}
 %{_bindir}/gjavah%{program_suffix}
+%{_bindir}/gjdoc%{program_suffix}
 %{_bindir}/gkeytool%{program_suffix}
 %{_bindir}/gnative2ascii%{program_suffix}
 %{_bindir}/gorbd%{program_suffix}
