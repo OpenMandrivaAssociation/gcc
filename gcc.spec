@@ -221,7 +221,7 @@
 #define build_libgcj_bc		1
 %endif
 %define use_hash_style_gnu	0
-%define build_cloog		1
+%define build_cloog		0
 
 # Define C library to use
 %define libc glibc
@@ -1341,6 +1341,17 @@ mkdir -p bin
 install -m755 %{SOURCE6} bin/help2man
 export PATH=$PATH:$PWD/bin
 
+if [ x$TMP != x ]; then
+    export TMP=`echo $TMP | sed -e 's%/$%%'`
+else
+    export TMP=/tmp
+fi
+if [ x$TMPDIR != x ]; then
+    export TMPDIR=`echo $TMPDIR | sed -e 's%/$%%'`
+else
+    export TMPDIR=/tmp
+fi
+
 # Prepare OPT_FLAGS
 OPT_FLAGS=`echo $RPM_OPT_FLAGS|sed -e 's/-fno-rtti//g' -e 's/-fno-exceptions//g' -e 's/-mcpu=pentiumpro//g'`
 %if %{build_debug}
@@ -1483,7 +1494,8 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--build=%{_target_platform} --host=%{_target_platform} $CROSS_FLAGS $TARGET_FLAGS \
 	--with-system-zlib $LIBC_FLAGS $LIBOBJC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS \
 	$MUDFLAP_FLAGS $LIBFFI_FLAGS --disable-werror $LIBGOMP_FLAGS \
-	$CLOOG_FLAGS --with-python-dir=%{python_dir} --enable-lto
+	$CLOOG_FLAGS --with-python-dir=%{python_dir} --enable-lto \
+	--enable-plugins
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 # (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
