@@ -8,7 +8,7 @@
 # NOTE! Dont forget to update manbo-files-gcc at the same time, or you will break the BS.
 %define version			4.5.2
 %define snapshot		%nil
-%define release			%{manbo_mkrel 2}
+%define release			%{manbo_mkrel 3}
 %define nof_arches		noarch
 %define spu_arches		ppc64
 %define lsb_arches		i386 x86_64 ia64 ppc ppc64 s390 s390x mips mipsel mips64 mips64el
@@ -3022,6 +3022,7 @@ if [ "$1" = "0" ];then /sbin/install-info %{_infodir}/gcc%{_package_suffix}.info
 %defattr(-,root,root)
 #
 %{_bindir}/gnat*
+%exclude %{_bindir}/gnative2ascii
 %config(noreplace) %{_sysconfdir}/bash_completion.d/gnatmake
 #
 %{gcc_libdir}/%{gcc_target_platform}/%{version}/gnat1
