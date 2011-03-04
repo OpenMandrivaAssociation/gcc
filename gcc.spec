@@ -189,7 +189,7 @@
 %endif
 %define build_cxx		1
 %define build_libstdcxx		%{build_cxx}
-%define build_fortran		1
+%define build_fortran		%{system_compiler}
 %define build_objc		1
 %define build_objcp		1
 %define build_libmudflap	1
