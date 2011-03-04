@@ -499,7 +499,8 @@ Conflicts:	gcc%{branch} < %{version}-%{release}
 Requires:	manbo-files-gcc%{program_suffix} = %{version}
 %endif
 %if %{build_pdf_doc}
-BuildRequires:	tetex, tetex-dvips, tetex-latex
+#BuildRequires:	tetex, tetex-dvips, tetex-latex
+BuildRequires:	texlive
 %endif
 %if %{build_check}
 BuildRequires:	dejagnu
@@ -1342,12 +1343,12 @@ install -m755 %{SOURCE6} bin/help2man
 export PATH=$PATH:$PWD/bin
 
 if [ x$TMP != x ]; then
-    export TMP=`echo $TMP | sed -e 's%/$%%'`
+    export TMP=`echo $TMP | sed -e 's|/$||'`
 else
     export TMP=/tmp
 fi
 if [ x$TMPDIR != x ]; then
-    export TMPDIR=`echo $TMPDIR | sed -e 's%/$%%'`
+    export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
 else
     export TMPDIR=/tmp
 fi
