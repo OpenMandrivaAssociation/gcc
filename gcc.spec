@@ -1496,7 +1496,7 @@ CC="%{__cc}" CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" XCFLAGS="$OPT_FLAGS" TCFL
 	--with-system-zlib $LIBC_FLAGS $LIBOBJC_FLAGS $LIBSTDCXX_FLAGS $LIBJAVA_FLAGS $SSP_FLAGS \
 	$MUDFLAP_FLAGS $LIBFFI_FLAGS --disable-werror $LIBGOMP_FLAGS \
 	$CLOOG_FLAGS --with-python-dir=%{python_dir} --enable-lto \
-	--enable-plugins
+	--enable-plugin
 touch ../gcc/c-gperf.h
 %if %{build_cross}
 # (peryvind): xgcc seems to ignore --sysroot, so let's just workaround it for
