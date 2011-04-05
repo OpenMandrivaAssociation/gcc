@@ -111,7 +111,7 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	%{mkrel 1}
+Release:	%{mkrel 2}
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -130,7 +130,7 @@ BuildRequires:	elfutils-devel >= 0.147
 
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
 # have been addressed if using an older version
-BuildRequires:	glibc-devel >= 2.13
+Requires:	glibc-devel >= 2.13
 
 BuildRequires:	dejagnu
 BuildRequires:	bison
