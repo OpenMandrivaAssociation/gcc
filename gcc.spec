@@ -126,6 +126,7 @@ Requires:	libgcc >= %{version}-%{release}
 Requires:	libgomp >= %{version}-%{release}
 %endif
 BuildRequires:	binutils >= 2.20.51.0.2
+Requires:	binutils >= 2.20.51.0.2
 BuildRequires:	elfutils-devel >= 0.147
 
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
