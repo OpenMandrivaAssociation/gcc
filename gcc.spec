@@ -888,12 +888,12 @@ Provides:	libgcj = %{version}-%{release}
 Provides:	%{libgcj_bc} = %{version}-%{release}
 %if %{provide_libmajor}
 Provides:	libgcj%{gcj_major} = %{version}-%{release}
+%endif
+%if %mdkversion <= 201100
 Obsoletes:	libgcj_bc%{gcj_bc_major} < %{version}-%{release}
 Provides:	libgcj_bc%{gcj_bc_major} = %{version}-%{release}
 Provides:	libgcj%{gcj_major}-base = %{version}-%{release}
 Provides:	%{libgcj}-base = %{version}-%{release}
-%endif
-%if %mdkversion <= 201100
 Obsoletes:	gcc-libgcj
 Obsoletes:	libgcj4.5 < %{version}-%{release}
 Obsoletes:	gcj4.5-tools
