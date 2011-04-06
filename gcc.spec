@@ -111,12 +111,12 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	%{mkrel 2}
+Release:	%{mkrel 3}
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
-Source0:	gcc-4.6.0.tar.bz2
+Source0:	http://ftp.gnu.org/gnu/gcc/gcc-%version/gcc-%version.tar.bz2
 Source1:	md5.sum
 Source2:	c89
 Source3:	c99
