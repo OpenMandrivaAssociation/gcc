@@ -179,7 +179,8 @@ Patch1:		gcc-4.6.0-java-nomulti.patch
 
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48343
 # [4.6/4.7 Regression] ICE compiling i586 linux-2.6.38/drivers/staging/wlan-ng/p80211wep.c: in form_sum, at reload.c:5338
-Patch2:		gcc46-pr48343.patch
+# 'gcc-4_6-branch] svn diff -r172109:172110' rediffed to also apply changelog diffs
+Patch2:		gcc-4.6.0-pr48343.patch
 
 Patch3:		gcc-4.6.0-make-pdf.patch
 
@@ -1558,7 +1559,7 @@ to compile SSP support.
 
 %patch0 -p1
 %patch1 -p1
-%patch2 -p0
+%patch2 -p1
 %patch3 -p1
 
 #-----------------------------------------------------------------------
@@ -1718,6 +1719,14 @@ pushd %{buildroot}%{_bindir}
     mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
 	%{buildroot}%{py_puresitedir}
     rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
+    %if %{build_cxx}
+	perl -pi -e 's|%{_datadir}/gcc-4.6.0/python|%{py_puresitedir}|;' \
+	    %{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
+    %endif
+    %if %{build_java}
+	perl -pi -e 's|%{_datadir}/gcc-4.6.0/python|%{py_puresitedir}|;' \
+	    %{buildroot}%{_bindir}/aot-compile
+    %endif
 %endif
 
     LANGUAGES="g++ gcc gccgo gcj gfortran"
