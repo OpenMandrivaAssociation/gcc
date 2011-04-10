@@ -111,7 +111,7 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	%{mkrel 3}
+Release:	%{mkrel 4}
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
