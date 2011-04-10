@@ -85,7 +85,7 @@
   %define	build_ada		%{system_compiler}
 %endif
 %define		build_check		1
-%define		build_cloog		0
+%define		build_cloog		1
 %define		build_cxx		1
 %define		build_doc		%{system_compiler}
 %define		build_ffi		1
@@ -149,10 +149,10 @@ BuildRequires:	texlive
 %endif
 BuildRequires:	zlib-devel
 %if %{build_cloog}
-BuildRequires:	ppl-devel >= 0.10
-BuildRequires:	pwl-devel >= 0.10
-BuildRequires:	ppl_c-devel >= 0.10
-BuildRequires:	cloog-ppl-devel >= 0.15
+BuildRequires:	ppl-devel >= 0.11
+BuildRequires:	pwl-devel >= 0.11
+BuildRequires:	ppl_c-devel >= 0.11
+BuildRequires:	cloog-ppl-devel >= 0.16.1
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
@@ -1629,6 +1629,7 @@ XCFLAGS="$OPT_FLAGS"						\
 %else
 	--with-cloog						\
 	--with-ppl						\
+	--enable-cloog-backend=ppl				\
 %endif
 %if !%{build_ffi}
 	--disable-libffi					\
