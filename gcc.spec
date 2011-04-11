@@ -1713,7 +1713,7 @@ pushd %{buildroot}%{_bindir}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     cp -fa %{SOURCE2} %{SOURCE3} %{buildroot}%{_bindir}
-    ln -sf gcc %{buildroot}%{_bindir}/cc
+    ln -sf %{_target_platform}-%{name}-%{version} %{buildroot}%{_bindir}/cc
     # configure python dir option does not cover libstdc++ and needs to remove
     # /usr prefix for libjava
     mkdir -p %{buildroot}%{py_puresitedir}
@@ -1730,7 +1730,7 @@ pushd %{buildroot}%{_bindir}
     %endif
 %endif
 
-    LANGUAGES="g++ gcc gccgo gcj gfortran"
+    LANGUAGES="gcc g++ gcc gccgo gcj gfortran"
     for lang in $LANGUAGES; do
 	if [ -f %{_target_platform}-$lang ]; then
 	    mv -f %{_target_platform}-$lang{,-%{version}}
