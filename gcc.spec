@@ -111,7 +111,7 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	%{mkrel 4}
+Release:	%{mkrel 5}
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -128,6 +128,9 @@ Requires:	libgomp >= %{version}-%{release}
 BuildRequires:	binutils >= 2.20.51.0.2
 Requires:	binutils >= 2.20.51.0.2
 BuildRequires:	elfutils-devel >= 0.147
+%if %mdkversion <= 201100
+Obsoletes:	manbo-mandriva-files-gcc
+%endif
 
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
 # have been addressed if using an older version
@@ -387,6 +390,9 @@ Requires:	%{libstdcxx_devel} = %{version}
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
+%if %mdkversion <= 201100
+Obsoletes:	manbo-mandriva-files-g++
+%endif
 
 %description	c++
 This package adds C++ support to the GNU Compiler Collection.
@@ -622,6 +628,9 @@ BuildRequires:	gmp-devel, mpfr-devel, libmpc-devel
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 %endif
+%if %mdkversion <= 201100
+Obsoletes:	manbo-mandriva-files-gfortran
+%endif
 
 %description	gfortran
 The gcc-gfortran package provides support for compiling Fortran
@@ -849,6 +858,9 @@ BuildRequires:	eclipse-ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
 BuildRequires:	zip
+%if %mdkversion <= 201100
+Obsoletes:	manbo-mandriva-files-java
+%endif
 
 %description	java
 This package adds support for compiling Java(tm) programs and
