@@ -1251,6 +1251,10 @@ to compile FFI support.
 %package	-n %{libquadmath}
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
+%if %{provide_libmajor}
+Obsoletes:	libquadmath%{quadmath_major} < %{version}-%{release}
+Provides:	libquadmath%{quadmath_major} = %{version}-%{release}
+%endif
 Provides:	libquadmath = %{version}-%{release}
 
 %description	-n %{libquadmath}
@@ -1748,9 +1752,11 @@ pushd %{buildroot}%{_bindir}
 	    mv -f %{_target_platform}-$lang{,-%{version}}
 	    rm -f $lang
 	    ln -sf %{_target_platform}-$lang-%{version} $lang-%{version}
-	    %if %{system_compiler}
+	%if %{system_compiler}
 		ln -sf %{_target_platform}-$lang-%{version} $lang
-	    %endif
+	elif [ -f %{_target_platform}-$lang-%{version} ]; then
+		ln -sf %{_target_platform}-$lang-%{version} %{_target_platform}-$lang
+	%endif
 	fi
     done
 
