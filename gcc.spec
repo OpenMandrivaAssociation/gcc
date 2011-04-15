@@ -336,6 +336,8 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 Summary:	Middle End Lisp Translator GCC plugin
 Group:		Development/C
 Requires:	gcc-plugin-devel = %{version}-%{release}
+Requires(post): /sbin/install-info
+Requires(preun): /sbin/install-info
 
 %description	plugin-melt
 GCC MELT is a GCC plugin providing a lispy domain specific
@@ -355,6 +357,14 @@ extensions for:
 * Any processing taking advantage of powerful GCC internal
   representations of your source code.
 
+%post		plugin-melt
+  %_install_info meltplugin.info
+  %_install_info meltpluginapi.info
+
+%preun		plugin-melt
+  %_remove_install_info meltplugin.info
+  %_remove_install_info meltpluginapi.info
+
 %files		plugin-melt
 %defattr(-,root,root,-)
 %{gccdir}/plugin/include/gimple-pretty-print.h
@@ -363,6 +373,8 @@ extensions for:
 %{gccdir}/plugin/include/melt*.h
 %{gccdir}/plugin/libexec
 %{gccdir}/plugin/melt*
+%{_infodir}/meltplugin*
+%doc %{_docdir}/gcc-plugin-melt
 #-----------------------------------------------------------------------
 # build_melt
 %endif
@@ -1946,6 +1958,9 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	-B$PWD/../host-%{_target_platform}		\
 	-M$PWD						\
 	-Y$PWD/melt/generated/gt-melt-runtime-plugin.h
+    install -m 0644 *.info %{buildroot}%{_infodir}
+    mkdir -p %{buildroot}%{_docdir}/gcc-plugin-melt/html
+    cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
     popd
 %endif
 
