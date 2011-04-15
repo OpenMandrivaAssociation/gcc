@@ -1943,7 +1943,7 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	DESTDIR=%{buildroot}/				\
 	./build-melt-plugin.sh				\
 	-S$PWD/..					\
-	-B$PWD/host-%{_target_platform}			\
+	-B$PWD/../host-%{_target_platform}		\
 	-M$PWD						\
 	-Y$PWD/melt/generated/gt-melt-runtime-plugin.h
     popd
