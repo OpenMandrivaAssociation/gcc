@@ -107,19 +107,22 @@
 %endif
 %define		build_pdf		%{build_doc}
 %define		build_ssp		0
+%define		build_plugin		1
+%define		build_melt		%{build_plugin}
 
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	%{mkrel 5}
+Release:	6
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 Source0:	http://ftp.gnu.org/gnu/gcc/gcc-%version/gcc-%version.tar.bz2
 Source1:	md5.sum
-Source2:	c89
-Source3:	c99
+Source2:	http://gcc-melt.org/melt-0.7rc3-plugin-for-gcc-4.6.tgz
+Source3:	c89
+Source4:	c99
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
@@ -186,6 +189,7 @@ Patch1:		gcc-4.6.0-java-nomulti.patch
 Patch2:		gcc-4.6.0-pr48343.patch
 
 Patch3:		gcc-4.6.0-make-pdf.patch
+Patch4:		gcc-4.6.0-melt-0.7rc3-plugin-for-gcc-4.6.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version 4.6.
@@ -215,6 +219,7 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %{_bindir}/c99
 %{_bindir}/gcc
 %{_bindir}/gcov
+%{_bindir}/%{_target_platform}-gcc
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
 %{_mandir}/man7/*
@@ -297,12 +302,13 @@ The %{libgcc_name} package contains GCC shared libraries for gcc %{branch}
 %endif
 
 ########################################################################
-%if %{system_compiler}
+%if %{build_plugin}
 #-----------------------------------------------------------------------
 %package	plugin-devel
 Summary:	Headers to build gcc plugins
 Group:		Development/C
 Obsoletes:	gcc-plugins <= 4.5.2
+Requires:	%{name} = %{version}-%{release}
 
 %description	plugin-devel
 This package contains header files and other support files
@@ -311,9 +317,54 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 
 %files		plugin-devel
 %defattr(-,root,root,-)
-%{gccdir}/plugin
+%dir %{gccdir}/plugin
+%{gccdir}/plugin/include
+%if %{build_melt}
+%exclude %{gccdir}/plugin/include/gimple-pretty-print.h
+%exclude %{gccdir}/plugin/include/tree-pretty-print.h
+%exclude %{gccdir}/plugin/include/realmpfr.h
+%exclude %{gccdir}/plugin/include/melt*.h
+%endif
 #-----------------------------------------------------------------------
-# system_compiler
+# build_plugin
+%endif
+
+########################################################################
+%if %{build_melt}
+#-----------------------------------------------------------------------
+%package	plugin-melt
+Summary:	Middle End Lisp Translator GCC plugin
+Group:		Development/C
+Requires:	gcc-plugin-devel = %{version}-%{release}
+
+%description	plugin-melt
+GCC MELT is a GCC plugin providing a lispy domain specific
+language to easily code GCC extensions in. MELT originally
+meant Middle End Lisp Translator.
+
+GCC MELT should interest any important software project
+(coded in C, C++, Ada, Fortran, ...), compiled with GCC,
+since it facilitates the development of customized GCC
+extensions for:
+
+* specific warnings or typechecks
+* specific optimizations
+* coding rules validation
+* source code navigation or processing, in particular aspect
+  oriented programming, retro-engineering or refactoring tasks
+* Any processing taking advantage of powerful GCC internal
+  representations of your source code.
+
+%files		plugin-melt
+%defattr(-,root,root,-)
+%{gccdir}/plugin/include/gimple-pretty-print.h
+%{gccdir}/plugin/include/tree-pretty-print.h
+%{gccdir}/plugin/include/realmpfr.h
+%{gccdir}/plugin/include/melt*.h
+%{gccdir}/plugin/libexec
+%{gccdir}/plugin/melt*
+#-----------------------------------------------------------------------
+# build_melt
 %endif
 
 ########################################################################
@@ -1588,11 +1639,6 @@ OPT_FLAGS=`echo %{optflags} |					\
 		-e 's/-pipe//g'`
 OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
 
-# FIXME this should really already be in #optflags
-%ifarch x86_64
-OPT_FLAGS="$OPT_FLAGS -fPIC"
-%endif
-
 # FIXME debugedit
 [ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
 [ ! -z "x$TMPDIR" ] && export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
@@ -1673,7 +1719,11 @@ XCFLAGS="$OPT_FLAGS"						\
 	--enable-gnu-unique-object				\
 	--enable-languages="$LANGUAGES"				\
 	--enable-linker-build-id				\
+%if !%{build_plugin}
+	--disable-plugin					\
+%else
 	--enable-plugin						\
+%endif
 	--enable-shared						\
 	--enable-threads=posix					\
 	--with-system-zlib					\
@@ -1728,7 +1778,7 @@ pushd %{buildroot}%{_bindir}
 %if %{system_compiler}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
-    cp -fa %{SOURCE2} %{SOURCE3} %{buildroot}%{_bindir}
+    cp -fa %{SOURCE3} %{SOURCE4} %{buildroot}%{_bindir}
     ln -sf %{_target_platform}-%{name}-%{version} %{buildroot}%{_bindir}/cc
     # configure python dir option does not cover libstdc++ and needs to remove
     # /usr prefix for libjava
@@ -1884,6 +1934,19 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	%endif
     popd
     %endif
+%endif
+
+%if %{build_melt}
+    tar zxf %{SOURCE2}
+    pushd melt-0.7rc3-plugin-for-gcc-4.6
+	patch -p0 < %{PATCH4}
+	DESTDIR=%{buildroot}/				\
+	./build-melt-plugin.sh				\
+	-S$PWD/..					\
+	-B$PWD/host-%{_target_platform}			\
+	-M$PWD						\
+	-Y$PWD/melt/generated/gt-melt-runtime-plugin.h
+    popd
 %endif
 
 #-----------------------------------------------------------------------
