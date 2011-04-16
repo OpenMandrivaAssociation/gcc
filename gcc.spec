@@ -191,6 +191,10 @@ Patch2:		gcc-4.6.0-pr48343.patch
 Patch3:		gcc-4.6.0-make-pdf.patch
 Patch4:		gcc-4.6.0-melt-0.7rc3-plugin-for-gcc-4.6.patch
 
+# https://qa.mandriva.com/show_bug.cgi?id=63047
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48462
+Patch5:		gcc-4.6.0-gfortran-pr48462.patch
+
 %description
 The gcc package contains the GNU Compiler Collection version 4.6.
 
@@ -336,13 +340,13 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 Summary:	Middle End Lisp Translator GCC plugin
 Group:		Development/C
 Requires:	gcc-plugin-devel = %{version}-%{release}
+BuildRequires:	gcc-plugin-devel
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
 %description	plugin-melt
 GCC MELT is a GCC plugin providing a lispy domain specific
-language to easily code GCC extensions in. MELT originally
-meant Middle End Lisp Translator.
+language to easily code GCC extensions in.
 
 GCC MELT should interest any important software project
 (coded in C, C++, Ada, Fortran, ...), compiled with GCC,
@@ -1640,6 +1644,7 @@ to compile SSP support.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch5 -p0
 
 #-----------------------------------------------------------------------
 %build
