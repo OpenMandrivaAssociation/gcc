@@ -108,7 +108,10 @@
 %define		build_pdf		%{build_doc}
 %define		build_ssp		0
 %define		build_plugin		1
-%define		build_melt		%{build_plugin}
+%define		build_melt		0
+%ifarch x86_64
+  %define	build_melt		%{build_plugin}
+%endif
 
 #-----------------------------------------------------------------------
 Name:		gcc
@@ -120,7 +123,7 @@ Group:		Development/C
 URL:		http://gcc.gnu.org/
 Source0:	http://ftp.gnu.org/gnu/gcc/gcc-%version/gcc-%version.tar.bz2
 Source1:	md5.sum
-Source2:	http://gcc-melt.org/melt-0.7rc3-plugin-for-gcc-4.6.tgz
+Source2:	http://gcc-melt.org/melt-0.7rc4-plugin-for-gcc-4.6.tgz
 Source3:	c89
 Source4:	c99
 %if %{system_compiler}
@@ -1955,7 +1958,7 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 
 %if %{build_melt}
     tar zxf %{SOURCE2}
-    pushd melt-0.7rc3-plugin-for-gcc-4.6
+    pushd melt-0.7rc4-plugin-for-gcc-4.6
 	patch -p0 < %{PATCH4}
 	DESTDIR=%{buildroot}/				\
 	./build-melt-plugin.sh				\
