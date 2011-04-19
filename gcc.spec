@@ -1645,6 +1645,10 @@ to compile SSP support.
 %patch3 -p1
 %patch5 -p1
 
+# FIXME synchronizing to gcc-4_6-branch instead of cherry-picking
+# corrections or picking corrections as bug reports are opened...
+echo %{version} > gcc/BASE-VER
+
 #-----------------------------------------------------------------------
 %build
 OPT_FLAGS=`echo %{optflags} |					\
@@ -1833,12 +1837,12 @@ pushd %{buildroot}%{_bindir}
 	ln -sf %{_target_platform}-g++-%{version} c++
     %endif
     %ifarch %{multilib_64}
-	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.15-gdb.py		\
-		%{buildroot}%{py_puresitedir}/libstdcxx/lib64stdc++.so.6.0.15-gdb.py
-	mv -f %{buildroot}%{libdir32}/libstdc++.so.6.0.15-gdb.py	\
+	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.16-gdb.py		\
+		%{buildroot}%{py_puresitedir}/libstdcxx/lib64stdc++.so.6.0.16-gdb.py
+	mv -f %{buildroot}%{libdir32}/libstdc++.so.6.0.16-gdb.py	\
 		%{buildroot}%{py_puresitedir}/libstdcxx
     %else
-	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.15-gdb.py		\
+	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.16-gdb.py		\
 		%{buildroot}%{py_puresitedir}/libstdcxx
     %endif
 %endif
