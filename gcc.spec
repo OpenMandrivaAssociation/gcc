@@ -116,7 +116,7 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	6
+Release:	7
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -183,14 +183,10 @@ Conflicts:	gcc-objc = 4.5.2
 Conflicts:	gcc-objc++ = 4.5.2
 %endif
 
-Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
-Patch1:		gcc-4.6.0-java-nomulti.patch
-
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48343
-# [4.6/4.7 Regression] ICE compiling i586 linux-2.6.38/drivers/staging/wlan-ng/p80211wep.c: in form_sum, at reload.c:5338
-# 'gcc-4_6-branch] svn diff -r172109:172110' rediffed to also apply changelog diffs
-Patch2:		gcc-4.6.0-pr48343.patch
-
+# gcc-4_6-branch$ svn diff -r171512:172691
+Patch0:		gcc-4.6.0-gcc-4_6-branch.patch.gz
+Patch1:		gcc-4.6.0-uclibc-ldso-path.patch
+Patch2:		gcc-4.6.0-java-nomulti.patch
 Patch3:		gcc-4.6.0-make-pdf.patch
 Patch4:		gcc-4.6.0-melt-0.7rc3-plugin-for-gcc-4.6.patch
 
@@ -1643,11 +1639,11 @@ to compile SSP support.
 %prep
 %setup -q
 
-%patch0 -p1
+%patch0 -p0
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch5 -p0
+%patch5 -p1
 
 #-----------------------------------------------------------------------
 %build
