@@ -10,6 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
+%define		snapshot		-20110415
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -116,14 +117,16 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	7
+Release:	8
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
-Source0:	http://ftp.gnu.org/gnu/gcc/gcc-%version/gcc-%version.tar.bz2
+# http://gcc.gnu.org/mirrors.html
+# <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-20110415.tar.bz2
+Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
-Source2:	http://gcc-melt.org/melt-0.7rc4-plugin-for-gcc-4.6.tgz
+Source2:	http://gcc-melt.org/melt-0.7rc5-plugin-for-gcc-4.6.tgz
 Source3:	c89
 Source4:	c99
 %if %{system_compiler}
@@ -183,16 +186,14 @@ Conflicts:	gcc-objc = 4.5.2
 Conflicts:	gcc-objc++ = 4.5.2
 %endif
 
-# gcc-4_6-branch$ svn diff -r171512:172691
-Patch0:		gcc-4.6.0-gcc-4_6-branch.patch.gz
-Patch1:		gcc-4.6.0-uclibc-ldso-path.patch
-Patch2:		gcc-4.6.0-java-nomulti.patch
-Patch3:		gcc-4.6.0-make-pdf.patch
-Patch4:		gcc-4.6.0-melt-0.7rc3-plugin-for-gcc-4.6.patch
+Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
+Patch1:		gcc-4.6.0-java-nomulti.patch
+Patch2:		gcc-4.6.0-make-pdf.patch
+Patch3:		gcc-4.6.0-linux32.patch
 
 # https://qa.mandriva.com/show_bug.cgi?id=63047
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48462
-Patch5:		gcc-4.6.0-gfortran-pr48462.patch
+Patch4:		gcc-4.6.0-gfortran-pr48462.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version 4.6.
@@ -1637,16 +1638,15 @@ to compile SSP support.
 
 ########################################################################
 %prep
-%setup -q
+%setup -q -n %{name}-%{branch}%{snapshot}
 
-%patch0 -p0
+%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch5 -p1
+%patch4 -p1
 
-# FIXME synchronizing to gcc-4_6-branch instead of cherry-picking
-# corrections or picking corrections as bug reports are opened...
+# do not pretend it is gcc-4.6.1 besides snapshot telling so
 echo %{version} > gcc/BASE-VER
 
 #-----------------------------------------------------------------------
@@ -1807,11 +1807,11 @@ pushd %{buildroot}%{_bindir}
 	%{buildroot}%{py_puresitedir}
     rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
     %if %{build_cxx}
-	perl -pi -e 's|%{_datadir}/gcc-4.6.0/python|%{py_puresitedir}|;' \
+	perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
 	    %{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
     %endif
     %if %{build_java}
-	perl -pi -e 's|%{_datadir}/gcc-4.6.0/python|%{py_puresitedir}|;' \
+	perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
 	    %{buildroot}%{_bindir}/aot-compile
     %endif
 %endif
@@ -1958,8 +1958,7 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 
 %if %{build_melt}
     tar zxf %{SOURCE2}
-    pushd melt-0.7rc4-plugin-for-gcc-4.6
-	patch -p0 < %{PATCH4}
+    pushd melt-0.7rc5-plugin-for-gcc-4.6
 	DESTDIR=%{buildroot}/				\
 	./build-melt-plugin.sh				\
 	-S$PWD/..					\
