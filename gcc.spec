@@ -85,7 +85,7 @@
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
 %endif
-%define		build_check		1
+%define		build_check		0
 %define		build_cloog		1
 %define		build_cxx		1
 %define		build_doc		%{system_compiler}
