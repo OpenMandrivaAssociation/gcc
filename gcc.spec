@@ -376,8 +376,10 @@ extensions for:
 %{gccdir}/plugin/include/melt*.h
 %{gccdir}/plugin/libexec
 %{gccdir}/plugin/melt*
+%if %{system_compiler}
 %{_infodir}/meltplugin*
 %doc %{_docdir}/gcc-plugin-melt
+%endif
 #-----------------------------------------------------------------------
 # build_melt
 %endif
@@ -1285,7 +1287,9 @@ to compile FFI support.
 %{libdir32}/libffi.la
 %{libdir32}/libffi.so
 %endif
+%if %{system_compiler}
 %{_mandir}/man3/*.3*
+%endif
 
 #-----------------------------------------------------------------------
 %package	-n %{libffi_static_devel}
@@ -1362,7 +1366,9 @@ REAL*16 and programs using __float128 math.
 %{libdir32}/libquadmath.la
 %{libdir32}/libquadmath.so
 %endif
+%if %{system_compiler}
 %{_infodir}/libquadmath.info*
+%endif
 %{gccdir}/include/quadmath*.h
 %if %{build_pdf}
 %doc %{_docdir}/libquadmath
@@ -1445,7 +1451,9 @@ to compile OpenMP v3.0 support.
 %{libdir32}/libgomp.so
 %{libdir32}/libgomp.spec
 %endif
+%if %{system_compiler}
 %{_infodir}/libgomp.info*
+%endif
 %{gccdir}/include/omp*.h
 %if %{build_pdf}
 %doc %{_docdir}/libgomp
@@ -1732,7 +1740,9 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-libunwind-exceptions				\
 	--disable-werror					\
 	--enable-__cxa_atexit					\
+%if %{system_compiler}
 	--enable-bootstrap					\
+%endif
 	--enable-checking=release				\
 	--enable-gnu-unique-object				\
 	--enable-languages="$LANGUAGES"				\
@@ -1758,8 +1768,12 @@ XCFLAGS="$OPT_FLAGS"						\
 	--host=%{_target_platform}				\
 	--target=%{_target_platform}
 
+%if %{system_compiler}
 GCJFLAGS="$OPT_FLAGS"						\
-make BOOT_CFLAGS="$OPT_FLAGS" profiledbootstrap
+%make BOOT_CFLAGS="$OPT_FLAGS" profiledbootstrap
+%else
+%make
+%endif
 
 %if %{build_pdf}
 %make pdf
@@ -1792,26 +1806,29 @@ echo ====================TESTING END=====================
     %make DESTDIR=%{buildroot} -C %{_target_platform}/libjava install-src.zip
 %endif
 
+# configure python dir option does not cover libstdc++ and needs to remove
+# /usr prefix for libjava
+mkdir -p %{buildroot}%{py_puresitedir}
+mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
+    %{buildroot}%{py_puresitedir}
+rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
+%if %{build_cxx}
+    perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
+	%{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
+%endif
+%if %{build_java}
+    perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
+	%{buildroot}%{_bindir}/aot-compile
+%endif
+
 pushd %{buildroot}%{_bindir}
 %if %{system_compiler}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     cp -fa %{SOURCE3} %{SOURCE4} %{buildroot}%{_bindir}
     ln -sf %{_target_platform}-%{name}-%{version} %{buildroot}%{_bindir}/cc
-    # configure python dir option does not cover libstdc++ and needs to remove
-    # /usr prefix for libjava
-    mkdir -p %{buildroot}%{py_puresitedir}
-    mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
-	%{buildroot}%{py_puresitedir}
-    rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
-    %if %{build_cxx}
-	perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
-	    %{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
-    %endif
-    %if %{build_java}
-	perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
-	    %{buildroot}%{_bindir}/aot-compile
-    %endif
+%else
+    rm -f %{buildroot}%{_bindir}/cpp
 %endif
 
     LANGUAGES="gcc g++ gcc gccgo gcj gfortran"
@@ -1963,9 +1980,11 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	-B$PWD/../host-%{_target_platform}		\
 	-M$PWD						\
 	-Y$PWD/melt/generated/gt-melt-runtime-plugin.h
-    install -m 0644 *.info %{buildroot}%{_infodir}
-    mkdir -p %{buildroot}%{_docdir}/gcc-plugin-melt/html
-    cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
+	%if %{system_compiler}
+	install -m 0644 *.info %{buildroot}%{_infodir}
+	mkdir -p %{buildroot}%{_docdir}/gcc-plugin-melt/html
+	cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
+	%endif
     popd
 %endif
 
