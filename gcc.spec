@@ -86,29 +86,29 @@
   %define	build_ada		%{system_compiler}
 %endif
 %define		build_check		0
-%define		build_cloog		1
-%define		build_cxx		1
+%define		build_cloog		%{system_compiler}
+%define		build_cxx		%{system_compiler}
 %define		build_doc		%{system_compiler}
-%define		build_ffi		1
-%define		build_fortran		1
-%define		build_gomp		1
-%define		build_quadmath		1
-%define		build_mudflap		1
+%define		build_ffi		%{system_compiler}
+%define		build_fortran		%{system_compiler}
+%define		build_gomp		%{system_compiler}
+%define		build_quadmath		%{build_fortran}
+%define		build_mudflap		%{system_compiler}
 %define		build_go		0
 %ifarch %{ix86} x86_64
-  %define	build_go		%{build_cxx}
+  %define	build_go		%{system_compiler}
 %endif
 %define		build_java		%{system_compiler}
 %define		build_lto		1
 %define		build_objc		0
 %define		build_objcxx		0
 %ifarch %{ix86} x86_64
-  %define	build_objc		1
-  %define	build_objcxx		%{build_cxx}
+  %define	build_objc		%{system_compiler}
+  %define	build_objcxx		%{system_compiler}
 %endif
 %define		build_pdf		%{build_doc}
 %define		build_ssp		0
-%define		build_plugin		1
+%define		build_plugin		%{system_compiler}
 %define		build_melt		0
 %ifarch x86_64
   %define	build_melt		%{build_plugin}
@@ -1753,6 +1753,9 @@ XCFLAGS="$OPT_FLAGS"						\
 	--enable-plugin						\
 %endif
 	--enable-shared						\
+%if !%{system_compiler}
+	--disable-static					\
+%endif
 	--enable-threads=posix					\
 	--with-system-zlib					\
 	--with-bugurl=https://qa.mandriva.com/			\
@@ -1809,17 +1812,19 @@ echo ====================TESTING END=====================
 # configure python dir option does not cover libstdc++ and needs to remove
 # /usr prefix for libjava
 mkdir -p %{buildroot}%{py_puresitedir}
-mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
-    %{buildroot}%{py_puresitedir}
-rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
-%if %{build_cxx}
+if [ -d %{buildroot}%{_datadir}/%{name}-%{version}/python ]; then
+    mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
+	%{buildroot}%{py_puresitedir}
+    rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
+    %if %{build_cxx}
     perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
-%endif
-%if %{build_java}
+    %endif
+    %if %{build_java}
     perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_bindir}/aot-compile
-%endif
+    %endif
+fi
 
 pushd %{buildroot}%{_bindir}
 %if %{system_compiler}
