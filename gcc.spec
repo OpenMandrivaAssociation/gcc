@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110506
+%define		snapshot		-20110513
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -117,13 +117,13 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	9
+Release:	10
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
-# <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-20110422.tar.bz2
+# <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-%{snapshot}.tar.bz2
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
 
