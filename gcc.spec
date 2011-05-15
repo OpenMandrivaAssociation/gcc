@@ -98,7 +98,7 @@
 %ifarch %{ix86} x86_64
   %define	build_go		%{system_compiler}
 %endif
-%define		build_java		%{system_compiler}
+%define		build_java		0
 %define		build_lto		1
 %define		build_objc		0
 %define		build_objcxx		0
@@ -605,7 +605,9 @@ done
 %files		gnat
 %defattr(-,root,root)
 %{_bindir}/gnat*
+%if %{build_java}
 %exclude %{_bindir}/gnative2ascii
+%endif
 %{gccdir}/gnat1
 %{_infodir}/gnat*
 %if %{build_doc}
