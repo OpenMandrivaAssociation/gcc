@@ -175,18 +175,18 @@ Requires(pre):	update-alternatives
 Obsoletes:	gcc-doc
 %if %mdkversion <= 201100
 # force same urpmi transaction
-Conflicts:	libgomp1 = 4.5.2
-Conflicts:	libgomp-devel = 4.5.2
-Conflicts:	gcc-c++ = 4.5.2
-Conflicts:	libstdc++-devel = 4.5.2
-Conflicts:	libstdc++-static-devel = 4.5.2
-Conflicts:	gcc-gnat = 4.5.2
-Conflicts:	libgnat1 = 4.5.2
-Conflicts:	gcc-gfortran = 4.5.2
-Conflicts:	libgfortran3 = 4.5.2
-Conflicts:	gcc-java = 4.5.2
-Conflicts:	gcc-objc = 4.5.2
-Conflicts:	gcc-objc++ = 4.5.2
+Conflicts:	libgomp1 <= 4.5.2
+Conflicts:	libgomp-devel <= 4.5.2
+Conflicts:	gcc-c++ <= 4.5.2
+Conflicts:	libstdc++-devel <= 4.5.2
+Conflicts:	libstdc++-static-devel <= 4.5.2
+Conflicts:	gcc-gnat <= 4.5.2
+Conflicts:	libgnat1 <= 4.5.2
+Conflicts:	gcc-gfortran <= 4.5.2
+Conflicts:	libgfortran3 <= 4.5.2
+Conflicts:	gcc-java <= 4.5.2
+Conflicts:	gcc-objc <= 4.5.2
+Conflicts:	gcc-objc++ <= 4.5.2
 %endif
 
 Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
