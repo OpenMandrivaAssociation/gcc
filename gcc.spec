@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110513
+%define		snapshot		-20110520
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -98,7 +98,7 @@
 %ifarch %{ix86} x86_64
   %define	build_go		%{system_compiler}
 %endif
-%define		build_java		0
+%define		build_java		1
 %define		build_lto		1
 %define		build_objc		0
 %define		build_objcxx		0
@@ -117,7 +117,7 @@
 #-----------------------------------------------------------------------
 Name:		gcc
 Version:	4.6.0
-Release:	10
+Release:	11
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -126,12 +126,12 @@ URL:		http://gcc.gnu.org/
 # <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-%{snapshot}.tar.bz2
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
-
 Source2:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
 #3672c1569ea95a27e0df5ad597ee7301
-
 Source3:	c89
 Source4:	c99
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
