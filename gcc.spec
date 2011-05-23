@@ -1808,7 +1808,11 @@ echo ====================TESTING END=====================
 %makeinstall_std
 
 %if %{build_java}
-    %make DESTDIR=%{buildroot} -C %{_target_platform}/libjava install-src.zip
+    %make							\
+	DESTDIR=%{buildroot}					\
+	JAR=$PWD/%{_target_platform}/libjava/scripts/jar	\
+	-C %{_target_platform}/libjava				\
+	install-src.zip
 %endif
 
 # configure python dir option does not cover libstdc++ and needs to remove
