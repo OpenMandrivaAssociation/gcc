@@ -1660,7 +1660,7 @@ to compile SSP support.
 
 ########################################################################
 %prep
-%setup -q -n %{name}-%{branch}%{snapshot}
+%setup -q -n gcc-%{branch}%{snapshot}
 
 %patch0 -p1
 %patch1 -p1
@@ -1831,16 +1831,16 @@ echo ====================TESTING END=====================
 # configure python dir option does not cover libstdc++ and needs to remove
 # /usr prefix for libjava
 mkdir -p %{buildroot}%{py_puresitedir}
-if [ -d %{buildroot}%{_datadir}/%{name}-%{version}/python ]; then
-    mv -f %{buildroot}%{_datadir}/%{name}-%{version}/python/*		\
+if [ -d %{buildroot}%{_datadir}/gcc-%{version}/python ]; then
+    mv -f %{buildroot}%{_datadir}/gcc-%{version}/python/*		\
 	%{buildroot}%{py_puresitedir}
-    rm -fr %{buildroot}%{_datadir}/%{name}-%{version}
+    rm -fr %{buildroot}%{_datadir}/gcc-%{version}
     %if %{build_cxx}
-    perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
+    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
     %endif
     %if %{build_java}
-    perl -pi -e 's|%{_datadir}/%{name}-%{version}/python|%{py_puresitedir}|;' \
+    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_bindir}/aot-compile
     %endif
 fi
@@ -1850,7 +1850,7 @@ pushd %{buildroot}%{_bindir}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     cp -fa %{SOURCE3} %{SOURCE4} %{buildroot}%{_bindir}
-    ln -sf %{_target_platform}-%{name}-%{version} %{buildroot}%{_bindir}/cc
+    ln -sf %{_target_platform}-gcc-%{version} %{buildroot}%{_bindir}/cc
 %else
     rm -f %{buildroot}%{_bindir}/cpp
 %endif
@@ -1935,7 +1935,7 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
     mkdir -p %{buildroot}%{_docdir}/libstdc++
     cp -far libstdc++-v3/doc/html %{buildroot}%{_docdir}/libstdc++
     %endif
-    pushd host-%{_target_platform}/gcc/HTML/%{name}-%{version}
+    pushd host-%{_target_platform}/gcc/HTML/gcc-%{version}
 	mkdir -p %{buildroot}%{_docdir}/gcc/html
 	for doc in gcc gccinstall gccint; do
 	    cp -far $doc %{buildroot}%{_docdir}/gcc/html
