@@ -29,6 +29,11 @@
 %endif
 %define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{version}
 %define		libdir32		%{_prefix}/lib
+%if %{system_compiler}
+  %define	name			gcc
+%else
+  %define	name			gcc%{branch}
+%endif
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -98,7 +103,10 @@
 %ifarch %{ix86} x86_64
   %define	build_go		%{system_compiler}
 %endif
-%define		build_java		1
+# system_compiler && build_ffi
+%define		build_java		%{system_compiler}
+# need to build if major does not conflict with current system_compiler
+%define		build_libgcc		%{system_compiler}
 %define		build_lto		1
 %define		build_objc		0
 %define		build_objcxx		0
@@ -115,7 +123,7 @@
 %endif
 
 #-----------------------------------------------------------------------
-Name:		gcc
+Name:		%{name}
 Version:	4.6.0
 Release:	11
 Summary:	GNU Compiler Collection
@@ -195,7 +203,7 @@ Patch2:		gcc-4.6.0-make-pdf.patch
 Patch3:		gcc-4.6.0-linux32.patch
 
 %description
-The gcc package contains the GNU Compiler Collection version 4.6.
+The gcc package contains the GNU Compiler Collection version %{branch}.
 
 %if %{remove_alternatives}
 %pre
@@ -279,6 +287,8 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %doc test_summary.log
 %endif
 
+########################################################################
+%if %{build_libgcc}
 #-----------------------------------------------------------------------
 %package	-n %{libgcc}
 Summary:	GNU C library
@@ -302,6 +312,9 @@ The %{libgcc_name} package contains GCC shared libraries for gcc %{branch}
 %{_libdir}/libgcc_s.so.*
 %ifarch %{multilib_64}
 %{libdir32}/libgcc_s.so.*
+%endif
+#-----------------------------------------------------------------------
+# build_libgcc
 %endif
 
 ########################################################################
@@ -1906,6 +1919,12 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     rm -f %{buildroot}%{_libdir}/libgcc_s.so
     %ifarch %{multilib_64}
 	rm -f %{buildroot}%{libdir32}/libgcc_s.so
+    %endif
+    %if !%{build_libgcc}
+	rm -f %{buildroot}%{_libdir}/libgcc_s.so.*
+	%ifarch %{multilib_64}
+	    rm -f %{buildroot}%{libdir32}/libgcc_s.so.*
+	%endif
     %endif
 %endif
 rm -f %{buildroot}%{_libdir}/libiberty.a
