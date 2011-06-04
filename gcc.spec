@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110527
+%define		snapshot		-20110603
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -125,7 +125,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.0
-Release:	12
+Release:	13
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -134,10 +134,11 @@ URL:		http://gcc.gnu.org/
 # <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-%{snapshot}.tar.bz2
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
-Source2:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
+Source2:	gcc-4.6-20110527-4.6-20110603.diff.bz2
+Source3:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
 #3672c1569ea95a27e0df5ad597ee7301
-Source3:	c89
-Source4:	c99
+Source4:	c89
+Source5:	c99
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if %{system_compiler}
@@ -1849,7 +1850,7 @@ pushd %{buildroot}%{_bindir}
 %if %{system_compiler}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
-    cp -fa %{SOURCE3} %{SOURCE4} %{buildroot}%{_bindir}
+    cp -fa %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
     ln -sf %{_target_platform}-gcc-%{version} %{buildroot}%{_bindir}/cc
 %else
     rm -f %{buildroot}%{_bindir}/cpp
@@ -2002,7 +2003,7 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 %endif
 
 %if %{build_melt}
-    tar zxf %{SOURCE2}
+    tar zxf %{SOURCE3}
     pushd melt-0.7-plugin-for-gcc-4.6
 	DESTDIR=%{buildroot}/				\
 	./build-melt-plugin.sh				\
