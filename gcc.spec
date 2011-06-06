@@ -163,6 +163,7 @@ BuildRequires:	elfutils-devel
 BuildRequires:	flex
 BuildRequires:	gdb
 BuildRequires:	gettext
+BuildRequires:	gmp-devel, mpfr-devel, libmpc-devel
 BuildRequires:	sharutils
 BuildRequires:	texinfo
 %if %{build_doc}
@@ -183,6 +184,7 @@ Requires(pre):	update-alternatives
 %endif
 Obsoletes:	gcc-doc
 %if %mdkversion <= 201100
+  %if %{system_compiler}
 # force same urpmi transaction
 Conflicts:	libgomp1 <= 4.5.2
 Conflicts:	libgomp-devel <= 4.5.2
@@ -196,6 +198,7 @@ Conflicts:	libgfortran3 <= 4.5.2
 Conflicts:	gcc-java <= 4.5.2
 Conflicts:	gcc-objc <= 4.5.2
 Conflicts:	gcc-objc++ <= 4.5.2
+  %endif
 %endif
 
 Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
@@ -707,7 +710,6 @@ Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgfortran_devel} = %{version}-%{release}
-BuildRequires:	gmp-devel, mpfr-devel, libmpc-devel
 %if %{system_compiler}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
