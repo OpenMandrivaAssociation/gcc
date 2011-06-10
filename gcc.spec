@@ -557,9 +557,11 @@ development. This includes rewritten implementation of STL.
 %{_includedir}/c++/%{version}
 %{_libdir}/libstdc++.la
 %{_libdir}/libstdc++.so
+%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 %ifarch %{multilib_64}
 %{libdir32}/libstdc++.la
 %{libdir32}/libstdc++.so
+%{_datadir}/gdb/auto-load%{libdir32}/libstdc++.*.py
 %endif
 %{py_puresitedir}/libstdcxx
 
@@ -1670,8 +1672,9 @@ to compile SSP support.
 %patch2 -p1
 %patch3 -p1
 
-# do not pretend it is gcc-4.6.1 besides snapshot telling so
+# customize (arguably)
 echo %{version} > gcc/BASE-VER
+echo %{vendor} > gcc/DEV-PHASE
 
 #-----------------------------------------------------------------------
 %build
@@ -1838,10 +1841,6 @@ if [ -d %{buildroot}%{_datadir}/gcc-%{version}/python ]; then
     mv -f %{buildroot}%{_datadir}/gcc-%{version}/python/*		\
 	%{buildroot}%{py_puresitedir}
     rm -fr %{buildroot}%{_datadir}/gcc-%{version}
-    %if %{build_cxx}
-    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
-	%{buildroot}%{py_puresitedir}/libstdcxx/lib*.py
-    %endif
     %if %{build_java}
     perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_bindir}/aot-compile
@@ -1878,14 +1877,17 @@ pushd %{buildroot}%{_bindir}
     %if %{system_compiler}
 	ln -sf %{_target_platform}-g++-%{version} c++
     %endif
+    mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+    mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py		\
+	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
+	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
     %ifarch %{multilib_64}
-	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.16-gdb.py		\
-		%{buildroot}%{py_puresitedir}/libstdcxx/lib64stdc++.so.6.0.16-gdb.py
-	mv -f %{buildroot}%{libdir32}/libstdc++.so.6.0.16-gdb.py	\
-		%{buildroot}%{py_puresitedir}/libstdcxx
-    %else
-	mv -f %{buildroot}%{_libdir}/libstdc++.so.6.0.16-gdb.py		\
-		%{buildroot}%{py_puresitedir}/libstdcxx
+	mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{libdir32}
+	mv -f %{buildroot}%{libdir32}/libstdc++.so.*.py		\
+	%{buildroot}%{_datadir}/gdb/auto-load%{libdir32}
+	perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
+	    %{buildroot}%{_datadir}/gdb/auto-load%{libdir32}/libstdc++.*.py
     %endif
 %endif
 popd
