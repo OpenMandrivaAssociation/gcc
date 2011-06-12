@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110603
+%define		snapshot		-20110610
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -125,7 +125,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.0
-Release:	13
+Release:	14
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -134,7 +134,7 @@ URL:		http://gcc.gnu.org/
 # <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-%{snapshot}.tar.bz2
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
-Source2:	gcc-4.6-20110527-4.6-20110603.diff.bz2
+Source2:	gcc-4.6-20110603-4.6-20110610.diff.bz2
 Source3:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
 #3672c1569ea95a27e0df5ad597ee7301
 Source4:	c89
