@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110617
+%define		snapshot		-RC-20110620
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -87,54 +87,51 @@
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
-%ifarch %{ix86} x86_64
-  %define	build_ada		%{system_compiler}
-%endif
 %define		build_check		0
+%define		build_go		0
+%define		build_lto		1
+%define		build_melt		0
+%define		build_objc		0
+%define		build_objcxx		0
+%define		build_quadmath		0
+%define		build_ssp		0
 %define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
 %define		build_doc		%{system_compiler}
 %define		build_ffi		%{system_compiler}
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
-%define		build_quadmath		%{build_fortran}
-%define		build_mudflap		%{system_compiler}
-%define		build_go		0
-%ifarch %{ix86} x86_64
-  %define	build_go		%{system_compiler}
-%endif
 # system_compiler && build_ffi
 %define		build_java		%{system_compiler}
 # need to build if major does not conflict with current system_compiler
 %define		build_libgcc		%{system_compiler}
-%define		build_lto		1
-%define		build_objc		0
-%define		build_objcxx		0
+%define		build_mudflap		%{system_compiler}
+%define		build_pdf		%{build_doc}
+%define		build_plugin		%{system_compiler}
 %ifarch %{ix86} x86_64
+  %define	build_ada		%{system_compiler}
+  %define	build_quadmath		%{system_compiler}
+# system_compiler && build_cxx
+  %define	build_go		%{system_compiler}
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
 %endif
-%define		build_pdf		%{build_doc}
-%define		build_ssp		0
-%define		build_plugin		%{system_compiler}
-%define		build_melt		0
 %ifarch x86_64
   %define	build_melt		%{build_plugin}
 %endif
 
 #-----------------------------------------------------------------------
 Name:		%{name}
-Version:	4.6.0
-Release:	15
+Version:	4.6.1
+Release:	1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
-# <<mirror>>/snapshots/LATEST-4.6/gcc-4.6-%{snapshot}.tar.bz2
-Source0:	gcc-%{branch}%{snapshot}.tar.bz2
+# <<mirror>>/snapshots/snapshots/%{version}%{snapshot}/
+Source0:	gcc-%{version}%{snapshot}.tar.bz2
 Source1:	md5.sum
-Source2:	gcc-4.6-20110610-4.6-20110617.diff.bz2
 Source3:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
 #3672c1569ea95a27e0df5ad597ee7301
 Source4:	c89
@@ -1665,15 +1662,13 @@ to compile SSP support.
 
 ########################################################################
 %prep
-%setup -q -n gcc-%{branch}%{snapshot}
+%setup -q -n gcc-%{version}%{snapshot}
 
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
 
-# customize (arguably)
-echo %{version} > gcc/BASE-VER
 echo %{vendor} > gcc/DEV-PHASE
 
 #-----------------------------------------------------------------------
@@ -2021,6 +2016,10 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
 	%endif
     popd
+
+    # FIXME quick hack until next rebuild
+    cp -fpar %{buildroot}%{gccdir}/../4.6.0/* %{buildroot}%{gccdir}
+    rm -fr %{buildroot}%{gccdir}/../4.6.0
 %endif
 
 #-----------------------------------------------------------------------
