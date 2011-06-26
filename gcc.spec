@@ -334,6 +334,8 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 
 %files		plugin-devel
 %defattr(-,root,root,-)
+%{gccdir}/gengtype
+%{gccdir}/gtype.state
 %dir %{gccdir}/plugin
 %{gccdir}/plugin/include
 %if %{build_melt}
@@ -2004,6 +2006,14 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
     %endif
 %endif
 
+# https://qa.mandriva.com/show_bug.cgi?id=63587
+%if %{build_plugin}
+    pushd host-%{_target_platform}
+	cp -fpa gcc/build/gengtype %{buildroot}%{gccdir}
+	cp -fpa gcc/gtype.state %{buildroot}%{gccdir}
+    popd
+%endif
+
 %if %{build_melt}
     tar zxf %{SOURCE3}
     pushd melt-0.7-plugin-for-gcc-4.6
@@ -2019,10 +2029,6 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
 	cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
 	%endif
     popd
-
-    # FIXME quick hack until next rebuild
-    cp -fpar %{buildroot}%{gccdir}/../4.6.0/* %{buildroot}%{gccdir}
-    rm -fr %{buildroot}%{gccdir}/../4.6.0
 %endif
 
 #-----------------------------------------------------------------------
