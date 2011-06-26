@@ -1784,6 +1784,9 @@ XCFLAGS="$OPT_FLAGS"						\
 %ifarch x86_64
 	--with-arch_32=i686					\
 %endif
+%ifarch armv5te
+	--with-arch=armv5te					\
+%endif
 	--host=%{_target_platform}				\
 	--target=%{_target_platform}
 
