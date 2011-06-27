@@ -90,7 +90,6 @@
 %define		build_check		0
 %define		build_go		0
 %define		build_lto		1
-%define		build_melt		0
 %define		build_objc		0
 %define		build_objcxx		0
 %define		build_quadmath		0
@@ -116,9 +115,6 @@
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
 %endif
-%ifarch x86_64
-  %define	build_melt		%{build_plugin}
-%endif
 
 #-----------------------------------------------------------------------
 Name:		%{name}
@@ -132,8 +128,6 @@ URL:		http://gcc.gnu.org/
 # <<mirror>>/snapshots/snapshots/%{version}%{snapshot}/
 Source0:	gcc-%{version}%{snapshot}.tar.bz2
 Source1:	md5.sum
-Source3:	http://gcc-melt.org/melt-0.7-plugin-for-gcc-4.6.tgz
-#3672c1569ea95a27e0df5ad597ee7301
 Source4:	c89
 Source5:	c99
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -338,66 +332,8 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 %{gccdir}/gtype.state
 %dir %{gccdir}/plugin
 %{gccdir}/plugin/include
-%if %{build_melt}
-%exclude %{gccdir}/plugin/include/gimple-pretty-print.h
-%exclude %{gccdir}/plugin/include/tree-pretty-print.h
-%exclude %{gccdir}/plugin/include/realmpfr.h
-%exclude %{gccdir}/plugin/include/melt*.h
-%endif
 #-----------------------------------------------------------------------
 # build_plugin
-%endif
-
-########################################################################
-%if %{build_melt}
-#-----------------------------------------------------------------------
-%package	plugin-melt
-Summary:	Middle End Lisp Translator GCC plugin
-Group:		Development/C
-Requires:	gcc-plugin-devel = %{version}-%{release}
-BuildRequires:	gcc-plugin-devel
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
-
-%description	plugin-melt
-GCC MELT is a GCC plugin providing a lispy domain specific
-language to easily code GCC extensions in.
-
-GCC MELT should interest any important software project
-(coded in C, C++, Ada, Fortran, ...), compiled with GCC,
-since it facilitates the development of customized GCC
-extensions for:
-
-* specific warnings or typechecks
-* specific optimizations
-* coding rules validation
-* source code navigation or processing, in particular aspect
-  oriented programming, retro-engineering or refactoring tasks
-* Any processing taking advantage of powerful GCC internal
-  representations of your source code.
-
-%post		plugin-melt
-  %_install_info meltplugin.info
-  %_install_info meltpluginapi.info
-
-%preun		plugin-melt
-  %_remove_install_info meltplugin.info
-  %_remove_install_info meltpluginapi.info
-
-%files		plugin-melt
-%defattr(-,root,root,-)
-%{gccdir}/plugin/include/gimple-pretty-print.h
-%{gccdir}/plugin/include/tree-pretty-print.h
-%{gccdir}/plugin/include/realmpfr.h
-%{gccdir}/plugin/include/melt*.h
-%{gccdir}/plugin/libexec
-%{gccdir}/plugin/melt*
-%if %{system_compiler}
-%{_infodir}/meltplugin*
-%doc %{_docdir}/gcc-plugin-melt
-%endif
-#-----------------------------------------------------------------------
-# build_melt
 %endif
 
 ########################################################################
@@ -2011,23 +1947,6 @@ rm -f %{buildroot}%{libdir32}/libiberty.a
     pushd host-%{_target_platform}
 	cp -fpa gcc/build/gengtype %{buildroot}%{gccdir}
 	cp -fpa gcc/gtype.state %{buildroot}%{gccdir}
-    popd
-%endif
-
-%if %{build_melt}
-    tar zxf %{SOURCE3}
-    pushd melt-0.7-plugin-for-gcc-4.6
-	DESTDIR=%{buildroot}/				\
-	./build-melt-plugin.sh				\
-	-S$PWD/..					\
-	-B$PWD/../host-%{_target_platform}		\
-	-M$PWD						\
-	-Y$PWD/melt/generated/gt-melt-runtime-plugin.h
-	%if %{system_compiler}
-	install -m 0644 *.info %{buildroot}%{_infodir}
-	mkdir -p %{buildroot}%{_docdir}/gcc-plugin-melt/html
-	cp -fa *.html %{buildroot}%{_docdir}/gcc-plugin-melt/html
-	%endif
     popd
 %endif
 
