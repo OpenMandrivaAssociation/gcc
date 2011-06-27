@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		snapshot		-RC-20110620
+%define		snapshot		%{nil}
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -119,13 +119,13 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	1
+Release:	2
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
-# <<mirror>>/snapshots/snapshots/%{version}%{snapshot}/
+# <<mirror>>/[releases|snapshots]/%{version}%{snapshot}/
 Source0:	gcc-%{version}%{snapshot}.tar.bz2
 Source1:	md5.sum
 Source4:	c89
