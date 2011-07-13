@@ -9,8 +9,11 @@
 # avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
 
+# awt qt not functional (?)
+%define		with_qt				0
+
 #-----------------------------------------------------------------------
-%define		snapshot		%{nil}
+%define		snapshot		-20110708
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -119,14 +122,14 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	2
+Release:	3
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
 # <<mirror>>/[releases|snapshots]/%{version}%{snapshot}/
-Source0:	gcc-%{version}%{snapshot}.tar.bz2
+Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
 Source4:	c89
 Source5:	c99
@@ -950,7 +953,9 @@ BuildRequires:	libart_lgpl-devel >= 2.1.0
 BuildRequires:	alsa-lib-devel
 BuildRequires:	libxtst-devel
 BuildRequires:	libxt-devel
+%if %{with_qt}
 BuildRequires:	qt4-devel
+%endif
 
 %description	-n %{libgcj}
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1600,7 +1605,7 @@ to compile SSP support.
 
 ########################################################################
 %prep
-%setup -q -n gcc-%{version}%{snapshot}
+%setup -q -n gcc-%{branch}%{snapshot}
 
 %patch0 -p1
 %patch1 -p1
@@ -1608,6 +1613,7 @@ to compile SSP support.
 %patch3 -p1
 
 echo %{vendor} > gcc/DEV-PHASE
+sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
 
 #-----------------------------------------------------------------------
 %build
@@ -1662,7 +1668,11 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-libjava-multilib				\
 	--with-java-home=%{java_home}				\
 	--with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar		\
+%if %{with_qt}
 	--enable-java-awt=qt,gtk				\
+%else
+	--enable-java-awt=gtk					\
+%endif
 	--enable-gtk-cairo					\
 %endif
 %if !%{build_cloog}
