@@ -333,8 +333,7 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 %defattr(-,root,root,-)
 %{gccdir}/gengtype
 %{gccdir}/gtype.state
-%dir %{gccdir}/plugin
-%{gccdir}/plugin/include
+%{gccdir}/plugin
 #-----------------------------------------------------------------------
 # build_plugin
 %endif
