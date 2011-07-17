@@ -13,7 +13,7 @@
 %define		with_qt				0
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110708
+%define		snapshot		-20110715
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -122,7 +122,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	3
+Release:	4
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
