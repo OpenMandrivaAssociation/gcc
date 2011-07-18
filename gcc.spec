@@ -21,7 +21,7 @@
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
 %define		provide_libmajor	0
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
   %if %{system_compiler}
     %define	remove_alternatives	1
     %define	obsolete_devmajor	1
@@ -122,7 +122,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	4
+Release:	5
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -176,7 +176,7 @@ BuildRequires:	cloog-ppl-devel >= 0.16.1
 Requires(pre):	update-alternatives
 %endif
 Obsoletes:	gcc-doc
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
   %if %{system_compiler}
 # force same urpmi transaction
 Conflicts:	libgomp1 <= 4.5.2
@@ -295,7 +295,7 @@ Provides:	libgcc = %{version}-%{release}
 Obsoletes:	libgcc%{gcc_major} < %{version}-%{release}
 Provides:	libgcc%{gcc_major} = %{version}-%{release}
 %endif
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
 Obsoletes:	libgcc3.0 < %{version}-%{release}
 Obsoletes:	libgcc3.2 < %{version}-%{release}
 Obsoletes:	libgcc4.5 < %{version}-%{release}
@@ -694,7 +694,7 @@ Provides:	libgfortran = %{version}-%{release}
 Obsoletes:	libgfortran%{gfortran_major} < %{version}-%{release}
 Provides:	libgfortran%{gfortran_major} = %{version}-%{release}
 %endif
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
 Obsoletes:	libgfortran4.5 < %{version}-%{release}
 %endif
 %if %{build_quadmath}
@@ -923,7 +923,7 @@ Provides:	%{libgcj_bc} = %{version}-%{release}
 %if %{provide_libmajor}
 Provides:	libgcj%{gcj_major} = %{version}-%{release}
 %endif
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
 Obsoletes:	libgcj_bc%{gcj_bc_major} < %{version}-%{release}
 Provides:	libgcj_bc%{gcj_bc_major} = %{version}-%{release}
 Provides:	libgcj%{gcj_major}-base = %{version}-%{release}
@@ -1107,7 +1107,7 @@ Provides:	libobjc = %{version}-%{release}
 Obsoletes:	libobjc%{objc_major} < %{version}-%{release}
 Provides:	libobjc%{objc_major} = %{version}-%{release}
 %endif
-%if %mdkversion <= 201100
+%if %mdkversion <= 201200
 Obsoletes:	libobjc3.0 < %{version}-%{release}
 Obsoletes:	libobjc3.1 < %{version}-%{release}
 %endif
