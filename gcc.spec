@@ -13,7 +13,7 @@
 %define		with_qt				0
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20110805
+%define		snapshot		-20110812
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -134,7 +134,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	7
+Release:	8
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -210,6 +210,8 @@ Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
 Patch2:		gcc-4.6.0-make-pdf.patch
 Patch3:		gcc-4.6.0-linux32.patch
+# http://gcc.gnu.org/viewcvs?view=revision&revision=176741
+Patch4:		gcc-4.6-plugin-installation.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1573,6 +1575,7 @@ to compile SSP support.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 echo %{vendor} > gcc/DEV-PHASE
 sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
