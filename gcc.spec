@@ -335,6 +335,11 @@ Summary:	Headers to build gcc plugins
 Group:		Development/C
 Obsoletes:	gcc-plugins <= 4.5.2
 Requires:	%{name} = %{version}-%{release}
+Requires:	gmp-devel
+Requires:	mpfr-devel
+Requires:	libmpc-devel
+Requires:	ppl-devel
+Requires:	ppl_c-devel
 
 %description	plugin-devel
 This package contains header files and other support files
