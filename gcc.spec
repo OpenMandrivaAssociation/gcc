@@ -278,7 +278,7 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %doc %{_docdir}/gcc
 %endif
 %if %{build_check}
-%doc test_summary.log
+%doc %{_docdir}/gcc/test_summary.log
 %endif
 
 ########################################################################
@@ -1723,6 +1723,7 @@ echo ====================TESTING=========================
 echo "XXX check time above XXX"
 contrib/test_summary > test_summary.log
 echo ====================TESTING END=====================
+install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 %endif
 
 #-----------------------------------------------------------------------
