@@ -196,6 +196,10 @@ Patch3:		gcc-4.6.0-linux32.patch
 # http://gcc.gnu.org/viewcvs?view=revision&revision=176741
 Patch4:		gcc-4.6-plugin-installation.patch
 
+# https://qa.mandriva.com/show_bug.cgi?id=64082
+# https://bugzilla.redhat.com/show_bug.cgi?id=713800
+Patch5:		gcc-4.6.1-C-comment.patch
+
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
 
@@ -1564,6 +1568,7 @@ to compile SSP support.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 echo %{vendor} > gcc/DEV-PHASE
 sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
