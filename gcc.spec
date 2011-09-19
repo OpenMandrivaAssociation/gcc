@@ -1697,6 +1697,15 @@ XCFLAGS="$OPT_FLAGS"						\
 %ifarch armv5te
 	--with-arch=armv5te					\
 %endif
+%ifarch armv7l
+	--with-cpu=cortex-a8					\
+	--with-tune=cortex-a8					\
+	--with-arch=armv7-a					\
+	--with-mode=thumb					\
+	--with-float=softfp					\
+	--with-fpu=vfpv3-d16					\
+	--with-abi=aapcs-linux					\
+%endif
 	--host=%{_target_platform}				\
 	--target=%{_target_platform}
 
