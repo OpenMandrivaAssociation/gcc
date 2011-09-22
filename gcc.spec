@@ -134,7 +134,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	13
+Release:	14
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -199,6 +199,10 @@ Patch4:		gcc-4.6-plugin-installation.patch
 # https://qa.mandriva.com/show_bug.cgi?id=64082
 # https://bugzilla.redhat.com/show_bug.cgi?id=713800
 Patch5:		gcc-4.6.1-C-comment.patch
+
+# patch already in gcc 4.6 branch, added to allow rebuilding libreoffice
+# in cooker before next gcc package
+Patch6:		gcc-4.6.1-pr50442.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1569,6 +1573,7 @@ to compile SSP support.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 echo %{vendor} > gcc/DEV-PHASE
 sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
