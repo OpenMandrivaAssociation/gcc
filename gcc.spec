@@ -12,6 +12,9 @@
 # awt qt not functional (?)
 %define		with_qt				0
 
+# until fixed in cooker
+%define		with_antlr			0
+
 #-----------------------------------------------------------------------
 %define		snapshot		-20110923
 %define		system_compiler		1
@@ -942,7 +945,9 @@ Requires:	gtk2 >= 2.4.0
 Requires:	glib2 >= 2.4.0
 Requires:	libart_lgpl >= 2.1.0
 Requires:	zip >= 2.1
+%if %{with_antlr}
 BuildRequires:	antlr
+%endif
 BuildRequires:	gtk2-devel >= 2.4.0
 BuildRequires:	glib2-devel >= 2.4.0
 BuildRequires:	libart_lgpl-devel >= 2.1.0
@@ -971,7 +976,9 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %{_bindir}/gc-analyze
 %{_bindir}/gij
 %{_bindir}/gjar
+%if %{with_antlr}
 %{_bindir}/gjdoc
+%endif
 %{_bindir}/gnative2ascii
 %{_bindir}/grmic
 %{_bindir}/grmid
