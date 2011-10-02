@@ -108,7 +108,7 @@
 %define		build_ssp		0
 %define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
-%define		build_doc		%{system_compiler}
+%define		build_doc		0
 %define		build_ffi		%{system_compiler}
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
@@ -125,6 +125,7 @@
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
+  %define	build_doc		%{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
   %define	build_objc		%{system_compiler}
@@ -151,6 +152,10 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
 Requires:	libgomp >= %{version}-%{release}
+%endif
+%ifarch armv7l
+# find-provides fail to provide devel(libgcc_s) because it is a linker script
+Provides:	devel(libgcc_s)
 %endif
 BuildRequires:	binutils >= 2.20.51.0.2
 Requires:	binutils >= 2.20.51.0.2
@@ -1613,6 +1618,13 @@ LANGUAGES=c
     LANGUAGES="$LANGUAGES,obj-c++"
 %endif
 
+BOOTSTRAP=
+%ifarch %{ix86} x86_64
+  %if %{system_compiler}
+BOOSTRAP=profiledbootstrap
+  %endif
+%endif
+
 CC=%{__cc}							\
 CFLAGS="$OPT_FLAGS"						\
 CXXFLAGS="$OPT_FLAGS"						\
@@ -1709,12 +1721,8 @@ XCFLAGS="$OPT_FLAGS"						\
 	--host=%{_target_platform}				\
 	--target=%{_target_platform}
 
-%if %{system_compiler}
 GCJFLAGS="$OPT_FLAGS"						\
-%make BOOT_CFLAGS="$OPT_FLAGS" profiledbootstrap
-%else
-%make
-%endif
+%make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 
 %if %{build_pdf}
 %make pdf
