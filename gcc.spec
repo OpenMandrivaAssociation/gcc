@@ -13,7 +13,7 @@
 %define		with_qt				0
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20111007
+%define		snapshot		-20111014
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -128,6 +128,8 @@
   %define	build_doc		%{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
+%endif
+%ifarch %{ix86} x86_64 %{arm}
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
 %endif
@@ -135,7 +137,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.1
-Release:	17
+Release:	18
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -153,7 +155,7 @@ Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
 Requires:	libgomp >= %{version}-%{release}
 %endif
-%ifarch armv7l
+%ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
 Provides:	devel(libgcc_s)
 %endif
@@ -1709,12 +1711,16 @@ XCFLAGS="$OPT_FLAGS"						\
 %ifarch armv5te
 	--with-arch=armv5te					\
 %endif
-%ifarch armv7l
+%ifarch armv7l armv7hl
 	--with-cpu=cortex-a8					\
 	--with-tune=cortex-a8					\
 	--with-arch=armv7-a					\
 	--with-mode=thumb					\
+  %ifarch armv7l
 	--with-float=softfp					\
+  %else
+	--with-float=hard					\
+  %endif
 	--with-fpu=vfpv3-d16					\
 	--with-abi=aapcs-linux					\
 %endif
@@ -1725,14 +1731,14 @@ GCJFLAGS="$OPT_FLAGS"						\
 %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 
 %if %{build_pdf}
-%make pdf
+%make pdf || :
 %endif
 
 %if %{build_doc}
     pushd host-%{_target_platform}/gcc
-	%make html
+	%make html || :
 	%if %{build_pdf}
-	    %make pdf
+	    %make pdf || :
 	%endif
     popd
 %endif
