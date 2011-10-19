@@ -13,7 +13,8 @@
 %define		with_qt				0
 
 #-----------------------------------------------------------------------
-%define		snapshot		-20111014
+%define		release_candidate	1
+%define		snapshot		-20111019
 %define		system_compiler		1
 %define		branch			4.6
 %define		alternatives		/usr/sbin/update-alternatives
@@ -136,15 +137,20 @@
 
 #-----------------------------------------------------------------------
 Name:		%{name}
-Version:	4.6.1
-Release:	18
+Version:	4.6.2
+Release:	0.1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
-# <<mirror>>/[releases|snapshots]/%{version}%{snapshot}/
+%if %{release_candidate}
+  # <<mirror>>/[releases|snapshots]/%{version}-RC%{snapshot}/
+Source0:	gcc-%{version}-RC%{snapshot}.tar.bz2
+%else
+  # <<mirror>>/[releases|snapshots]/%{branch}%{snapshot}/
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
+%endif
 Source1:	md5.sum
 Source4:	c89
 Source5:	c99
@@ -1568,7 +1574,11 @@ to compile SSP support.
 
 ########################################################################
 %prep
-%setup -q -n gcc-%{branch}%{snapshot}
+%if %{release_candidate}
+  %setup -q -n gcc-%{version}-RC%{snapshot}
+%else
+  %setup -q -n gcc-%{branch}%{snapshot}
+%endif
 
 %patch0 -p1
 %patch1 -p1
@@ -1578,7 +1588,9 @@ to compile SSP support.
 %patch5 -p1
 
 echo %{vendor} > gcc/DEV-PHASE
-sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
+%if !%{release_candidate}
+    sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
+%endif
 
 #-----------------------------------------------------------------------
 %build
