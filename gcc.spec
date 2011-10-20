@@ -319,9 +319,9 @@ The %{libgcc_name} package contains GCC shared libraries for gcc %{branch}
 
 %files		-n %{libgcc}
 %defattr(-,root,root)
-%{_libdir}/libgcc_s.so.*
+%{_libdir}/libgcc_s.so.%{gcc_major}
 %if %{build_multilib}
-%{multilibdir}/libgcc_s.so.*
+%{multilibdir}/libgcc_s.so.%{gcc_major}
 %endif
 #-----------------------------------------------------------------------
 # build libgcc
@@ -474,9 +474,11 @@ GCC Standard C++ Library.
 
 %files		-n %{libstdcxx}
 %defattr(-,root,root)
-%{_libdir}/libstdc++.so.*
+%{_libdir}/libstdc++.so.%{stdcxx_major}
+%{_libdir}/libstdc++.so.%{stdcxx_major}.*
 %if %{build_multilib}
-%{multilibdir}/libstdc++.so.*
+%{multilibdir}/libstdc++.so.%{stdcxx_major}
+%{multilibdir}/libstdc++.so.%{stdcxx_major}.*
 %endif
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
@@ -595,11 +597,11 @@ libraries, which are required to run programs compiled with the GNAT.
 
 %files		-n %{libgnat}
 %defattr(-,root,root)
-%{_libdir}/libgnat-%{branch}.so.*
-%{_libdir}/libgnarl-%{branch}.so.*
+%{_libdir}/libgnat-%{branch}.so.%{gnat_major}
+%{_libdir}/libgnarl-%{branch}.so.%{gnat_major}
 %if %{build_multilib}
-%{multilibdir}/libgnat-%{branch}.so.*
-%{multilibdir}/libgnarl-%{branch}.so.*
+%{multilibdir}/libgnat-%{branch}.so.%{gnat_major}
+%{multilibdir}/libgnarl-%{branch}.so.%{gnat_major}
 %endif
 
 #-----------------------------------------------------------------------
@@ -716,9 +718,11 @@ Fortran 95 dynamically linked programs.
 
 %files		-n %{libgfortran}
 %defattr(-,root,root)
-%{_libdir}/libgfortran.so.*
+%{_libdir}/libgfortran.so.%{gfortran_major}
+%{_libdir}/libgfortran.so.%{gfortran_major}.*
 %if %{build_multilib}
-%{multilibdir}/libgfortran.so.*
+%{multilibdir}/libgfortran.so.%{gfortran_major}
+%{multilibdir}/libgfortran.so.%{gfortran_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -831,9 +835,11 @@ Go dynamically linked programs.
 
 %files		-n %{libgo}
 %defattr(-,root,root)
-%{_libdir}/libgo.so.*
+%{_libdir}/libgo.so.%{go_major}
+%{_libdir}/libgo.so.%{go_major}.*
 %if %{build_multilib}
-%{multilibdir}/libgo.so.*
+%{multilibdir}/libgo.so.%{go_major}
+%{multilibdir}/libgo.so.%{go_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1019,8 +1025,14 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %dir %{_libdir}/gcj-%{version}-12
 %{_libdir}/gcj-%{version}-12/*.so
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{version}-12/classmap.db
-%{_libdir}/libgcj*.so.*
-%{_libdir}/libgij.so.*
+%{_libdir}/libgcj.so.%{gcj_major}
+%{_libdir}/libgcj.so.%{gcj_major}.*
+%{_libdir}/libgcj-tools.so.%{gcj_major}
+%{_libdir}/libgcj-tools.so.%{gcj_major}.*
+%{_libdir}/libgcj_bc.so.%{gcj_bc_major}
+%{_libdir}/libgcj_bc.so.%{gcj_bc_major}.*
+%{_libdir}/libgij.so.%{gcj_major}
+%{_libdir}/libgij.so.%{gcj_major}.*
 %{_libdir}/logging.properties
 %{_libdir}/security
 %if %{build_pdf}
@@ -1125,9 +1137,11 @@ Objective-C dynamically linked programs.
 
 %files		-n %{libobjc}
 %defattr(-,root,root)
-%{_libdir}/libobjc.so.*
+%{_libdir}/libobjc.so.%{objc_major}
+%{_libdir}/libobjc.so.%{objc_major}.*
 %if %{build_multilib}
-%{multilibdir}/libobjc.so.*
+%{multilibdir}/libobjc.so.%{objc_major}
+%{multilibdir}/libobjc.so.%{objc_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1206,9 +1220,11 @@ for FFI support.
 
 %files		-n %{libffi}
 %defattr(-,root,root)
-%{_libdir}/libffi.so.*
+%{_libdir}/libffi.so.%{ffi_major}
+%{_libdir}/libffi.so.%{ffi_major}.*
 %if %{build_multilib}
-%{multilibdir}/libffi.so.*
+%{multilibdir}/libffi.so.%{ffi_major}
+%{multilibdir}/libffi.so.%{ffi_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1284,9 +1300,11 @@ for __float128 math support and for Fortran REAL*16 support.
 
 %files		-n %{libquadmath}
 %defattr(-,root,root)
-%{_libdir}/libquadmath.so.*
+%{_libdir}/libquadmath.so.%{quadmath_major}
+%{_libdir}/libquadmath.so.%{quadmath_major}.*
 %if %{build_multilib}
-%{multilibdir}/libquadmath.so.*
+%{multilibdir}/libquadmath.so.%{quadmath_major}
+%{multilibdir}/libquadmath.so.%{quadmath_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1363,9 +1381,11 @@ for OpenMP v3.0 support.
 
 %files		-n %{libgomp}
 %defattr(-,root,root)
-%{_libdir}/libgomp.so.*
+%{_libdir}/libgomp.so.%{gomp_major}
+%{_libdir}/libgomp.so.%{gomp_major}.*
 %if %{build_multilib}
-%{multilibdir}/libgomp.so.*
+%{multilibdir}/libgomp.so.%{gomp_major}
+%{multilibdir}/libgomp.so.%{gomp_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1451,11 +1471,15 @@ programming errors.
 
 %files		-n %{libmudflap}
 %defattr(-,root,root)
-%{_libdir}/libmudflap.so.*
-%{_libdir}/libmudflapth.so.*
+%{_libdir}/libmudflap.so.%{mudflap_major}
+%{_libdir}/libmudflap.so.%{mudflap_major}.*
+%{_libdir}/libmudflapth.so.%{mudflap_major}
+%{_libdir}/libmudflapth.so.%{mudflap_major}.*
 %if %{build_multilib}
-%{multilibdir}/libmudflap.so.*
-%{multilibdir}/libmudflapth.so.*
+%{multilibdir}/libmudflap.so.%{mudflap_major}
+%{multilibdir}/libmudflap.so.%{mudflap_major}.*
+%{multilibdir}/libmudflapth.so.%{mudflap_major}
+%{multilibdir}/libmudflapth.so.%{mudflap_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1524,9 +1548,11 @@ for SSP support.
 
 %files		-n %{libssp}
 %defattr(-,root,root)
-%{_libdir}/libssp.so.*
+%{_libdir}/libssp.so.%{ssp_major}
+%{_libdir}/libssp.so.%{ssp_major}.*
 %if %{build_multilib}
-%{multilibdir}/libssp.so.*
+%{multilibdir}/libssp.so.%{ssp_major}
+%{multilibdir}/libssp.so.%{ssp_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1743,6 +1769,9 @@ GCJFLAGS="$OPT_FLAGS"						\
 %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 
 %if %{build_pdf}
+perl -pi -e "s|/mnt/share/src/gcc.svn-trunk/|$PWD/|;"		\
+    libstdc++-v3/doc/xml/manual/build_hacking.xml		\
+    libstdc++-v3/doc/html/manual/appendix_porting.html
 %make pdf || :
 %endif
 
