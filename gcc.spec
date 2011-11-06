@@ -13,11 +13,11 @@
 %define		with_qt				0
 
 #-----------------------------------------------------------------------
-%define		official		1
+%define		official		0
 %if %{official}
   %define	snapshot		%{nil}
 %else
-  %define	snapshot		-RC-20111019
+  %define	snapshot		-20111104
 %endif
 %define		system_compiler		1
 %define		branch			4.6
@@ -152,7 +152,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.2
-Release:	1
+Release:	2
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -1636,7 +1636,7 @@ to compile SSP support.
 
 echo %{vendor} > gcc/DEV-PHASE
 %if !%{official}
-    sed -i -e 's/4\.6\.2/%{version}/' gcc/BASE-VER
+    sed -i -e 's/4\.6\.3/%{version}/' gcc/BASE-VER
 %endif
 
 %if %{with java_bootstrap}
