@@ -1797,14 +1797,14 @@ GCJFLAGS="$OPT_FLAGS"						\
 perl -pi -e "s|/mnt/share/src/gcc.svn-trunk/|$PWD/|;"		\
     libstdc++-v3/doc/xml/manual/build_hacking.xml		\
     libstdc++-v3/doc/html/manual/appendix_porting.html
-make pdf || :
+%make pdf || :
 %endif
 
 %if %{build_doc}
     pushd host-%{_target_platform}/gcc
-	make html || :
+	%make html || :
 	%if %{build_pdf}
-	    make pdf || :
+	    %make pdf || :
 	%endif
     popd
 %endif
