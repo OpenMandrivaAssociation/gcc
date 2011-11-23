@@ -139,6 +139,8 @@
   %define	build_objcxx		%{system_compiler}
 %endif
 
+%define		package_ffi		0
+
 # Adapted from fedora procedure:
 #   If there is no usable gcc-java neither libgcj for the arch,
 # on an arch that has it, run:
@@ -1225,7 +1227,7 @@ gcc++-objc provides Objective-C++ support for the GCC.
 %endif
 
 ########################################################################
-%if %{build_ffi}
+%if %{package_ffi}
 #-----------------------------------------------------------------------
 %package	-n %{libffi}
 Summary:	GCC support library for FFI
@@ -1301,7 +1303,7 @@ to compile FFI support.
 %{multilibdir}/libffi.a
 %endif
 #-----------------------------------------------------------------------
-# build ffi
+# package ffi
 %endif
 
 ########################################################################
@@ -1942,6 +1944,12 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
 %endif
 rm -f %{buildroot}%{_libdir}/libiberty.a
 rm -f %{buildroot}%{multilibdir}/libiberty.a
+
+%if !%{package_ffi}
+    rm -f %{buildroot}%{_libdir}/libffi.*
+    rm -f %{buildroot}%{multilibdir}/libffi.*
+    rm -f %{buildroot}%{_mandir}/man3/ffi*
+%endif
 
 %if %{build_doc}
     %if %{build_cxx}
