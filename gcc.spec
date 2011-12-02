@@ -943,9 +943,6 @@ Obsoletes:	%{mklibname gcj 11}-base
 %endif
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-Requires:	gtk2 >= 2.4.0
-Requires:	glib2 >= 2.4.0
-Requires:	libart_lgpl >= 2.1.0
 Requires:	zip >= 2.1
 %if %{without java_bootstrap}
 BuildRequires:	antlr
