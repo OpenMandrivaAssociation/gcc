@@ -196,7 +196,6 @@ Requires:	glibc-devel >= 2.13
 
 BuildRequires:	dejagnu
 BuildRequires:	bison
-BuildRequires:	elfutils-devel
 BuildRequires:	flex
 BuildRequires:	gdb
 BuildRequires:	gettext
