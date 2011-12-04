@@ -693,7 +693,7 @@ programs with the GNU Compiler Collection.
 %post		gfortran
   %_install_info gfortran.info
 
-%preun	gfortran
+%preun		gfortran
   %_remove_install_info gfortran.info
 %endif
 
@@ -932,7 +932,7 @@ bytecode into native code.
 %preun		java
   %_remove_install_info gcj.info
 
-%files java
+%files		java
 %defattr(-,root,root,-)
 %{_bindir}/gcj
 %{_bindir}/gjavah
