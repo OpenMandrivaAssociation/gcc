@@ -177,7 +177,8 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
-Requires:	%{libgomp} >= %{version}-%{release}
+Requires:	libgcc >= %{version}-%{release}
+Requires:	libgomp >= %{version}-%{release}
 %endif
 %ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
@@ -322,6 +323,10 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %package	-n %{libgcc}
 Summary:	GNU C library
 Group:		System/Libraries
+Provides:	libgcc = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibgcc} = %{version}-%{release}
+%endif
 %if %mdkversion <= 201200
 Obsoletes:	libgcc3.0 < %{version}-%{release}
 Obsoletes:	libgcc3.2 < %{version}-%{release}
@@ -473,6 +478,10 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %package	-n %{libstdcxx}
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
+Provides:	libstdc++ = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibstdcxx} = %{version}-%{release}
+%endif
 %if %{build_doc}
 BuildRequires:	doxygen
 BuildRequires:	graphviz
@@ -502,7 +511,7 @@ GCC Standard C++ Library.
 Summary:	Header files and libraries for C++ development
 Group:		Development/C++
 Requires:	%{libstdcxx} = %{version}-%{release}
-Provides:	stdc++-devel = %{version}-%{release}
+Provides:	libstdc++-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
 Obsoletes:	libstdc++4.5-devel
 Obsoletes:	libstdc++6-devel
@@ -531,7 +540,7 @@ development. This includes rewritten implementation of STL.
 Summary:	Static libraries for the GNU standard C++ library
 Group:		Development/C++
 Requires:	%{libstdcxx_devel} = %{version}-%{release}
-Provides:	stdc++-static-devel = %{version}-%{release}
+Provides:	libstdc++-static-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
 Obsoletes:	libstdc++4.5-static-devel
 Obsoletes:	libstdc++%{stdcxx_major}-static-devel
@@ -595,6 +604,10 @@ done
 %package	-n %{libgnat}
 Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
+Provides:	libgnat = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibgnat} = %{version}-%{release}
+%endif
 Obsoletes:	gnat-runtime
 
 %description	-n %{libgnat}
@@ -615,7 +628,7 @@ libraries, which are required to run programs compiled with the GNAT.
 Summary:	GNU Ada 95 libraries
 Group:		Development/Other
 Requires:	%{libgnat} = %{version}-%{release}
-Provides:	gnat-devel = %{version}-%{release}
+Provides:	libgnat-devel = %{version}-%{release}
 
 %description	-n %{libgnat_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -641,7 +654,7 @@ libraries, which are required to compile with the GNAT.
 Summary:	GNU Ada 95 static libraries
 Group:		Development/Other
 Requires:	%{libgnat_devel} = %{version}-%{release}
-Provides:	gnat-static-devel = %{version}-%{release}
+Provides:	libgnat-static-devel = %{version}-%{release}
 
 %description	-n %{libgnat_static_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes static
@@ -710,6 +723,10 @@ Group:		System/Libraries
 %if %{build_quadmath}
 Requires:	%{libquadmath} = %{version}-%{release}
 %endif
+Provides:	libgfortran = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibgfortran} = %{version}-%{release}
+%endif
 %if %mdkversion <= 201200
 Obsoletes:	libgfortran4.5 < %{version}-%{release}
 %endif
@@ -735,7 +752,7 @@ Requires:	%{libgfortran} = %{version}-%{release}
 %if %{build_quadmath}
 Requires:	%{libquadmath_devel} = %{version}-%{release}
 %endif
-Provides:	gfortran-devel = %{version}-%{release}
+Provides:	libgfortran-devel = %{version}-%{release}
 
 %description	-n %{libgfortran_devel}
 This package contains Fortran 95 shared library which is needed to
@@ -757,7 +774,7 @@ compile Fortran 95 programs.
 Summary:	Fortran 95 static libraries
 Group:		System/Libraries
 Requires:	%{libgfortran_devel} = %{version}-%{release}
-Provides:	gfortran-static-devel = %{version}-%{release}
+Provides:	libgfortran-static-devel = %{version}-%{release}
 
 %description	-n %{libgfortran_static_devel}
 This package contains Fortran 95 static library which is needed to
@@ -826,6 +843,10 @@ with the GNU Compiler Collection.
 %package	-n %{libgo}
 Summary:	Go runtime libraries
 Group:		System/Libraries
+Provides:       libgo = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibgo} = %{version}-%{release}
+%endif
 
 %description	-n %{libgo}
 This package contains Go shared library which is needed to run
@@ -845,7 +866,10 @@ Go dynamically linked programs.
 Summary:	Go development libraries
 Group:		Development/Other
 Requires:	%{libgo} = %{version}-%{release}
-Provides:	go-devel = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibgo} = %{version}-%{release}
+%endif
+Provides:	libgo-devel = %{version}-%{release}
 
 %description	-n %{libgo_devel}
 This package includes libraries and support files for compiling
@@ -865,7 +889,7 @@ Go programs.
 Summary:	Static Go libraries
 Group:		Development/Other
 Requires:	%{libgo_devel} = %{version}-%{release}
-Provides:	go-static-devel = %{version}-%{release}
+Provides:	libgo-static-devel = %{version}-%{release}
 
 %description	-n %{libgo_static_devel}
 This package contains static Go libraries.
@@ -933,7 +957,16 @@ bytecode into native code.
 Summary:	Java runtime library for gcc
 Group:		System/Libraries
 Provides:	gcj-tools = %{version}-%{release}
+Provides:	libgcj = %{version}-%{release}
+Provides:	%{libgcj_bc} = %{version}-%{release}
+%if %{build_multilib}
+# for compatibility and/or make updates clean
+Provides:	libgcj%{gcj_major} = %{version}-%{release}
+Provides:	libgcj_bc%{gcj_bc_major} = %{version}-%{release}
+%endif
 %if %mdkversion <= 201200
+Provides:	libgcj%{gcj_major}-base = %{version}-%{release}
+Provides:	%{libgcj}-base = %{version}-%{release}
 Obsoletes:	gcc-libgcj
 Obsoletes:	libgcj4.5 < %{version}-%{release}
 Obsoletes:	gcj4.5-tools
@@ -1033,7 +1066,7 @@ Group:		Development/Java
 Requires:	%{libgcj} = %{version}-%{release}
 Requires:	zlib-devel
 Requires:	awk
-Provides:	gcj-devel = %{version}-%{release}
+Provides:	libgcj-devel = %{version}-%{release}
 
 %description	-n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
@@ -1059,7 +1092,7 @@ package to compile your Java programs using the GCC Java compiler (gcj).
 Summary:	Static Libraries for Java development using GCC
 Group:		Development/Other
 Requires:	%{libgcj_devel} = %{version}-%{release}
-Provides:	gcj-static-devel = %{version}-%{release}
+Provides:	libgcj-static-devel = %{version}-%{release}
 
 %description	-n %{libgcj_static_devel}
 Static Libraries for Java development using GCC.
@@ -1075,7 +1108,7 @@ Static Libraries for Java development using GCC.
 Summary:	Java library sources
 Group:		Development/Java
 Requires:	%{libgcj} = %{version}-%{release}
-Provides:	gcj-src = %{version}-%{release}
+Provides:	libgcj-src = %{version}-%{release}
 
 %description	-n libgcj%{gcj_major}-src
 The Java(tm) runtime library sources.
@@ -1109,6 +1142,10 @@ object-oriented derivative of the C language.
 %package	-n %{libobjc}
 Summary:	Objective-C runtime
 Group:		System/Libraries
+Provides:	libobjc = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibobjc} = %{version}-%{release}
+%endif
 %if %mdkversion <= 201200
 Obsoletes:	libobjc3.0 < %{version}-%{release}
 Obsoletes:	libobjc3.1 < %{version}-%{release}
@@ -1132,7 +1169,7 @@ Objective-C dynamically linked programs.
 Summary:	Objective-C development libraries
 Group:		Development/Other
 Requires:	%{libobjc} = %{version}-%{release}
-Provides:	objc-devel = %{version}-%{release}
+Provides:	libobjc-devel = %{version}-%{release}
 
 %description	-n %{libobjc_devel}
 This package includes libraries and support files for compiling
@@ -1153,7 +1190,7 @@ Objective-C programs.
 Summary:	Static Objective-C libraries
 Group:		Development/Other
 Requires:	%{libobjc_devel} = %{version}-%{release}
-Provides:	objc-static-devel = %{version}-%{release}
+Provides:	libobjc-static-devel = %{version}-%{release}
 
 %description	-n %{libobjc_static_devel}
 This package contains static Objective-C libraries.
@@ -1192,6 +1229,10 @@ gcc++-objc provides Objective-C++ support for the GCC.
 %package	-n %{libffi}
 Summary:	GCC support library for FFI
 Group:		System/Libraries
+Provides:	libffi = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibffi} = %{version}-%{release}
+%endif
 
 %description	-n %{libffi}
 This package contains GCC shared support library which is needed
@@ -1212,7 +1253,7 @@ Summary:	GCC development for FFI
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libffi} = %{version}-%{release}
-Provides:	ffi-devel = %{version}-%{release}
+Provides:	libffi-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
 Obsoletes:	libffi4-devel < %{version}-%{release}
 %endif
@@ -1246,7 +1287,7 @@ to compile FFI support.
 Summary:	GCC FFI static library
 Group:		Development/C
 Requires:	%{libffi_devel} = %{version}-%{release}
-Provides:	ffi-static-devel = %{version}-%{release}
+Provides:	libffi-static-devel = %{version}-%{release}
 
 %description	-n %{libffi_static_devel}
 This package contains GCC static libraries which are needed
@@ -1268,6 +1309,7 @@ to compile FFI support.
 %package	-n %{libquadmath}
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
+Provides:	libquadmath = %{version}-%{release}
 %if %{build_multilib}
 Provides:	%{multilibquadmath} = %{version}-%{release}
 %endif
@@ -1291,7 +1333,7 @@ Summary:	GCC __float128 support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libquadmath} = %{version}-%{release}
-Provides:	quadmath-devel = %{version}-%{release}
+Provides:	libquadmath-devel = %{version}-%{release}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
@@ -1326,7 +1368,7 @@ REAL*16 and programs using __float128 math.
 Summary:	Static libraries for __float128 support
 Group:		Development/C
 Requires:	%{libquadmath_devel} = %{version}-%{release}
-Provides:	quadmath-static-devel = %{version}-%{release}
+Provides:	libquadmath-static-devel = %{version}-%{release}
 
 %description	-n %{libquadmath_static_devel}
 This package contains static libraries for building Fortran programs
@@ -1348,6 +1390,10 @@ using REAL*16 and programs using __float128 math.
 %package	-n %{libgomp}
 Summary:	GCC OpenMP v3.0 shared support library
 Group:		System/Libraries
+Provides:	libgomp = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibgomp} = %{version}-%{release}
+%endif
 
 %description	-n %{libgomp}
 This package contains GCC shared library which is needed
@@ -1368,7 +1414,7 @@ Summary:	GCC OpenMP v3.0 development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgomp} = %{version}-%{release}
-Provides:	gomp-devel = %{version}-%{release}
+Provides:	libgomp-devel = %{version}-%{release}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
@@ -1405,7 +1451,7 @@ to compile OpenMP v3.0 support.
 Summary:	GCC OpenMP v3.0 static library
 Group:		Development/C
 Requires:	%{libgomp_devel} = %{version}-%{release}
-Provides:	gomp-static-devel = %{version}-%{release}
+Provides:	libgomp-static-devel = %{version}-%{release}
 
 %description	-n %{libgomp_static_devel}
 This package contains GCC static libraries which are needed
@@ -1427,6 +1473,10 @@ to compile OpenMP v3.0 support.
 %package	-n %{libmudflap}
 Summary:	GCC mudflap shared support libraries
 Group:		System/Libraries
+Provides:	libmudflap = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibmudflap} = %{version}-%{release}
+%endif
 
 %description	-n %{libmudflap}
 This package contains GCC shared libraries which are needed
@@ -1458,7 +1508,7 @@ Summary:	GCC mudflap development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libmudflap} = %{version}-%{release}
-Provides:	mudflap-devel = %{version}-%{release}
+Provides:	libmudflap-devel = %{version}-%{release}
 
 %description	-n %{libmudflap_devel}
 This package contains GCC libraries which are needed
@@ -1483,7 +1533,7 @@ to compile mudflap support.
 Summary:	GCC mudflap static libraries
 Group:		Development/C
 Requires:	%{libmudflap_devel} = %{version}-%{release}
-Provides:	mudflap-static-devel = %{version}-%{release}
+Provides:	libmudflap-static-devel = %{version}-%{release}
 
 %description	-n %{libmudflap_static_devel}
 This package contains GCC static libraries which are needed
@@ -1507,6 +1557,10 @@ to compile mudflap support.
 %package	-n %{libssp}
 Summary:	GCC SSP shared support library
 Group:		System/Libraries
+Provides:	libssp = %{version}-%{release}
+%if %{build_multilib}
+Provides:	%{multilibssp} = %{version}-%{release}
+%endif
 
 %description	-n %{libssp}
 This package contains GCC shared support library which is needed
@@ -1527,7 +1581,7 @@ Summary:	GCC SSP development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libssp} = %{version}-%{release}
-Provides:	ssp-devel = %{version}-%{release}
+Provides:	libssp-devel = %{version}-%{release}
 
 %description	-n %{libssp_devel}
 This package contains GCC libraries which are needed
