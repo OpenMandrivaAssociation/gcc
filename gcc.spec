@@ -996,6 +996,7 @@ BuildRequires:	libxt-devel
 %if %{with_qt}
 BuildRequires:	qt4-devel
 %endif
+BuildRequires:	spec-helper >= 0.31.10
 
 %description	-n %{libgcj}
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1852,11 +1853,6 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 
 #-----------------------------------------------------------------------
 %install
-#(proyvind): static linking gets fscked up, simply just disable this for now,
-#            will try improve spec-helper script, but gcc takes forever to build
-#            locally for me to test, and right now this blocks building
-#            of other packages..
-export DONT_REMOVE_LIBTOOL_FILES=1
 %makeinstall_std
 
 %if %{build_java}
