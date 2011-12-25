@@ -17,7 +17,7 @@
 %if %{official}
   %define	snapshot		%{nil}
 %else
-  %define	snapshot		-20111216
+  %define	snapshot		-20111223
 %endif
 %define		system_compiler		1
 %define		branch			4.6
@@ -161,10 +161,10 @@ Group:		Development/C
 URL:		http://gcc.gnu.org/
 # http://gcc.gnu.org/mirrors.html
 %if %{official}
-  # <<mirror>>/[releases|snapshots]/%{version}%{snapshot}/
-Source0:	gcc-%{version}%{snapshot}.tar.bz2
+  # <<mirror>>/releases/%{version}/
+Source0:	gcc-%{version}.tar.bz2
 %else
-  # <<mirror>>/[releases|snapshots]/%{branch}%{snapshot}/
+  # <<mirror>>/snapshots/%{branch}%{snapshot}/
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 %endif
 Source1:	md5.sum
@@ -525,11 +525,9 @@ development. This includes rewritten implementation of STL.
 %files		-n %{libstdcxx_devel}
 %defattr(-,root,root)
 %{_includedir}/c++/%{version}
-%{_libdir}/libstdc++.la
 %{_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 %if %{build_multilib}
-%{multilibdir}/libstdc++.la
 %{multilibdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
 %endif
@@ -553,10 +551,12 @@ Static libraries for the GNU standard C++ library.
 %files		-n %{libstdcxx_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libstdc++.a
+%{_libdir}/libstdc++.la
 %{_libdir}/libsupc++.a
 %{_libdir}/libsupc++.la
 %if %{build_multilib}
 %{multilibdir}/libstdc++.a
+%{multilibdir}/libstdc++.la
 %{multilibdir}/libsupc++.a
 %{multilibdir}/libsupc++.la
 %endif
@@ -764,11 +764,9 @@ compile Fortran 95 programs.
 
 %files		-n %{libgfortran_devel}
 %defattr(-,root,root)
-%{_libdir}/libgfortran.la
 %{_libdir}/libgfortran.so
 %{_libdir}/libgfortran.spec
 %if %{build_multilib}
-%{multilibdir}/libgfortran.la
 %{multilibdir}/libgfortran.so
 %{multilibdir}/libgfortran.spec
 %endif
@@ -788,8 +786,10 @@ compile Fortran 95 programs.
 %files		-n %{libgfortran_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libgfortran.a
+%{_libdir}/libgfortran.la
 %if %{build_multilib}
 %{multilibdir}/libgfortran.a
+%{multilibdir}/libgfortran.la
 %endif
 #-----------------------------------------------------------------------
 # build fortran
@@ -883,10 +883,8 @@ Go programs.
 
 %files		-n %{libgo_devel}
 %defattr(-,root,root)
-%{_libdir}/libgo.la
 %{_libdir}/libgo.so
 %if %{build_multilib}
-%{multilibdir}/libgo.la
 %{multilibdir}/libgo.so
 %endif
 
@@ -904,8 +902,10 @@ This package contains static Go libraries.
 %files		-n %{libgo_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libgo.a
+%{_libdir}/libgo.la
 %if %{build_multilib}
 %{multilibdir}/libgo.a
+%{multilibdir}/libgo.la
 %endif
 #-----------------------------------------------------------------------
 # build go
@@ -1089,11 +1089,8 @@ package to compile your Java programs using the GCC Java compiler (gcj).
 %{gccdir}/include/jvm*.h
 %{py_puresitedir}/libjava
 %{_libdir}/pkgconfig/libgcj-%{branch}.pc
-%{_libdir}/gcj-%{version}-12/*.la
 %{_libdir}/libgcj*.spec
-%{_libdir}/libgcj*.la
 %{_libdir}/libgcj*.so
-%{_libdir}/libgij.la
 %{_libdir}/libgij.so
 
 #-----------------------------------------------------------------------
@@ -1110,8 +1107,11 @@ Static Libraries for Java development using GCC.
 %files		-n %{libgcj_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libgcj*.a
+%{_libdir}/libgcj*.la
 %{_libdir}/libgij.a
+%{_libdir}/libgij.la
 %{_libdir}/gcj-%{version}-12/*.a
+%{_libdir}/gcj-%{version}-12/*.la
 
 #-----------------------------------------------------------------------
 %package	-n libgcj%{gcj_major}-src
@@ -1188,11 +1188,9 @@ Objective-C programs.
 
 %files		-n %{libobjc_devel}
 %defattr(-,root,root)
-%{_libdir}/libobjc.la
 %{_libdir}/libobjc.so
 %{gccdir}/include/objc
 %if %{build_multilib}
-%{multilibdir}/libobjc.la
 %{multilibdir}/libobjc.so
 %endif
 
@@ -1210,8 +1208,10 @@ This package contains static Objective-C libraries.
 %files		-n %{libobjc_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libobjc.a
+%{_libdir}/libobjc.la
 %if %{build_multilib}
 %{multilibdir}/libobjc.a
+%{multilibdir}/libobjc.la
 %endif
 #-----------------------------------------------------------------------
 # build objc
@@ -1285,10 +1285,8 @@ to compile FFI support.
 
 %files		-n %{libffi_devel}
 %defattr(-,root,root)
-%{_libdir}/libffi.la
 %{_libdir}/libffi.so
 %if %{build_multilib}
-%{multilibdir}/libffi.la
 %{multilibdir}/libffi.so
 %endif
 %if %{system_compiler}
@@ -1310,8 +1308,10 @@ to compile FFI support.
 %files		-n %{libffi_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libffi.a
+%{_libdir}/libffi.la
 %if %{build_multilib}
 %{multilibdir}/libffi.a
+%{multilibdir}/libffi.la
 %endif
 #-----------------------------------------------------------------------
 # package ffi
@@ -1364,10 +1364,8 @@ REAL*16 and programs using __float128 math.
 
 %files		-n %{libquadmath_devel}
 %defattr(-,root,root)
-%{_libdir}/libquadmath.la
 %{_libdir}/libquadmath.so
 %if %{build_multilib}
-%{multilibdir}/libquadmath.la
 %{multilibdir}/libquadmath.so
 %endif
 %if %{system_compiler}
@@ -1393,8 +1391,10 @@ using REAL*16 and programs using __float128 math.
 %files		-n %{libquadmath_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libquadmath.a
+%{_libdir}/libquadmath.la
 %if %{build_multilib}
 %{multilibdir}/libquadmath.a
+%{multilibdir}/libquadmath.la
 %endif
 #-----------------------------------------------------------------------
 # build quadmath
@@ -1447,11 +1447,9 @@ to compile OpenMP v3.0 support.
 
 %files		-n %{libgomp_devel}
 %defattr(-,root,root)
-%{_libdir}/libgomp.la
 %{_libdir}/libgomp.so
 %{_libdir}/libgomp.spec
 %if %{build_multilib}
-%{multilibdir}/libgomp.la
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
 %endif
@@ -1478,8 +1476,10 @@ to compile OpenMP v3.0 support.
 %files		-n %{libgomp_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libgomp.a
+%{_libdir}/libgomp.la
 %if %{build_multilib}
 %{multilibdir}/libgomp.a
+%{multilibdir}/libgomp.la
 %endif
 #-----------------------------------------------------------------------
 # build gomp
@@ -1535,14 +1535,10 @@ to compile mudflap support.
 
 %files		-n %{libmudflap_devel}
 %defattr(-,root,root)
-%{_libdir}/libmudflap.la
 %{_libdir}/libmudflap.so
-%{_libdir}/libmudflapth.la
 %{_libdir}/libmudflapth.so
 %if %{build_multilib}
-%{multilibdir}/libmudflap.la
 %{multilibdir}/libmudflap.so
-%{multilibdir}/libmudflapth.la
 %{multilibdir}/libmudflapth.so
 %endif
 %{gccdir}/include/mf-runtime.h
@@ -1562,10 +1558,14 @@ to compile mudflap support.
 %files		-n %{libmudflap_static_devel}
 %defattr(-,root,root)
 %{_libdir}/libmudflap.a
+%{_libdir}/libmudflap.la
 %{_libdir}/libmudflapth.a
+%{_libdir}/libmudflapth.la
 %if %{build_multilib}
 %{multilibdir}/libmudflap.a
+%{multilibdir}/libmudflap.la
 %{multilibdir}/libmudflapth.a
+%{multilibdir}/libmudflapth.la
 %endif
 #-----------------------------------------------------------------------
 # build mudflap
@@ -1610,11 +1610,9 @@ to compile SSP support.
 
 %files		-n %{libssp_devel}
 %defattr(-,root,root)
-%{_libdir}/libssp.la
 %{_libdir}/libssp.so
 %if %{build_multilib}
-%{multilibdir}/libmssp.la
-%{multilibdir}/libmssp.so
+%{multilibdir}/libssp.so
 %endif
 %{gccdir}/include/ssp
 
@@ -1632,8 +1630,10 @@ to compile SSP support.
 
 %files		-n %{libssp_static_devel}
 %defattr(-,root,root)
+%{_libdir}/libssp.la
 %{_libdir}/libssp_nonshared.a
 %if %{build_multilib}
+%{multilibdir}/libssp.la
 %{multilibdir}/libssp_nonshared.a
 %endif
 #-----------------------------------------------------------------------
