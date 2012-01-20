@@ -154,7 +154,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.2
-Release:	10
+Release:	10.1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -173,12 +173,15 @@ Source5:	c99
 %if %{with java_bootstrap}
 Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 %endif
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
 Requires:	libgomp >= %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc
+Obsoletes:	manbo-mandriva-files-gcc4.4
+# versioned and non versioned files
+Conflicts:	manbo-mandriva-files-gcc4.2
 %endif
 %ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
@@ -187,8 +190,6 @@ Provides:	devel(libgcc_s)
 BuildRequires:	binutils >= 2.20.51.0.2
 Requires:	binutils >= 2.20.51.0.2
 BuildRequires:	elfutils-devel >= 0.147
-Obsoletes:	manbo-mandriva-files-gcc
-Obsoletes:	manbo-mandriva-files-gcc4.4
 
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
 # have been addressed if using an older version
@@ -252,7 +253,6 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %endif
 
 %files
-%defattr(-,root,root)
 %if %{system_compiler}
 %{_bindir}/cc
 %{_bindir}/c89
@@ -268,10 +268,8 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
 %{_libdir}/libgcc_s.so
-#%{_libdir}/libiberty.a
   %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-#%{multilibdir}/libiberty.a
   %endif
 %endif
 %{_bindir}/gcc-%{version}
@@ -323,9 +321,6 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 Summary:	GNU C library
 Group:		System/Libraries
 Provides:	libgcc = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibgcc} = %{version}-%{release}
-%endif
 %if %mdkversion <= 201200
 Obsoletes:	libgcc3.0 < %{version}-%{release}
 Obsoletes:	libgcc3.2 < %{version}-%{release}
@@ -333,12 +328,21 @@ Obsoletes:	libgcc4.5 < %{version}-%{release}
 %endif
 
 %description	-n %{libgcc}
-The %{libgcc_name} package contains GCC shared libraries for gcc %{branch}
+The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files		-n %{libgcc}
-%defattr(-,root,root)
 %{_libdir}/libgcc_s.so.%{gcc_major}
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibgcc}
+Summary:	GNU C library
+Group:		System/Libraries
+
+%description	-n %{multilibgcc}
+The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
+
+%files		-n %{multilibgcc}
 %{multilibdir}/libgcc_s.so.%{gcc_major}
 %endif
 #-----------------------------------------------------------------------
@@ -365,7 +369,6 @@ for compiling GCC plugins.  The GCC plugin ABI is currently
 not stable, so plugins must be rebuilt any time GCC is updated.
 
 %files		plugin-devel
-%defattr(-,root,root,-)
 %{gccdir}/gengtype
 %{gccdir}/gtype.state
 %{gccdir}/plugin
@@ -421,7 +424,6 @@ if [ -f %{_bindir}/cpp ]; then %{alternatives} --remove-all cpp; fi
   %_remove_install_info cpp.info
 
 %files		cpp
-%defattr(-,root,root)
 /lib/cpp
 %{_bindir}/cpp
 %{_mandir}/man1/cpp.1*
@@ -443,12 +445,14 @@ Group:		Development/C++
 Requires:	%{name} = %{version}-%{release}
 %if %{system_compiler}
 Requires:	%{libstdcxx_devel} = %{version}
+Obsoletes:	manbo-mandriva-files-g++
+Obsoletes:	manbo-mandriva-files-g++4.4
+Obsoletes:	manbo-mandriva-files-gcc-c++
+Obsoletes:	manbo-mandriva-files-gcc-c++4.2
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
-Obsoletes:	manbo-mandriva-files-g++
-Obsoletes:	manbo-mandriva-files-g++4.4
 
 %description	c++
 This package adds C++ support to the GNU Compiler Collection.
@@ -462,10 +466,11 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %endif
 
 %files		c++
-%defattr(-,root,root)
 %if %{system_compiler}
 %{_bindir}/c++
 %{_bindir}/g++
+%{_bindir}/%{_target_platform}-c++
+%{_bindir}/%{_target_platform}-g++
 %{_mandir}/man1/g++.1*
 %endif
 %{_bindir}/c++-%{version}
@@ -478,9 +483,6 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
 Provides:	libstdc++ = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibstdcxx} = %{version}-%{release}
-%endif
 %if %{build_doc}
 BuildRequires:	doxygen
 BuildRequires:	graphviz
@@ -491,13 +493,8 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files		-n %{libstdcxx}
-%defattr(-,root,root)
 %{_libdir}/libstdc++.so.%{stdcxx_major}
 %{_libdir}/libstdc++.so.%{stdcxx_major}.*
-%if %{build_multilib}
-%{multilibdir}/libstdc++.so.%{stdcxx_major}
-%{multilibdir}/libstdc++.so.%{stdcxx_major}.*
-%endif
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
 %endif
@@ -506,10 +503,28 @@ GCC Standard C++ Library.
 %endif
 
 #-----------------------------------------------------------------------
+%if %{build_multilib}
+%package	-n %{multilibstdcxx}
+Summary:	GNU Standard C++ library
+Group:		System/Libraries
+
+%description	-n %{multilibstdcxx}
+The libstdc++ package contains a rewritten standard compliant
+GCC Standard C++ Library.
+
+%files		-n %{multilibstdcxx}
+%{multilibdir}/libstdc++.so.%{stdcxx_major}
+%{multilibdir}/libstdc++.so.%{stdcxx_major}.*
+%endif
+
+#-----------------------------------------------------------------------
 %package	-n %{libstdcxx_devel}
 Summary:	Header files and libraries for C++ development
 Group:		Development/C++
 Requires:	%{libstdcxx} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibstdcxx} = %{version}-%{release}
+%endif
 Provides:	libstdc++-devel = %{version}-%{release}
 Provides:	stdc++-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
@@ -523,7 +538,6 @@ package includes the header files and libraries needed for C++
 development. This includes rewritten implementation of STL.
 
 %files		-n %{libstdcxx_devel}
-%defattr(-,root,root)
 %{_includedir}/c++/%{version}
 %{_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
@@ -549,7 +563,6 @@ Obsoletes:	libstdc++%{stdcxx_major}-static-devel
 Static libraries for the GNU standard C++ library.
 
 %files		-n %{libstdcxx_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libstdc++.a
 %{_libdir}/libstdc++.la
 %{_libdir}/libsupc++.a
@@ -590,7 +603,6 @@ for info in _rm ugn -stype; do
 done
 
 %files		gnat
-%defattr(-,root,root)
 %{_bindir}/gnat*
 %if %{build_java}
 %exclude %{_bindir}/gnative2ascii
@@ -606,9 +618,6 @@ done
 Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
 Provides:	libgnat = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibgnat} = %{version}-%{release}
-%endif
 Obsoletes:	gnat-runtime
 
 %description	-n %{libgnat}
@@ -616,10 +625,20 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to run programs compiled with the GNAT.
 
 %files		-n %{libgnat}
-%defattr(-,root,root)
 %{_libdir}/libgnat-%{branch}.so.%{gnat_major}
 %{_libdir}/libgnarl-%{branch}.so.%{gnat_major}
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibgnat}
+Summary:	GNU Ada 95 runtime libraries
+Group:		System/Libraries
+
+%description	-n %{multilibgnat}
+GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
+libraries, which are required to run programs compiled with the GNAT.
+
+%files		-n %{multilibgnat}
 %{multilibdir}/libgnat-%{branch}.so.%{gnat_major}
 %{multilibdir}/libgnarl-%{branch}.so.%{gnat_major}
 %endif
@@ -629,6 +648,9 @@ libraries, which are required to run programs compiled with the GNAT.
 Summary:	GNU Ada 95 libraries
 Group:		Development/Other
 Requires:	%{libgnat} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibgnat} = %{version}-%{release}
+%endif
 Provides:	libgnat-devel = %{version}-%{release}
 Provides:	gnat-devel = %{version}-%{release}
 
@@ -637,7 +659,6 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to compile with the GNAT.
 
 %files		-n %{libgnat_devel}
-%defattr(-,root,root)
 %{_libdir}/libgnat*.so
 %{_libdir}/libgnarl*.so
 %{gccdir}/adalib
@@ -664,7 +685,6 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes static
 libraries.
 
 %files		-n %{libgnat_static_devel}
-%defattr(-,root,root)
 %{gccdir}/adalib/lib*.a
 %if %{build_multilib}
 %{multigccdir}/adalib/lib*.a
@@ -681,34 +701,30 @@ Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgfortran_devel} = %{version}-%{release}
-%if %{system_compiler}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-%endif
 Obsoletes:	manbo-mandriva-files-gfortran
 Obsoletes:	manbo-mandriva-files-gfortran4.4
+Obsoletes:	manbo-mandriva-files-gcc-gfortran
+Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2
 
 %description	gfortran
 The gcc-gfortran package provides support for compiling Fortran
 programs with the GNU Compiler Collection.
 
-%if %{system_compiler}
 %post		gfortran
   %_install_info gfortran.info
 
 %preun		gfortran
   %_remove_install_info gfortran.info
-%endif
 
 %files		gfortran
-%defattr(-,root,root)
-%if %{system_compiler}
 %{_bindir}/gfortran
+%{_bindir}/gfortran-%{version}
+%{_bindir}/%{_target_platform}-gfortran
+%{_bindir}/%{_target_platform}-gfortran-%{version}
 %{_infodir}/gfortran.info*
 %{_mandir}/man1/gfortran.1*
-%endif
-%{_bindir}/gfortran-%{version}
-%{_bindir}/%{_target_platform}-gfortran-%{version}
 %{gccdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libgfortranbegin.*
@@ -739,10 +755,23 @@ This package contains Fortran 95 shared library which is needed to run
 Fortran 95 dynamically linked programs.
 
 %files		-n %{libgfortran}
-%defattr(-,root,root)
 %{_libdir}/libgfortran.so.%{gfortran_major}
 %{_libdir}/libgfortran.so.%{gfortran_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibgfortran}
+Summary:	Fortran 95 runtime libraries
+Group:		System/Libraries
+%if %{build_quadmath}
+Requires:	%{multilibquadmath} = %{version}-%{release}
+%endif
+
+%description	-n %{multilibgfortran}
+This package contains Fortran 95 shared library which is needed to run
+Fortran 95 dynamically linked programs.
+
+%files		-n %{multilibgfortran}
 %{multilibdir}/libgfortran.so.%{gfortran_major}
 %{multilibdir}/libgfortran.so.%{gfortran_major}.*
 %endif
@@ -752,6 +781,9 @@ Fortran 95 dynamically linked programs.
 Summary:	Fortran 95 libraries
 Group:		System/Libraries
 Requires:	%{libgfortran} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibgfortran} = %{version}-%{release}
+%endif
 %if %{build_quadmath}
 Requires:	%{libquadmath_devel} = %{version}-%{release}
 %endif
@@ -763,7 +795,6 @@ This package contains Fortran 95 shared library which is needed to
 compile Fortran 95 programs.
 
 %files		-n %{libgfortran_devel}
-%defattr(-,root,root)
 %{_libdir}/libgfortran.so
 %{_libdir}/libgfortran.spec
 %if %{build_multilib}
@@ -784,7 +815,6 @@ This package contains Fortran 95 static library which is needed to
 compile Fortran 95 programs.
 
 %files		-n %{libgfortran_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libgfortran.a
 %{_libdir}/libgfortran.la
 %if %{build_multilib}
@@ -803,34 +833,27 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgo_devel} = %{version}-%{release}
-%if %{system_compiler}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-%endif
 
 %description	go
 The gcc-go package provides support for compiling Go programs
 with the GNU Compiler Collection.
 
-%if %{system_compiler}
 %post		go
   %_install_info gccgo.info
 
 %preun	go
   %_remove_install_info gccgo.info
-%endif
 
 %files		go
-%defattr(-,root,root)
-%if %{system_compiler}
 %{_bindir}/gccgo
 %dir %{_libdir}/go
-  %if %{build_multilib}
+%if %{build_multilib}
 %dir %{multilibdir}/go
-  %endif
+%endif
 %{_infodir}/gccgo.info*
 %{_mandir}/man1/gccgo.1*
-%endif
 %{_bindir}/gccgo-%{version}
 %{_bindir}/%{_target_platform}-gccgo-%{version}
 %{gccdir}/go1
@@ -849,19 +872,26 @@ with the GNU Compiler Collection.
 Summary:	Go runtime libraries
 Group:		System/Libraries
 Provides:       libgo = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibgo} = %{version}-%{release}
-%endif
 
 %description	-n %{libgo}
 This package contains Go shared library which is needed to run
 Go dynamically linked programs.
 
 %files		-n %{libgo}
-%defattr(-,root,root)
 %{_libdir}/libgo.so.%{go_major}
 %{_libdir}/libgo.so.%{go_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibgo}
+Summary:	Go runtime libraries
+Group:		System/Libraries
+
+%description	-n %{multilibgo}
+This package contains Go shared library which is needed to run
+Go dynamically linked programs.
+
+%files		-n %{multilibgo}
 %{multilibdir}/libgo.so.%{go_major}
 %{multilibdir}/libgo.so.%{go_major}.*
 %endif
@@ -882,7 +912,6 @@ This package includes libraries and support files for compiling
 Go programs.
 
 %files		-n %{libgo_devel}
-%defattr(-,root,root)
 %{_libdir}/libgo.so
 %if %{build_multilib}
 %{multilibdir}/libgo.so
@@ -900,7 +929,6 @@ Provides:	go-static-devel = %{version}-%{release}
 This package contains static Go libraries.
 
 %files		-n %{libgo_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libgo.a
 %{_libdir}/libgo.la
 %if %{build_multilib}
@@ -928,6 +956,8 @@ BuildRequires:	unzip
 BuildRequires:	zip
 Obsoletes:	manbo-mandriva-files-java
 Obsoletes:	manbo-mandriva-files-java4.4
+Obsoletes:	manbo-mandriva-files-gcc-java
+Obsoletes:	manbo-mandriva-files-gcc-java4.2
 
 %description	java
 This package adds support for compiling Java(tm) programs and
@@ -940,7 +970,6 @@ bytecode into native code.
   %_remove_install_info gcj.info
 
 %files		java
-%defattr(-,root,root,-)
 %{_bindir}/gcj
 %{_bindir}/gjavah
 %{_bindir}/gcjh
@@ -951,7 +980,9 @@ bytecode into native code.
 %{_mandir}/man1/gcjh.1*
 %{_infodir}/gcj.info*
 %{_bindir}/gcj-%{version}
+%{_bindir}/%{_target_platform}-gcj
 %{_bindir}/%{_target_platform}-gcj-%{version}
+%{_bindir}/%{_target_platform}-gcjh
 %{gccdir}/jc1
 %{gccdir}/ecj1
 %{gccdir}/jvgenmain
@@ -1009,7 +1040,6 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
   %_remove_install_info cp-tools.info
 
 %files		-n %{libgcj}
-%defattr(-,root,root,-)
 %{_bindir}/aot-compile
 %{_bindir}/jv-convert
 %{_bindir}/gappletviewer
@@ -1082,7 +1112,6 @@ The Java(tm) static libraries and C header files. You will need this
 package to compile your Java programs using the GCC Java compiler (gcj).
 
 %files		-n %{libgcj_devel}
-%defattr(-,root,root,-)
 %{gccdir}/include/gcj
 %{gccdir}/include/jawt*.h
 %{gccdir}/include/jni*.h
@@ -1124,7 +1153,6 @@ Provides:	libgcj-src = %{version}-%{release}
 The Java(tm) runtime library sources.
 
 %files	-n libgcj%{gcj_major}-src
-%defattr(-,root,root)
 %{_javadir}/src-%{version}.zip
 #-----------------------------------------------------------------------
 # build java
@@ -1145,7 +1173,6 @@ Mainly used on systems running NeXTSTEP, Objective-C is an
 object-oriented derivative of the C language.
 
 %files		objc
-%defattr(-,root,root)
 %{gccdir}/cc1obj
 
 #-----------------------------------------------------------------------
@@ -1153,9 +1180,6 @@ object-oriented derivative of the C language.
 Summary:	Objective-C runtime
 Group:		System/Libraries
 Provides:	libobjc = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibobjc} = %{version}-%{release}
-%endif
 %if %mdkversion <= 201200
 Obsoletes:	libobjc3.0 < %{version}-%{release}
 Obsoletes:	libobjc3.1 < %{version}-%{release}
@@ -1166,10 +1190,25 @@ This package contains Objective-C shared library which is needed to run
 Objective-C dynamically linked programs.
 
 %files		-n %{libobjc}
-%defattr(-,root,root)
 %{_libdir}/libobjc.so.%{objc_major}
 %{_libdir}/libobjc.so.%{objc_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibobjc}
+Summary:	Objective-C runtime
+Group:		System/Libraries
+Provides:	libobjc = %{version}-%{release}
+%if %mdkversion <= 201200
+Obsoletes:	libobjc3.0 < %{version}-%{release}
+Obsoletes:	libobjc3.1 < %{version}-%{release}
+%endif
+
+%description	-n %{multilibobjc}
+This package contains Objective-C shared library which is needed to run
+Objective-C dynamically linked programs.
+
+%files		-n %{multilibobjc}
 %{multilibdir}/libobjc.so.%{objc_major}
 %{multilibdir}/libobjc.so.%{objc_major}.*
 %endif
@@ -1179,6 +1218,9 @@ Objective-C dynamically linked programs.
 Summary:	Objective-C development libraries
 Group:		Development/Other
 Requires:	%{libobjc} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibobjc} = %{version}-%{release}
+%endif
 Provides:	libobjc-devel = %{version}-%{release}
 Provides:	objc-devel = %{version}-%{release}
 
@@ -1187,7 +1229,6 @@ This package includes libraries and support files for compiling
 Objective-C programs.
 
 %files		-n %{libobjc_devel}
-%defattr(-,root,root)
 %{_libdir}/libobjc.so
 %{gccdir}/include/objc
 %if %{build_multilib}
@@ -1206,7 +1247,6 @@ Provides:	objc-static-devel = %{version}-%{release}
 This package contains static Objective-C libraries.
 
 %files		-n %{libobjc_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libobjc.a
 %{_libdir}/libobjc.la
 %if %{build_multilib}
@@ -1229,7 +1269,6 @@ Requires:	gcc-objc = %{version}-%{release}
 gcc++-objc provides Objective-C++ support for the GCC.
 
 %files		objc++
-%defattr(-,root,root)
 %{gccdir}/cc1objplus
 #-----------------------------------------------------------------------
 # build objcxx
@@ -1242,19 +1281,26 @@ gcc++-objc provides Objective-C++ support for the GCC.
 Summary:	GCC support library for FFI
 Group:		System/Libraries
 Provides:	libffi = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibffi} = %{version}-%{release}
-%endif
 
 %description	-n %{libffi}
 This package contains GCC shared support library which is needed
 for FFI support.
 
 %files		-n %{libffi}
-%defattr(-,root,root)
 %{_libdir}/libffi.so.%{ffi_major}
 %{_libdir}/libffi.so.%{ffi_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibffi}
+Summary:	GCC support library for FFI
+Group:		System/Libraries
+
+%description	-n %{multilibffi}
+This package contains GCC shared support library which is needed
+for FFI support.
+
+%files		-n %{multilibffi}
 %{multilibdir}/libffi.so.%{ffi_major}
 %{multilibdir}/libffi.so.%{ffi_major}.*
 %endif
@@ -1265,6 +1311,9 @@ Summary:	GCC development for FFI
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libffi} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibffi} = %{version}-%{release}
+%endif
 Provides:	libffi-devel = %{version}-%{release}
 Provides:	ffi-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
@@ -1284,14 +1333,11 @@ to compile FFI support.
   %_remove_install_info libffi.info
 
 %files		-n %{libffi_devel}
-%defattr(-,root,root)
 %{_libdir}/libffi.so
 %if %{build_multilib}
 %{multilibdir}/libffi.so
 %endif
-%if %{system_compiler}
 %{_mandir}/man3/*.3*
-%endif
 
 #-----------------------------------------------------------------------
 %package	-n %{libffi_static_devel}
@@ -1306,7 +1352,6 @@ This package contains GCC static libraries which are needed
 to compile FFI support.
 
 %files		-n %{libffi_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libffi.a
 %{_libdir}/libffi.la
 %if %{build_multilib}
@@ -1324,19 +1369,26 @@ to compile FFI support.
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
 Provides:	libquadmath = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibquadmath} = %{version}-%{release}
-%endif
 
 %description	-n %{libquadmath}
 This package contains GCC shared support library which is needed
 for __float128 math support and for Fortran REAL*16 support.
 
 %files		-n %{libquadmath}
-%defattr(-,root,root)
 %{_libdir}/libquadmath.so.%{quadmath_major}
 %{_libdir}/libquadmath.so.%{quadmath_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibquadmath}
+Summary:	GCC __float128 shared support library
+Group:		System/Libraries
+
+%description	-n %{multilibquadmath}
+This package contains GCC shared support library which is needed
+for __float128 math support and for Fortran REAL*16 support.
+
+%files		-n %{multilibquadmath}
 %{multilibdir}/libquadmath.so.%{quadmath_major}
 %{multilibdir}/libquadmath.so.%{quadmath_major}.*
 %endif
@@ -1347,6 +1399,9 @@ Summary:	GCC __float128 support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libquadmath} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibquadmath} = %{version}-%{release}
+%endif
 Provides:	libquadmath-devel = %{version}-%{release}
 Provides:	quadmath-devel = %{version}-%{release}
 Requires(post): /sbin/install-info
@@ -1363,14 +1418,11 @@ REAL*16 and programs using __float128 math.
   %_remove_install_info libquadmath.info
 
 %files		-n %{libquadmath_devel}
-%defattr(-,root,root)
 %{_libdir}/libquadmath.so
 %if %{build_multilib}
 %{multilibdir}/libquadmath.so
 %endif
-%if %{system_compiler}
 %{_infodir}/libquadmath.info*
-%endif
 %{gccdir}/include/quadmath*.h
 %if %{build_pdf}
 %doc %{_docdir}/libquadmath
@@ -1389,7 +1441,6 @@ This package contains static libraries for building Fortran programs
 using REAL*16 and programs using __float128 math.
 
 %files		-n %{libquadmath_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libquadmath.a
 %{_libdir}/libquadmath.la
 %if %{build_multilib}
@@ -1407,19 +1458,27 @@ using REAL*16 and programs using __float128 math.
 Summary:	GCC OpenMP v3.0 shared support library
 Group:		System/Libraries
 Provides:	libgomp = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibgomp} = %{version}-%{release}
-%endif
 
 %description	-n %{libgomp}
 This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files		-n %{libgomp}
-%defattr(-,root,root)
 %{_libdir}/libgomp.so.%{gomp_major}
 %{_libdir}/libgomp.so.%{gomp_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibgomp}
+Summary:	GCC OpenMP v3.0 shared support library
+Group:		System/Libraries
+Provides:	libgomp = %{version}-%{release}
+
+%description	-n %{multilibgomp}
+This package contains GCC shared library which is needed
+for OpenMP v3.0 support.
+
+%files		-n %{multilibgomp}
 %{multilibdir}/libgomp.so.%{gomp_major}
 %{multilibdir}/libgomp.so.%{gomp_major}.*
 %endif
@@ -1430,6 +1489,9 @@ Summary:	GCC OpenMP v3.0 development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgomp} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibgomp} = %{version}-%{release}
+%endif
 Provides:	libgomp-devel = %{version}-%{release}
 Provides:	gomp-devel = %{version}-%{release}
 Requires(post): /sbin/install-info
@@ -1446,16 +1508,13 @@ to compile OpenMP v3.0 support.
   %_remove_install_info libgomp.info
 
 %files		-n %{libgomp_devel}
-%defattr(-,root,root)
 %{_libdir}/libgomp.so
 %{_libdir}/libgomp.spec
 %if %{build_multilib}
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
 %endif
-%if %{system_compiler}
 %{_infodir}/libgomp.info*
-%endif
 %{gccdir}/include/omp*.h
 %if %{build_pdf}
 %doc %{_docdir}/libgomp
@@ -1474,7 +1533,6 @@ This package contains GCC static libraries which are needed
 to compile OpenMP v3.0 support.
 
 %files		-n %{libgomp_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libgomp.a
 %{_libdir}/libgomp.la
 %if %{build_multilib}
@@ -1492,9 +1550,6 @@ to compile OpenMP v3.0 support.
 Summary:	GCC mudflap shared support libraries
 Group:		System/Libraries
 Provides:	libmudflap = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibmudflap} = %{version}-%{release}
-%endif
 
 %description	-n %{libmudflap}
 This package contains GCC shared libraries which are needed
@@ -1508,12 +1563,29 @@ buffer overflows, invalid heap use, and some other classes of C/C++
 programming errors.
 
 %files		-n %{libmudflap}
-%defattr(-,root,root)
 %{_libdir}/libmudflap.so.%{mudflap_major}
 %{_libdir}/libmudflap.so.%{mudflap_major}.*
 %{_libdir}/libmudflapth.so.%{mudflap_major}
 %{_libdir}/libmudflapth.so.%{mudflap_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibmudflap}
+Summary:	GCC mudflap shared support libraries
+Group:		System/Libraries
+
+%description	-n %{multilibmudflap}
+This package contains GCC shared libraries which are needed
+for mudflap support.
+
+For front-ends that support it (C and C++), instrument all risky
+pointer/array dereferencing operations, some standard library
+string/heap functions, and some other associated constructs with
+range/validity tests.  Modules so instrumented should be immune to
+buffer overflows, invalid heap use, and some other classes of C/C++
+programming errors.
+
+%files		-n %{multilibmudflap}
 %{multilibdir}/libmudflap.so.%{mudflap_major}
 %{multilibdir}/libmudflap.so.%{mudflap_major}.*
 %{multilibdir}/libmudflapth.so.%{mudflap_major}
@@ -1526,6 +1598,9 @@ Summary:	GCC mudflap development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libmudflap} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibmudflap} = %{version}-%{release}
+%endif
 Provides:	libmudflap-devel = %{version}-%{release}
 Provides:	mudflap-devel = %{version}-%{release}
 
@@ -1534,7 +1609,6 @@ This package contains GCC libraries which are needed
 to compile mudflap support.
 
 %files		-n %{libmudflap_devel}
-%defattr(-,root,root)
 %{_libdir}/libmudflap.so
 %{_libdir}/libmudflapth.so
 %if %{build_multilib}
@@ -1556,7 +1630,6 @@ This package contains GCC static libraries which are needed
 to compile mudflap support.
 
 %files		-n %{libmudflap_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libmudflap.a
 %{_libdir}/libmudflap.la
 %{_libdir}/libmudflapth.a
@@ -1578,19 +1651,27 @@ to compile mudflap support.
 Summary:	GCC SSP shared support library
 Group:		System/Libraries
 Provides:	libssp = %{version}-%{release}
-%if %{build_multilib}
-Provides:	%{multilibssp} = %{version}-%{release}
-%endif
 
 %description	-n %{libssp}
 This package contains GCC shared support library which is needed
 for SSP support.
 
 %files		-n %{libssp}
-%defattr(-,root,root)
 %{_libdir}/libssp.so.%{ssp_major}
 %{_libdir}/libssp.so.%{ssp_major}.*
+
+#-----------------------------------------------------------------------
 %if %{build_multilib}
+%package	-n %{multilibssp}
+Summary:	GCC SSP shared support library
+Group:		System/Libraries
+Provides:	libssp = %{version}-%{release}
+
+%description	-n %{multilibssp}
+This package contains GCC shared support library which is needed
+for SSP support.
+
+%files		-n %{multilibssp}
 %{multilibdir}/libssp.so.%{ssp_major}
 %{multilibdir}/libssp.so.%{ssp_major}.*
 %endif
@@ -1601,6 +1682,9 @@ Summary:	GCC SSP development support
 Group:		Development/C
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libssp} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibssp} = %{version}-%{release}
+%endif
 Provides:	libssp-devel = %{version}-%{release}
 Provides:	ssp-devel = %{version}-%{release}
 
@@ -1609,7 +1693,6 @@ This package contains GCC libraries which are needed
 to compile SSP support.
 
 %files		-n %{libssp_devel}
-%defattr(-,root,root)
 %{_libdir}/libssp.so
 %if %{build_multilib}
 %{multilibdir}/libssp.so
@@ -1629,7 +1712,6 @@ This package contains GCC static libraries which are needed
 to compile SSP support.
 
 %files		-n %{libssp_static_devel}
-%defattr(-,root,root)
 %{_libdir}/libssp.la
 %{_libdir}/libssp_nonshared.a
 %if %{build_multilib}
@@ -1881,11 +1963,10 @@ pushd %{buildroot}%{_bindir}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     cp -fa %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
-    ln -sf %{_target_platform}-gcc-%{version} %{buildroot}%{_bindir}/cc
+    ln -sf %{_target_platform}-gcc-%{version} cc
 %else
     rm -f %{buildroot}%{_bindir}/cpp
 %endif
-
     LANGUAGES="gcc g++ gcc gccgo gcj gfortran"
     for lang in $LANGUAGES; do
 	if [ -f %{_target_platform}-$lang ]; then
@@ -1893,18 +1974,19 @@ pushd %{buildroot}%{_bindir}
 	    rm -f $lang
 	    ln -sf %{_target_platform}-$lang-%{version} $lang-%{version}
 	%if %{system_compiler}
-		ln -sf %{_target_platform}-$lang-%{version} $lang
+	    ln -sf %{_target_platform}-$lang-%{version} $lang
 	elif [ -f %{_target_platform}-$lang-%{version} ]; then
-		ln -sf %{_target_platform}-$lang-%{version} %{_target_platform}-$lang
+	    ln -sf %{_target_platform}-$lang-%{version} %{_target_platform}-$lang
 	%endif
 	fi
     done
-
 %if %{build_cxx}
     rm -f c++ %{_target_platform}-c++{,-%{version}}
     ln -sf %{_target_platform}-g++-%{version} c++-%{version}
     %if %{system_compiler}
 	ln -sf %{_target_platform}-g++-%{version} c++
+	ln -sf %{_target_platform}-g++-%{version} %{_target_platform}-c++
+	ln -sf %{_target_platform}-g++-%{version} %{_target_platform}-g++
     %endif
     mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py		\
@@ -1918,6 +2000,13 @@ pushd %{buildroot}%{_bindir}
 	perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
 	    %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
     %endif
+%endif
+%if %{build_fortran}
+    ln -sf %{_target_platform}-gfortran-%{version} %{_target_platform}-gfortran
+%endif
+%if %{build_java}
+    ln -sf %{_target_platform}-gcj-%{version} %{_target_platform}-gcj
+    ln -sf gcjh %{_target_platform}-gcjh
 %endif
 popd
 
@@ -2048,7 +2137,3 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 	cp -fpa gcc/gtype.state %{buildroot}%{gccdir}
     popd
 %endif
-
-#-----------------------------------------------------------------------
-%clean
-rm -fr %{buildroot}
