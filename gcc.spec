@@ -1865,11 +1865,11 @@ XCFLAGS="$OPT_FLAGS"						\
 	--with-tune=generic					\
 %endif
 %ifarch %{ix86}
-	--with-arch=i686					\
+	--with-arch=i586					\
 %endif
 %ifarch x86_64
   %if %{build_multilib}
-	--with-arch_32=i686					\
+	--with-arch_32=i586					\
   %else
 	--disable-multilib					\
   %endif
