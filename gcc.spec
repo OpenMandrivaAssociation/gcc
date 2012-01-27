@@ -498,9 +498,6 @@ GCC Standard C++ Library.
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
 %endif
-%if %{build_doc}
-%doc %{_docdir}/libstdc++
-%endif
 
 #-----------------------------------------------------------------------
 %if %{build_multilib}
@@ -546,6 +543,9 @@ development. This includes rewritten implementation of STL.
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
 %endif
 %{py_puresitedir}/libstdcxx
+%if %{build_doc}
+%doc %{_docdir}/libstdc++
+%endif
 
 #-----------------------------------------------------------------------
 %package	-n %{libstdcxx_static_devel}
