@@ -9,15 +9,12 @@
 # avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
 
-# awt qt not functional (?)
-%define		with_qt				0
-
 #-----------------------------------------------------------------------
 %define		official		0
 %if %{official}
   %define	snapshot		%{nil}
 %else
-  %define	snapshot		-20120120
+  %define	snapshot		-20120127
 %endif
 %define		system_compiler		1
 %define		branch			4.6
@@ -154,7 +151,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.2
-Release:	11
+Release:	12
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -727,9 +724,9 @@ programs with the GNU Compiler Collection.
 %{_mandir}/man1/gfortran.1*
 %{gccdir}/f951
 %{gccdir}/finclude
-%{gccdir}/libgfortranbegin.*
+%{gccdir}/libgfortranbegin.a
 %if %{build_multilib}
-%{multigccdir}/libgfortranbegin.*
+%{multigccdir}/libgfortranbegin.a
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
@@ -848,6 +845,7 @@ with the GNU Compiler Collection.
 
 %files		go
 %{_bindir}/gccgo
+%{_bindir}/%{_target_platform}-gccgo
 %dir %{_libdir}/go
 %if %{build_multilib}
 %dir %{multilibdir}/go
@@ -1024,9 +1022,6 @@ BuildRequires:	libart_lgpl-devel >= 2.1.0
 BuildRequires:	alsa-lib-devel
 BuildRequires:	libxtst-devel
 BuildRequires:	libxt-devel
-%if %{with_qt}
-BuildRequires:	qt4-devel
-%endif
 BuildRequires:	spec-helper >= 0.31.10
 
 %description	-n %{libgcj}
@@ -1786,7 +1781,7 @@ LANGUAGES=c
     LANGUAGES="$LANGUAGES,obj-c++"
 %endif
 
-BOOTSTRAP=
+BOOTSTRAP=bootstrap
 %ifarch %{ix86} x86_64
   %if %{system_compiler}
 BOOSTRAP=profiledbootstrap
@@ -1806,11 +1801,7 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-libjava-multilib				\
 	--with-java-home=%{_jvmdir}/java-1.5.0-gcj-1.5.0.0/jre	\
 	--with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar		\
-%if %{with_qt}
-	--enable-java-awt=qt,gtk				\
-%else
 	--enable-java-awt=gtk					\
-%endif
 	--enable-gtk-cairo					\
 %endif
 %if !%{build_cloog}
@@ -1897,10 +1888,7 @@ GCJFLAGS="$OPT_FLAGS"						\
 %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 
 %if %{build_pdf}
-perl -pi -e "s|/mnt/share/src/gcc.svn-trunk/|$PWD/|;"		\
-    libstdc++-v3/doc/xml/manual/build_hacking.xml		\
-    libstdc++-v3/doc/html/manual/appendix_porting.html
-%make pdf || :
+    %make pdf || :
 %endif
 
 %if %{build_doc}
@@ -1919,7 +1907,7 @@ find libjava -name \*.h -type f |					\
 find libjava -name \*.class -type f >> libjava-classes.list
 find libjava/testsuite -name \*.jar -type f >> libjava-classes.list
 tar cf - -T libjava-classes.list | bzip2 -9				\
-    > %{_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
+    > %{make_rpmlint_happy_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
 %endif
 
 #-----------------------------------------------------------------------
@@ -1967,18 +1955,17 @@ pushd %{buildroot}%{_bindir}
 %else
     rm -f %{buildroot}%{_bindir}/cpp
 %endif
-    LANGUAGES="gcc g++ gcc gccgo gcj gfortran"
-    for lang in $LANGUAGES; do
-	if [ -f %{_target_platform}-$lang ]; then
-	    mv -f %{_target_platform}-$lang{,-%{version}}
-	    rm -f $lang
-	    ln -sf %{_target_platform}-$lang-%{version} $lang-%{version}
-	%if %{system_compiler}
-	    ln -sf %{_target_platform}-$lang-%{version} $lang
-	elif [ -f %{_target_platform}-$lang-%{version} ]; then
-	    ln -sf %{_target_platform}-$lang-%{version} %{_target_platform}-$lang
-	%endif
+    PROGRAMS="gcc g++ gccgo gcj gfortran"
+    for prog in $PROGRAMS; do
+	if [ -f %{_target_platform}-$prog ]; then
+	    mv -f %{_target_platform}-$prog{,-%{version}}
 	fi
+	rm -f $prog
+	ln -sf %{_target_platform}-$prog-%{version} $prog-%{version}
+	%if %{system_compiler}
+	    ln -sf %{_target_platform}-$prog-%{version} $prog
+	    ln -sf %{_target_platform}-$prog-%{version} %{_target_platform}-$prog
+	%endif
     done
 %if %{build_cxx}
     rm -f c++ %{_target_platform}-c++{,-%{version}}
@@ -1986,7 +1973,6 @@ pushd %{buildroot}%{_bindir}
     %if %{system_compiler}
 	ln -sf %{_target_platform}-g++-%{version} c++
 	ln -sf %{_target_platform}-g++-%{version} %{_target_platform}-c++
-	ln -sf %{_target_platform}-g++-%{version} %{_target_platform}-g++
     %endif
     mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py		\
@@ -2001,11 +1987,7 @@ pushd %{buildroot}%{_bindir}
 	    %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
     %endif
 %endif
-%if %{build_fortran}
-    ln -sf %{_target_platform}-gfortran-%{version} %{_target_platform}-gfortran
-%endif
 %if %{build_java}
-    ln -sf %{_target_platform}-gcj-%{version} %{_target_platform}-gcj
     ln -sf gcjh %{_target_platform}-gcjh
 %endif
 popd
