@@ -728,7 +728,6 @@ programs with the GNU Compiler Collection.
 %{gccdir}/libgfortranbegin.la
 %if %{build_multilib}
 %{multigccdir}/libgfortranbegin.a
-%{multigccdir}/libgfortranbegin.la
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
