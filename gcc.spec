@@ -14,7 +14,7 @@
 %if %{official}
   %define	snapshot		%{nil}
 %else
-  %define	snapshot		-20120127
+  %define	snapshot		-20120203
 %endif
 %define		system_compiler		1
 %define		branch			4.6
@@ -151,7 +151,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.2
-Release:	12
+Release:	13
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
