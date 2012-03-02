@@ -10,7 +10,7 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		official		0
+%define		official		1
 %if %{official}
   %define	snapshot		%{nil}
 %else
@@ -150,21 +150,22 @@
 
 #-----------------------------------------------------------------------
 Name:		%{name}
-Version:	4.6.2
-Release:	16
+Version:	4.6.3
+Release:	1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
-# http://gcc.gnu.org/mirrors.html
 %if %{official}
-  # <<mirror>>/releases/%{version}/
+  #http://www.gnu.org/prep/ftp.html ...
 Source0:	gcc-%{version}.tar.bz2
+Source1:	gcc-%{version}.tar.bz2.sig
 %else
+  # http://gcc.gnu.org/mirrors.html
   # <<mirror>>/snapshots/%{branch}%{snapshot}/
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
-%endif
 Source1:	md5.sum
+%endif
 Source4:	c89
 Source5:	c99
 %if %{with java_bootstrap}
@@ -724,8 +725,7 @@ programs with the GNU Compiler Collection.
 %{_mandir}/man1/gfortran.1*
 %{gccdir}/f951
 %{gccdir}/finclude
-%{gccdir}/libgfortranbegin.a
-%{gccdir}/libgfortranbegin.la
+%{gccdir}/libgfortranbegin.*a
 %if %{build_multilib}
 %{multigccdir}/libgfortranbegin.a
 %endif
