@@ -10,11 +10,11 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		official		1
+%define		official		0
 %if %{official}
   %define	snapshot		%{nil}
 %else
-  %define	snapshot		-20120224
+  %define	snapshot		-20120309
 %endif
 %define		system_compiler		1
 %define		branch			4.6
@@ -151,7 +151,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.3
-Release:	2
+Release:	3
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -1735,7 +1735,7 @@ to compile SSP support.
 
 echo %{vendor} > gcc/DEV-PHASE
 %if !%{official}
-    sed -i -e 's/4\.6\.3/%{version}/' gcc/BASE-VER
+    sed -i -e 's/4\.6\..*/%{version}/' gcc/BASE-VER
 %endif
 
 %if %{with java_bootstrap}
