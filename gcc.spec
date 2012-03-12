@@ -95,7 +95,7 @@
 %define		ssp_major		0
 %define		libssp			%mklibname ssp %{ssp_major}
 %define		libssp_devel		%mklibname -d ssp
-%define		libssp_static_devel 	%mklibname -d -s ssp
+%define		libssp_static_devel	%mklibname -d -s ssp
 %define		multilibssp		libssp%{ssp_major}
 
 #-----------------------------------------------------------------------
@@ -142,7 +142,7 @@
 #   If there is no usable gcc-java neither libgcj for the arch,
 # on an arch that has it, run:
 #	rpmbuild -bc --define "_topdir `pwd`" --with java_build_tar SPECS/gcc.spec
-# which creates libjava-classes-%{version}-%{release}.tar.bz2
+# which creates libjava-classes-@{version}-@{release}.tar.bz2
 #   With the tarball on the new arch, run:
 #	rpmbuild -ba --define "_topdir `pwd`" -v --with java_bootstrap SPECS/gcc.spec
 %bcond_with	java_build_tar
@@ -162,7 +162,7 @@ Source0:	gcc-%{version}.tar.bz2
 Source1:	gcc-%{version}.tar.bz2.sig
 %else
   # http://gcc.gnu.org/mirrors.html
-  # <<mirror>>/snapshots/%{branch}%{snapshot}/
+  # <<mirror>>/snapshots/@{branch}@{snapshot}/
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
 %endif
@@ -176,14 +176,14 @@ Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 Requires:	gcc-cpp >= %{version}-%{release}
 Requires:	libgcc >= %{version}-%{release}
 Requires:	libgomp >= %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc
-Obsoletes:	manbo-mandriva-files-gcc4.4
+Obsoletes:	manbo-mandriva-files-gcc < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc4.4 < %{version}-%{release}
 # versioned and non versioned files
-Conflicts:	manbo-mandriva-files-gcc4.2
+Conflicts:	manbo-mandriva-files-gcc4.2 < %{version}-%{release}
 %endif
 %ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
-Provides:	devel(libgcc_s)
+Provides:	devel(libgcc_s) = %{version}-%{release}
 %endif
 BuildRequires:	binutils >= 2.20.51.0.2
 Requires:	binutils >= 2.20.51.0.2
@@ -217,7 +217,7 @@ BuildRequires:	cloog-ppl-devel >= 0.16.1
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
-Obsoletes:	gcc-doc
+Obsoletes:	gcc-doc < %{version}-%{release}
 
 Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
@@ -443,10 +443,10 @@ Group:		Development/C++
 Requires:	%{name} = %{version}-%{release}
 %if %{system_compiler}
 Requires:	%{libstdcxx_devel} = %{version}
-Obsoletes:	manbo-mandriva-files-g++
-Obsoletes:	manbo-mandriva-files-g++4.4
-Obsoletes:	manbo-mandriva-files-gcc-c++
-Obsoletes:	manbo-mandriva-files-gcc-c++4.2
+Obsoletes:	manbo-mandriva-files-g++ < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-g++4.4 < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-c++ < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-c++4.2 < %{version}-%{release}
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
@@ -523,8 +523,8 @@ Requires:	%{multilibstdcxx} = %{version}-%{release}
 Provides:	libstdc++-devel = %{version}-%{release}
 Provides:	stdc++-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-devel
-Obsoletes:	libstdc++6-devel
+Obsoletes:	libstdc++4.5-devel < %{version}-%{release}
+Obsoletes:	libstdc++6-devel < %{version}-%{release}
 %endif
 
 %description	-n %{libstdcxx_devel}
@@ -553,8 +553,8 @@ Requires:	%{libstdcxx_devel} = %{version}-%{release}
 Provides:	libstdc++-static-devel = %{version}-%{release}
 Provides:	stdc++-static-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-static-devel
-Obsoletes:	libstdc++%{stdcxx_major}-static-devel
+Obsoletes:	libstdc++4.5-static-devel < %{version}-%{release}
+Obsoletes:	libstdc++%{stdcxx_major}-static-devel < %{version}-%{release}
 %endif
 
 %description	-n %{libstdcxx_static_devel}
@@ -616,7 +616,7 @@ done
 Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
 Provides:	libgnat = %{version}-%{release}
-Obsoletes:	gnat-runtime
+Obsoletes:	gnat-runtime < %{version}-%{release}
 
 %description	-n %{libgnat}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -701,10 +701,10 @@ Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgfortran_devel} = %{version}-%{release}
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
-Obsoletes:	manbo-mandriva-files-gfortran
-Obsoletes:	manbo-mandriva-files-gfortran4.4
-Obsoletes:	manbo-mandriva-files-gcc-gfortran
-Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2
+Obsoletes:	manbo-mandriva-files-gfortran < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gfortran4.4 < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-gfortran < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2 < %{version}-%{release}
 
 %description	gfortran
 The gcc-gfortran package provides support for compiling Fortran
@@ -870,7 +870,7 @@ with the GNU Compiler Collection.
 %package	-n %{libgo}
 Summary:	Go runtime libraries
 Group:		System/Libraries
-Provides:       libgo = %{version}-%{release}
+Provides:	libgo = %{version}-%{release}
 
 %description	-n %{libgo}
 This package contains Go shared library which is needed to run
@@ -953,10 +953,10 @@ BuildRequires:	eclipse-ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
 BuildRequires:	zip
-Obsoletes:	manbo-mandriva-files-java
-Obsoletes:	manbo-mandriva-files-java4.4
-Obsoletes:	manbo-mandriva-files-gcc-java
-Obsoletes:	manbo-mandriva-files-gcc-java4.2
+Obsoletes:	manbo-mandriva-files-java < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-java4.4 < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-java < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-gcc-java4.2 < %{version}-%{release}
 
 %description	java
 This package adds support for compiling Java(tm) programs and
@@ -1004,12 +1004,13 @@ Provides:	libgcj_bc%{gcj_bc_major} = %{version}-%{release}
 %if %mdkversion <= 201200
 Provides:	libgcj%{gcj_major}-base = %{version}-%{release}
 Provides:	%{libgcj}-base = %{version}-%{release}
-Obsoletes:	gcc-libgcj
+Obsoletes:	gcc-libgcj < %{version}-%{release}
 Obsoletes:	libgcj4.5 < %{version}-%{release}
-Obsoletes:	gcj4.5-tools
+Obsoletes:	gcj4.5-tools < %{version}-%{release}
 Obsoletes:	gcj-tools <= 4.5.2
-Obsoletes:	%{mklibname gcj 11}
-Obsoletes:	%{mklibname gcj 11}-base
+%define		libgcj11 %{mklibname gcj 11}
+Obsoletes:	%{libgcj11} < %{version}-%{release}
+Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 %endif
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
