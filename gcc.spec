@@ -151,7 +151,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.3
-Release:	3
+Release:	4
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -1021,7 +1021,7 @@ BuildRequires:	antlr
 BuildRequires:	gtk2-devel >= 2.4.0
 BuildRequires:	glib2-devel >= 2.4.0
 BuildRequires:	libart_lgpl-devel >= 2.1.0
-BuildRequires:	alsa-lib-devel
+BuildRequires:	pkgconfig(alsa)
 BuildRequires:	libxtst-devel
 BuildRequires:	libxt-devel
 BuildRequires:	spec-helper >= 0.31.10
