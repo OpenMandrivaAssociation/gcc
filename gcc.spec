@@ -389,8 +389,6 @@ Requires:	%{name} = %{version}-%{release}
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 
 %description	cpp
 Cpp is the GNU C-Compatible Compiler Preprocessor.
@@ -701,8 +699,6 @@ Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgfortran_devel} = %{version}-%{release}
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 Obsoletes:	manbo-mandriva-files-gfortran < %{version}-%{release}
 Obsoletes:	manbo-mandriva-files-gfortran4.4 < %{version}-%{release}
 Obsoletes:	manbo-mandriva-files-gcc-gfortran < %{version}-%{release}
@@ -832,8 +828,6 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgo_devel} = %{version}-%{release}
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 
 %description	go
 The gcc-go package provides support for compiling Go programs
@@ -947,8 +941,6 @@ Group:		Development/Java
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgcj_devel} = %{version}-%{release}
 Requires:	eclipse-ecj
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 BuildRequires:	eclipse-ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
@@ -1012,8 +1004,6 @@ Obsoletes:	gcj-tools <= 4.5.2
 Obsoletes:	%{libgcj11} < %{version}-%{release}
 Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 %endif
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 Requires:	zip >= 2.1
 %if %{without java_bootstrap}
 BuildRequires:	antlr
@@ -1313,8 +1303,6 @@ Provides:	ffi-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
 Obsoletes:	libffi4-devel < %{version}-%{release}
 %endif
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 
 %description	-n %{libffi_devel}
 This package contains GCC development which is needed
@@ -1397,8 +1385,6 @@ Requires:	%{multilibquadmath} = %{version}-%{release}
 %endif
 Provides:	libquadmath-devel = %{version}-%{release}
 Provides:	quadmath-devel = %{version}-%{release}
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 
 %description	-n %{libquadmath_devel}
 This package contains support for building Fortran programs using
@@ -1486,8 +1472,6 @@ Requires:	%{multilibgomp} = %{version}-%{release}
 %endif
 Provides:	libgomp-devel = %{version}-%{release}
 Provides:	gomp-devel = %{version}-%{release}
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
 
 %description	-n %{libgomp_devel}
 This package contains GCC development which is needed
