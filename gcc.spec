@@ -151,7 +151,7 @@
 #-----------------------------------------------------------------------
 Name:		%{name}
 Version:	4.6.3
-Release:	7
+Release:	8
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -239,18 +239,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{remove_alternatives}
 %pre
 if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
-%endif
-
-%if %{system_compiler}
-%post
-  %_install_info gcc.info
-  %_install_info gccint.info
-  %_install_info gccinstall.info
-
-%preun
-  %_remove_install_info gcc.info
-  %_remove_install_info gccint.info
-  %_remove_install_info gccinstall.info
 %endif
 
 %files
@@ -416,12 +404,6 @@ The C preprocessor provides four separate functionalities:
 %pre		cpp
 if [ -f %{_bindir}/cpp ]; then %{alternatives} --remove-all cpp; fi
 %endif
-
-%post		cpp
-  %_install_info cpp.info
-
-%preun		cpp
-  %_remove_install_info cpp.info
 
 %files		cpp
 /lib/cpp
@@ -589,16 +571,6 @@ BuildRequires:	gcc-gnat >= 3.1, libgnat >= 3.1
 GNAT is a GNU Ada 95 front-end to GCC. This package includes development
 tools, the documents and Ada 95 compiler.
 
-%post		gnat
-for info in _rm ugn -stype; do
-    %_install_info gnat${info}.info
-done
-
-%preun		gnat
-for info in _rm ugn -stype; do
-    %_remove_install_info gnat${info}.info
-done
-
 %files		gnat
 %{_bindir}/gnat*
 %if %{build_java}
@@ -707,12 +679,6 @@ Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2 < %{version}-%{release}
 %description	gfortran
 The gcc-gfortran package provides support for compiling Fortran
 programs with the GNU Compiler Collection.
-
-%post		gfortran
-  %_install_info gfortran.info
-
-%preun		gfortran
-  %_remove_install_info gfortran.info
 
 %files		gfortran
 %{_bindir}/gfortran
@@ -833,12 +799,6 @@ Requires:	%{libgo_devel} = %{version}-%{release}
 The gcc-go package provides support for compiling Go programs
 with the GNU Compiler Collection.
 
-%post		go
-  %_install_info gccgo.info
-
-%preun	go
-  %_remove_install_info gccgo.info
-
 %files		go
 %{_bindir}/gccgo
 %{_bindir}/%{_target_platform}-gccgo
@@ -954,12 +914,6 @@ Obsoletes:	manbo-mandriva-files-gcc-java4.2 < %{version}-%{release}
 This package adds support for compiling Java(tm) programs and
 bytecode into native code.
 
-%post		java
-  %_install_info gcj.info
-
-%preun		java
-  %_remove_install_info gcj.info
-
 %files		java
 %{_bindir}/gcj
 %{_bindir}/gjavah
@@ -1019,12 +973,6 @@ BuildRequires:	spec-helper >= 0.31.10
 %description	-n %{libgcj}
 The Java(tm) runtime library. You will need this package to run your Java
 programs compiled using the Java compiler from GNU Compiler Collection (gcj).
-
-%post		-n %{libgcj}
-  %_install_info cp-tools.info
-
-%preun		-n %{libgcj}
-  %_remove_install_info cp-tools.info
 
 %files		-n %{libgcj}
 %{_bindir}/aot-compile
@@ -1308,12 +1256,6 @@ Obsoletes:	libffi4-devel < %{version}-%{release}
 This package contains GCC development which is needed
 to compile FFI support.
 
-%post		-n %{libffi_devel}
-  %_install_info libffi.info
-
-%preun		-n %{libffi_devel}
-  %_remove_install_info libffi.info
-
 %files		-n %{libffi_devel}
 %{_libdir}/libffi.so
 %if %{build_multilib}
@@ -1389,12 +1331,6 @@ Provides:	quadmath-devel = %{version}-%{release}
 %description	-n %{libquadmath_devel}
 This package contains support for building Fortran programs using
 REAL*16 and programs using __float128 math.
-
-%post		-n %{libquadmath_devel}
-  %_install_info libquadmath.info
-
-%preun		-n %{libquadmath_devel}
-  %_remove_install_info libquadmath.info
 
 %files		-n %{libquadmath_devel}
 %{_libdir}/libquadmath.so
@@ -1476,12 +1412,6 @@ Provides:	gomp-devel = %{version}-%{release}
 %description	-n %{libgomp_devel}
 This package contains GCC development which is needed
 to compile OpenMP v3.0 support.
-
-%post		-n %{libgomp_devel}
-  %_install_info libgomp.info
-
-%preun		-n %{libgomp_devel}
-  %_remove_install_info libgomp.info
 
 %files		-n %{libgomp_devel}
 %{_libdir}/libgomp.so
