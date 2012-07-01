@@ -10,14 +10,16 @@
 %define		_disable_libtoolize		1
 
 #-----------------------------------------------------------------------
-%define		official		0
+%define		official		1
 %if %{official}
   %define	snapshot		%{nil}
 %else
   %define	snapshot		-20120413
 %endif
 %define		system_compiler		1
-%define		branch			4.6
+%define		branch			4.7
+%define		ver			%branch.1
+%define		linaro			2012.06
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -27,14 +29,9 @@
     %define	obsolete_devmajor	1
   %endif
 %endif
-%define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{version}
-%define		multigccdir		%{_libdir}/gcc/%{_target_platform}/%{version}/32
+%define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{ver}
+%define		multigccdir		%{_libdir}/gcc/%{_target_platform}/%{ver}/32
 %define		multilibdir		%{_prefix}/lib
-%if %{system_compiler}
-  %define	name			gcc
-%else
-  %define	name			gcc%{branch}
-%endif
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -45,7 +42,7 @@
 %define		libstdcxx_devel		%mklibname -d stdc++
 %define		libstdcxx_static_devel	%mklibname -d -s stdc++
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		12
+%define		gcj_major		13
 %define		libgcj			%mklibname gcj %{gcj_major}
 %define		libgcj_devel		%mklibname -d gcj
 %define		libgcj_static_devel	%mklibname -d -s gcj
@@ -82,7 +79,7 @@
 %define		libmudflap_devel	%mklibname -d mudflap
 %define		libmudflap_static_devel %mklibname -d -s mudflap
 %define		multilibmudflap		libmudflap%{mudflap_major}
-%define		objc_major		3
+%define		objc_major		4
 %define		libobjc			%mklibname objc %{objc_major}
 %define		libobjc_devel		%mklibname -d objc
 %define		libobjc_static_devel	%mklibname -d -s objc
@@ -97,6 +94,11 @@
 %define		libssp_devel		%mklibname -d ssp
 %define		libssp_static_devel	%mklibname -d -s ssp
 %define		multilibssp		libssp%{ssp_major}
+%define		itm_major		1
+%define		libitm			%mklibname itm %{itm_major}
+%define		libitm_devel		%mklibname -d itm
+%define		libitm_static_devel	%mklibname -d -s itm
+%define		multilibitm		libitm%{itm_major}
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
@@ -108,6 +110,7 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
+%define		build_itm		1
 %define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
 %define		build_doc		0
@@ -149,13 +152,21 @@
 %bcond_with	java_bootstrap
 
 #-----------------------------------------------------------------------
-Name:		%{name}
-Version:	4.6.3
-Release:	8
+%if %{system_compiler}
+Name:		gcc
+%else
+Name:		gcc%branch
+%endif
+Release:	1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
+%if "%linaro" != ""
+Version:	%{ver}_%linaro
+Source0:	https://launchpad.net/gcc-linaro/%branch/%branch-%linaro/+download/gcc-linaro-%branch-%linaro.tar.bz2
+%else
+Version:	%ver
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
 Source0:	gcc-%{version}.tar.bz2
@@ -166,11 +177,14 @@ Source1:	gcc-%{version}.tar.bz2.sig
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
 %endif
+%endif
 Source4:	c89
 Source5:	c99
 %if %{with java_bootstrap}
 Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 %endif
+
+Source100:	%name.rpmlintrc
 
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
@@ -219,19 +233,14 @@ Requires(pre):	update-alternatives
 %endif
 Obsoletes:	gcc-doc < %{version}-%{release}
 
-Patch0:		gcc-4.6.0-uclibc-ldso-path.patch
+Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
 Patch2:		gcc-4.6.0-make-pdf.patch
-Patch3:		gcc-4.6.0-linux32.patch
-# http://gcc.gnu.org/viewcvs?view=revision&revision=176741
-Patch4:		gcc-4.6-plugin-installation.patch
-
-# https://qa.mandriva.com/show_bug.cgi?id=64082
-# https://bugzilla.redhat.com/show_bug.cgi?id=713800
-Patch5:		gcc-4.6.1-C-comment.patch
-
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53174
-Patch6:		gcc48-pr53174.patch
+Patch3:		gcc-4.7.1-linux32.patch
+Patch4:		gnatmake-execstack.patch
+Patch5:		gcc-4.7.1-linker-selection.patch
+Patch6:		gcc-4.7.1-autoconf-2.69.patch
+Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -247,8 +256,14 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %{_bindir}/c89
 %{_bindir}/c99
 %{_bindir}/gcc
+%{_bindir}/gcc-ar
+%{_bindir}/gcc-nm
+%{_bindir}/gcc-ranlib
 %{_bindir}/gcov
 %{_bindir}/%{_target_platform}-gcc
+%{_bindir}/%{_target_platform}-gcc-ar
+%{_bindir}/%{_target_platform}-gcc-nm
+%{_bindir}/%{_target_platform}-gcc-ranlib
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
 %{_mandir}/man7/*
@@ -261,8 +276,8 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %{multilibdir}/libgcc_s.so
   %endif
 %endif
-%{_bindir}/gcc-%{version}
-%{_bindir}/%{_target_platform}-gcc-%{version}
+%{_bindir}/gcc-%{ver}
+%{_bindir}/%{_target_platform}-gcc-%{ver}
 %dir %{gccdir}
 %{gccdir}/cc1
 %{gccdir}/collect2
@@ -455,9 +470,9 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %{_bindir}/%{_target_platform}-g++
 %{_mandir}/man1/g++.1*
 %endif
-%{_bindir}/c++-%{version}
-%{_bindir}/g++-%{version}
-%{_bindir}/%{_target_platform}-g++-%{version}
+%{_bindir}/c++-%{ver}
+%{_bindir}/g++-%{ver}
+%{_bindir}/%{_target_platform}-g++-%{ver}
 %{gccdir}/cc1plus
 
 #-----------------------------------------------------------------------
@@ -518,7 +533,7 @@ package includes the header files and libraries needed for C++
 development. This includes rewritten implementation of STL.
 
 %files		-n %{libstdcxx_devel}
-%{_includedir}/c++/%{version}
+%{_includedir}/c++/%{ver}
 %{_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 %if %{build_multilib}
@@ -682,16 +697,18 @@ programs with the GNU Compiler Collection.
 
 %files		gfortran
 %{_bindir}/gfortran
-%{_bindir}/gfortran-%{version}
+%{_bindir}/gfortran-%{ver}
 %{_bindir}/%{_target_platform}-gfortran
-%{_bindir}/%{_target_platform}-gfortran-%{version}
+%{_bindir}/%{_target_platform}-gfortran-%{ver}
 %{_infodir}/gfortran.info*
 %{_mandir}/man1/gfortran.1*
 %{gccdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libgfortranbegin.*a
+%{gccdir}/libcaf_single.a
 %if %{build_multilib}
 %{multigccdir}/libgfortranbegin.a
+%{multigccdir}/libcaf_single.a
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
@@ -808,13 +825,13 @@ with the GNU Compiler Collection.
 %endif
 %{_infodir}/gccgo.info*
 %{_mandir}/man1/gccgo.1*
-%{_bindir}/gccgo-%{version}
-%{_bindir}/%{_target_platform}-gccgo-%{version}
+%{_bindir}/gccgo-%{ver}
+%{_bindir}/%{_target_platform}-gccgo-%{ver}
 %{gccdir}/go1
-%{_libdir}/go/%{version}
+%{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
 %if %{build_multilib}
-%{multilibdir}/go/%{version}
+%{multilibdir}/go/%{ver}
 %{multilibdir}/libgobegin.a
 %endif
 %if %{build_doc}
@@ -924,9 +941,9 @@ bytecode into native code.
 %{_mandir}/man1/gjavah.1*
 %{_mandir}/man1/gcjh.1*
 %{_infodir}/gcj.info*
-%{_bindir}/gcj-%{version}
+%{_bindir}/gcj-%{ver}
 %{_bindir}/%{_target_platform}-gcj
-%{_bindir}/%{_target_platform}-gcj-%{version}
+%{_bindir}/%{_target_platform}-gcj-%{ver}
 %{_bindir}/%{_target_platform}-gcjh
 %{gccdir}/jc1
 %{gccdir}/ecj1
@@ -1015,9 +1032,9 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %{_mandir}/man1/rebuild-gcj-db.1*
 %{_infodir}/cp-tools.info*
 %{_javadir}/libgcj*.jar
-%dir %{_libdir}/gcj-%{version}-12
-%{_libdir}/gcj-%{version}-12/*.so
-%attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{version}-12/classmap.db
+%dir %{_libdir}/gcj-%{ver}-%{gcj_major}
+%{_libdir}/gcj-%{ver}-%{gcj_major}/*.so
+%attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
 %{_libdir}/libgcj.so.%{gcj_major}
 %{_libdir}/libgcj.so.%{gcj_major}.*
 %{_libdir}/libgcj-tools.so.%{gcj_major}
@@ -1041,6 +1058,8 @@ Requires:	zlib-devel
 Requires:	awk
 Provides:	libgcj-devel = %{version}-%{release}
 Provides:	gcj-devel = %{version}-%{release}
+# libgcj and friends are no longer built statically for 4.7.x
+Obsoletes:	%{libgcj_static_devel}
 
 %description	-n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
@@ -1058,23 +1077,6 @@ package to compile your Java programs using the GCC Java compiler (gcj).
 %{_libdir}/libgij.so
 
 #-----------------------------------------------------------------------
-%package	-n %{libgcj_static_devel}
-Summary:	Static Libraries for Java development using GCC
-Group:		Development/Other
-Requires:	%{libgcj_devel} = %{version}-%{release}
-Provides:	libgcj-static-devel = %{version}-%{release}
-Provides:	gcj-static-devel = %{version}-%{release}
-
-%description	-n %{libgcj_static_devel}
-Static Libraries for Java development using GCC.
-
-%files		-n %{libgcj_static_devel}
-%defattr(-,root,root)
-%{_libdir}/libgcj*.*a
-%{_libdir}/libgij.*a
-%{_libdir}/gcj-%{version}-12/*.*a
-
-#-----------------------------------------------------------------------
 %package	-n libgcj%{gcj_major}-src
 Summary:	Java library sources
 Group:		Development/Java
@@ -1085,7 +1087,7 @@ Provides:	libgcj-src = %{version}-%{release}
 The Java(tm) runtime library sources.
 
 %files	-n libgcj%{gcj_major}-src
-%{_javadir}/src-%{version}.zip
+%{_javadir}/src-%{ver}.zip
 #-----------------------------------------------------------------------
 # build java
 %endif
@@ -1623,24 +1625,108 @@ to compile SSP support.
 %endif
 
 ########################################################################
+%if %{build_itm}
+#-----------------------------------------------------------------------
+%package	-n %{libitm}
+Summary:	GCC Transactional Memory support library
+Group:		System/Libraries
+Provides:	libitm = %{version}-%{release}
+
+%description	-n %{libitm}
+This package contains GCC's Transactional Memory support library.
+
+%files		-n %{libitm}
+%{_libdir}/libitm.so.%{itm_major}
+%{_libdir}/libitm.so.%{itm_major}.*
+
+#-----------------------------------------------------------------------
+%if %{build_multilib}
+%package	-n %{multilibitm}
+Summary:	GCC Transactional Memory support library
+Group:		System/Libraries
+Provides:	libitm = %{version}-%{release}
+
+%description	-n %{multilibitm}
+This package contains GCC's Transactional Memory support library.
+
+%files		-n %{multilibitm}
+%{multilibdir}/libitm.so.%{itm_major}
+%{multilibdir}/libitm.so.%{itm_major}.*
+%endif
+
+#-----------------------------------------------------------------------
+%package	-n %{libitm_devel}
+Summary:	GCC Transactional Memory development support
+Group:		Development/C
+Requires:	%{name} = %{version}-%{release}
+Requires:	%{libitm} = %{version}-%{release}
+%if %{build_multilib}
+Requires:	%{multilibitm} = %{version}-%{release}
+%endif
+Provides:	libitm-devel = %{version}-%{release}
+Provides:	itm-devel = %{version}-%{release}
+
+%description	-n %{libitm_devel}
+This package contains GCC libraries which are needed
+to use Transactional Memory features.
+
+%files		-n %{libitm_devel}
+%{_libdir}/libitm.so
+%{_libdir}/libitm.spec
+%if %{build_multilib}
+%{multilibdir}/libitm.so
+%{multilibdir}/libitm.spec
+%endif
+%_infodir/libitm.info*
+
+#-----------------------------------------------------------------------
+%package	-n %{libitm_static_devel}
+Summary:	GCC Transactional Memory static libraries
+Group:		Development/C
+Requires:	%{libitm_devel} = %{version}-%{release}
+Provides:	libitm-static-devel = %{version}-%{release}
+Provides:	itm-static-devel = %{version}-%{release}
+
+%description	-n %{libitm_static_devel}
+This package contains GCC static libraries which are needed
+to compile Transactional Memory support.
+
+%files		-n %{libitm_static_devel}
+%{_libdir}/libitm.a
+%if %{build_multilib}
+%{multilibdir}/libitm.a
+%endif
+#-----------------------------------------------------------------------
+# build itm
+%endif
+
+########################################################################
 %prep
+%if "%linaro" != ""
+  %setup -q -n gcc-linaro-%branch-%linaro
+%else
 %if %{official}
   %setup -q -n gcc-%{version}%{snapshot}
 %else
   %setup -q -n gcc-%{branch}%{snapshot}
 %endif
+%endif
 
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p0
+%patch0 -p1 -b .uclibc~
+%patch1 -p1 -b .java~
+%patch2 -p1 -b .pdf~
+%patch3 -p1 -b .linux32~
+%patch4 -p1 -b .execstack~
+%patch5 -p1 -b .linker-selection~
+%patch6 -p1 -b .ac269~
+%patch7 -p1 -b .plugindet~
+
+aclocal -I config
+autoconf
 
 echo %{vendor} > gcc/DEV-PHASE
 %if !%{official}
-    sed -i -e 's/4\.6\..*/%{version}/' gcc/BASE-VER
+    sed -i -e 's/4\.7\..*/%{version}/' gcc/BASE-VER
 %endif
 
 %if %{with java_bootstrap}
@@ -1649,11 +1735,13 @@ echo %{vendor} > gcc/DEV-PHASE
 
 #-----------------------------------------------------------------------
 %build
+# The -gdwarf-4 removal is a workaround for gcc bug #52420
 OPT_FLAGS=`echo %{optflags} |					\
 	sed	-e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g'	\
 		-e 's/-m\(31\|32\|64\)//g'			\
 		-e 's/-fstack-protector//g'			\
 		-e 's/--param=ssp-buffer-size=4//'		\
+		-e 's/-gdwarf-4/-g/'				\
 		-e 's/-pipe//g'`
 OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
 
@@ -1693,6 +1781,12 @@ BOOTSTRAP=bootstrap
 BOOSTRAP=profiledbootstrap
   %endif
 %endif
+
+# FIXME: Replace
+#	--with-multilib-list=m32,m64
+# with	--with-multilib-list=m32,m64,mx32
+# once the build process is fixed.
+# Currently, it barfs while linking x32/libgcc_s.so.1 (incompatible target)
 
 CC=%{__cc}							\
 CFLAGS="$OPT_FLAGS"						\
@@ -1739,6 +1833,8 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-libunwind-exceptions				\
 	--disable-werror					\
 	--enable-__cxa_atexit					\
+	--enable-gold=default					\
+	--with-plugin-ld=%_bindir/ld				\
 %if %{system_compiler}
 	--enable-bootstrap					\
 %endif
@@ -1750,6 +1846,7 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-plugin					\
 %else
 	--enable-plugin						\
+	--enable-lto						\
 %endif
 	--enable-shared						\
 %if !%{system_compiler}
@@ -1767,6 +1864,7 @@ XCFLAGS="$OPT_FLAGS"						\
 %ifarch x86_64
   %if %{build_multilib}
 	--with-arch_32=i586					\
+	--with-multilib-list=m32,m64				\
   %else
 	--disable-multilib					\
   %endif
@@ -1842,12 +1940,12 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 # configure python dir option does not cover libstdc++ and needs to remove
 # /usr prefix for libjava
 mkdir -p %{buildroot}%{py_puresitedir}
-if [ -d %{buildroot}%{_datadir}/gcc-%{version}/python ]; then
-    mv -f %{buildroot}%{_datadir}/gcc-%{version}/python/*		\
+if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
+    mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/*		\
 	%{buildroot}%{py_puresitedir}
-    rm -fr %{buildroot}%{_datadir}/gcc-%{version}
+    rm -fr %{buildroot}%{_datadir}/gcc-%{ver}
     %if %{build_java}
-    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
+    perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_bindir}/aot-compile
     %endif
 fi
@@ -1857,39 +1955,39 @@ pushd %{buildroot}%{_bindir}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
-    ln -sf %{_target_platform}-gcc-%{version} cc
+    ln -sf %{_target_platform}-gcc-%{ver} cc
 %else
     rm -f %{buildroot}%{_bindir}/cpp
 %endif
     PROGRAMS="gcc g++ gccgo gcj gfortran"
     for prog in $PROGRAMS; do
 	if [ -f %{_target_platform}-$prog ]; then
-	    mv -f %{_target_platform}-$prog{,-%{version}}
+	    mv -f %{_target_platform}-$prog{,-%{ver}}
 	fi
 	rm -f $prog
-	ln -sf %{_target_platform}-$prog-%{version} $prog-%{version}
+	ln -sf %{_target_platform}-$prog-%{ver} $prog-%{ver}
 	%if %{system_compiler}
-	    ln -sf %{_target_platform}-$prog-%{version} $prog
-	    ln -sf %{_target_platform}-$prog-%{version} %{_target_platform}-$prog
+	    ln -sf %{_target_platform}-$prog-%{ver} $prog
+	    ln -sf %{_target_platform}-$prog-%{ver} %{_target_platform}-$prog
 	%endif
     done
 %if %{build_cxx}
-    rm -f c++ %{_target_platform}-c++{,-%{version}}
-    ln -sf %{_target_platform}-g++-%{version} c++-%{version}
+    rm -f c++ %{_target_platform}-c++{,-%{ver}}
+    ln -sf %{_target_platform}-g++-%{ver} c++-%{ver}
     %if %{system_compiler}
-	ln -sf %{_target_platform}-g++-%{version} c++
-	ln -sf %{_target_platform}-g++-%{version} %{_target_platform}-c++
+	ln -sf %{_target_platform}-g++-%{ver} c++
+	ln -sf %{_target_platform}-g++-%{ver} %{_target_platform}-c++
     %endif
     mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py		\
 	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
+    perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
     %if %{build_multilib}
 	mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
 	mv -f %{buildroot}%{multilibdir}/libstdc++.so.*.py		\
 	%{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
-	perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
+	perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
 	    %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
     %endif
 %endif
@@ -1952,7 +2050,7 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
     mkdir -p %{buildroot}%{_docdir}/libstdc++
     cp -far libstdc++-v3/doc/html %{buildroot}%{_docdir}/libstdc++
     %endif
-    pushd host-%{_target_platform}/gcc/HTML/gcc-%{version}
+    pushd host-%{_target_platform}/gcc/HTML/gcc-%{ver}
 	mkdir -p %{buildroot}%{_docdir}/gcc/html
 	for doc in gcc gccinstall gccint; do
 	    cp -far $doc %{buildroot}%{_docdir}/gcc/html
