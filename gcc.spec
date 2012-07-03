@@ -157,7 +157,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	1
+Release:	2
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -932,15 +932,40 @@ This package adds support for compiling Java(tm) programs and
 bytecode into native code.
 
 %files		java
+%{_bindir}/aot-compile
+%{_bindir}/gc-analyze
 %{_bindir}/gcj
-%{_bindir}/gjavah
+%{_bindir}/gcj-dbtool
 %{_bindir}/gcjh
+%{_bindir}/gjavah
+%{_bindir}/gjar
+%{_bindir}/gjarsigner
+%if %{without java_bootstrap}
+%{_bindir}/gjdoc
+%endif
+%{_bindir}/gnative2ascii
+%{_bindir}/grmic
+%{_bindir}/gserialver
 %{_bindir}/jcf-dump
+%{_bindir}/jv-convert
+%{_bindir}/rebuild-gcj-db
+%{_mandir}/man1/aot-compile.1*
+%{_mandir}/man1/gc-analyze.1*
 %{_mandir}/man1/gcj.1*
-%{_mandir}/man1/jcf-dump.1*
-%{_mandir}/man1/gjavah.1*
+%{_mandir}/man1/gcj-dbtool.1*
 %{_mandir}/man1/gcjh.1*
+%{_mandir}/man1/gjar.1*
+%{_mandir}/man1/gjarsigner.1*
+%{_mandir}/man1/gjavah.1*
+%{_mandir}/man1/gjdoc.1*
+%{_mandir}/man1/gnative2ascii.1*
+%{_mandir}/man1/grmic.1*
+%{_mandir}/man1/gserialver.1*
+%{_mandir}/man1/jcf-dump.1*
+%{_mandir}/man1/jv-convert.1*
+%{_mandir}/man1/rebuild-gcj-db.1*
 %{_infodir}/gcj.info*
+%{_infodir}/cp-tools.info*
 %{_bindir}/gcj-%{ver}
 %{_bindir}/%{_target_platform}-gcj
 %{_bindir}/%{_target_platform}-gcj-%{ver}
@@ -992,45 +1017,6 @@ The Java(tm) runtime library. You will need this package to run your Java
 programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 
 %files		-n %{libgcj}
-%{_bindir}/aot-compile
-%{_bindir}/jv-convert
-%{_bindir}/gappletviewer
-%{_bindir}/gc-analyze
-%{_bindir}/gij
-%{_bindir}/gjar
-%if %{without java_bootstrap}
-%{_bindir}/gjdoc
-%endif
-%{_bindir}/gnative2ascii
-%{_bindir}/grmic
-%{_bindir}/grmid
-%{_bindir}/grmiregistry
-%{_bindir}/gtnameserv
-%{_bindir}/gkeytool
-%{_bindir}/gorbd
-%{_bindir}/gserialver
-%{_bindir}/gcj-dbtool
-%{_bindir}/gjarsigner
-%{_bindir}/rebuild-gcj-db
-%{_mandir}/man1/aot-compile.1*
-%{_mandir}/man1/gappletviewer.1*
-%{_mandir}/man1/gc-analyze.1*
-%{_mandir}/man1/gjdoc.1*
-%{_mandir}/man1/gnative2ascii.1*
-%{_mandir}/man1/gjar.1*
-%{_mandir}/man1/gjarsigner.1*
-%{_mandir}/man1/jv-convert.1*
-%{_mandir}/man1/gij.1*
-%{_mandir}/man1/grmic.1*
-%{_mandir}/man1/grmiregistry.1*
-%{_mandir}/man1/gcj-dbtool.1*
-%{_mandir}/man1/gkeytool.1*
-%{_mandir}/man1/gorbd.1*
-%{_mandir}/man1/grmid.1*
-%{_mandir}/man1/gserialver.1*
-%{_mandir}/man1/gtnameserv.1*
-%{_mandir}/man1/rebuild-gcj-db.1*
-%{_infodir}/cp-tools.info*
 %{_javadir}/libgcj*.jar
 %dir %{_libdir}/gcj-%{ver}-%{gcj_major}
 %{_libdir}/gcj-%{ver}-%{gcj_major}/*.so
@@ -1043,6 +1029,34 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %{_libdir}/libgcj_bc.so.%{gcj_bc_major}.*
 %{_libdir}/libgij.so.%{gcj_major}
 %{_libdir}/libgij.so.%{gcj_major}.*
+
+#-----------------------------------------------------------------------
+%package	-n gcj-tools
+Summary:	Tools needed to use applications in the GCJ Java runtime
+Group:		System/Libraries
+Requires:	%{libgcj} = %{version}-%{release}
+Requires:	zip >= 2.1
+
+%description	-n gcj-tools
+Tools needed to run applications in the GCJ Java(tm) runtime. You will
+need this package to run your Java programs in the Java Virtual Machine
+(JVM) provided by the GNU Compiler Collection (gcj).
+
+%files		-n gcj-tools
+%{_bindir}/gappletviewer
+%{_bindir}/gij
+%{_bindir}/grmid
+%{_bindir}/grmiregistry
+%{_bindir}/gtnameserv
+%{_bindir}/gkeytool
+%{_bindir}/gorbd
+%{_mandir}/man1/gappletviewer.1*
+%{_mandir}/man1/gij.1*
+%{_mandir}/man1/grmiregistry.1*
+%{_mandir}/man1/gkeytool.1*
+%{_mandir}/man1/gorbd.1*
+%{_mandir}/man1/grmid.1*
+%{_mandir}/man1/gtnameserv.1*
 %{_libdir}/logging.properties
 %{_libdir}/security
 %if %{build_pdf}
