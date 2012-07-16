@@ -18,7 +18,7 @@
 %endif
 %define		system_compiler		1
 %define		branch			4.7
-%define		ver			%branch.1
+%define		ver			%branch.2
 %define		linaro			2012.07
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
@@ -2137,3 +2137,9 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 	cp -fpa gcc/gtype.state %{buildroot}%{gccdir}
     popd
 %endif
+
+# Not needed on cooker (but on ROSA 2012 and backports, and
+# can't hurt)
+rm -f %buildroot%_libdir/libitm.la \
+      %buildroot%_prefix/lib/libitm.la \
+      %buildroot%_libdir/gcj-*/*.la
