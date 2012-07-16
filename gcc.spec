@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.1
-%define		linaro			2012.06
+%define		linaro			2012.07
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -157,7 +157,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	2
+Release:	1
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
