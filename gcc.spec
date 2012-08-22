@@ -1986,7 +1986,6 @@ pushd %{buildroot}%{_bindir}
     %if %{build_fortran}
 	PROGRAMS="$PROGRAMS gfortran"
     %endif
-
     for prog in $PROGRAMS; do
 	if [ -f %{_target_platform}-$prog ]; then
 	    mv -f %{_target_platform}-$prog{,-%{ver}}
