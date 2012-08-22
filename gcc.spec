@@ -1973,7 +1973,20 @@ pushd %{buildroot}%{_bindir}
 %else
     rm -f %{buildroot}%{_bindir}/cpp
 %endif
-    PROGRAMS="gcc g++ gccgo gcj gfortran"
+    PROGRAMS="gcc"
+    %if %{build_cxx}
+	PROGRAMS="$PROGRAMS g++"
+    %endif
+    %if %{build_go}
+	PROGRAMS="$PROGRAMS gccgo"
+    %endif
+      %if %{build_java}
+	PROGRAMS="$PROGRAMS gcj"
+    %endif
+    %if %{build_fortran}
+	PROGRAMS="$PROGRAMS gfortran"
+    %endif
+
     for prog in $PROGRAMS; do
 	if [ -f %{_target_platform}-$prog ]; then
 	    mv -f %{_target_platform}-$prog{,-%{ver}}
