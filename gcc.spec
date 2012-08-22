@@ -241,6 +241,7 @@ Patch4:		gnatmake-execstack.patch
 Patch5:		gcc-4.7.1-linker-selection.patch
 Patch6:		gcc-4.7.1-autoconf-2.69.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
+Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1734,6 +1735,7 @@ to compile Transactional Memory support.
 %patch5 -p1 -b .linker-selection~
 %patch6 -p1 -b .ac269~
 %patch7 -p1 -b .plugindet~
+%patch8 -p1 -b .ext_inline~
 
 aclocal -I config
 autoconf
