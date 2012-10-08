@@ -242,6 +242,7 @@ Patch5:		gcc-4.7.1-linker-selection.patch
 Patch6:		gcc-4.7.1-autoconf-2.69.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
+Patch9:		gcc-4.7-bug33763.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1735,7 +1736,9 @@ to compile Transactional Memory support.
 %patch5 -p1 -b .linker-selection~
 %patch6 -p1 -b .ac269~
 %patch7 -p1 -b .plugindet~
-%patch8 -p1 -b .ext_inline~
+# Breaks the build, see comment on bug 33763
+#patch8 -p1 -b .ext_inline~
+%patch9 -p0 -b .33763~
 
 aclocal -I config
 autoconf
@@ -2157,3 +2160,25 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
+
+# Workaround for all gcj related tools
+# somehow getting the same build ID
+strip --strip-unneeded \
+	%buildroot%_bindir/gc-analyze \
+	%buildroot%_bindir/gappletviewer \
+	%buildroot%_bindir/gjar \
+	%buildroot%_bindir/gij \
+	%buildroot%_bindir/gjavah \
+	%buildroot%_bindir/gjarsigner \
+	%buildroot%_bindir/gkeytool \
+	%buildroot%_bindir/gjdoc \
+	%buildroot%_bindir/gorbd \
+	%buildroot%_bindir/grmic \
+	%buildroot%_bindir/grmid \
+	%buildroot%_bindir/gnative2ascii \
+	%buildroot%_bindir/gserialver \
+	%buildroot%_bindir/grmiregistry \
+	%buildroot%_bindir/jv-convert \
+	%buildroot%_bindir/gtnameserv \
+	%buildroot%_bindir/gcjh
+
