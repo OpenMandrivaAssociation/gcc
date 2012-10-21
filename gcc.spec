@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.2
-%define		linaro			2012.09
+%define		linaro			2012.10
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -524,6 +524,11 @@ Requires:	%{multilibstdcxx} = %{version}-%{release}
 %endif
 Provides:	libstdc++-devel = %{version}-%{release}
 Provides:	stdc++-devel = %{version}-%{release}
+%if "%ver" != "%version"
+# 4.7.2_2010.10 should provide 4.7.2 so clang can pick up the dep
+Provides:	libstdc++-devel = %ver-%release
+Provides:	stdc++-devel = %ver-%release
+%endif
 %if %{obsolete_devmajor}
 Obsoletes:	libstdc++4.5-devel < %{version}-%{release}
 Obsoletes:	libstdc++6-devel < %{version}-%{release}
