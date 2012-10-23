@@ -18,7 +18,7 @@
 %endif
 %define		system_compiler		1
 %define		branch			4.7
-%define		ver			%branch.2
+%define		ver			%branch.3
 %define		linaro			2012.10
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
