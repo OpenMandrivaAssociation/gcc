@@ -157,7 +157,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	1
+Release:	2
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -2166,6 +2166,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
+%if 0
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
@@ -2186,4 +2187,4 @@ strip --strip-unneeded \
 	%buildroot%_bindir/jv-convert \
 	%buildroot%_bindir/gtnameserv \
 	%buildroot%_bindir/gcjh
-
+%endif
