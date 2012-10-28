@@ -32,6 +32,7 @@
 %define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{ver}
 %define		multigccdir		%{_libdir}/gcc/%{_target_platform}/%{ver}/32
 %define		multilibdir		%{_prefix}/lib
+%define		multirootlibdir		/lib
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -157,7 +158,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	2
+Release:	3
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -337,7 +338,7 @@ Obsoletes:	libgcc4.5 < %{version}-%{release}
 The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files		-n %{libgcc}
-%{_libdir}/libgcc_s.so.%{gcc_major}
+/%{_lib}/libgcc_s.so.%{gcc_major}
 
 #-----------------------------------------------------------------------
 %if %{build_multilib}
@@ -350,7 +351,7 @@ Conflicts:	%{libgcc} < 4.6.2-11
 The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files		-n %{multilibgcc}
-%{multilibdir}/libgcc_s.so.%{gcc_major}
+%{multirootlibdir}/libgcc_s.so.%{gcc_major}
 %endif
 #-----------------------------------------------------------------------
 # build libgcc
@@ -492,8 +493,8 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files		-n %{libstdcxx}
-%{_libdir}/libstdc++.so.%{stdcxx_major}
-%{_libdir}/libstdc++.so.%{stdcxx_major}.*
+/%{_lib}/libstdc++.so.%{stdcxx_major}
+/%{_lib}/libstdc++.so.%{stdcxx_major}.*
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
 %endif
@@ -510,8 +511,8 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files		-n %{multilibstdcxx}
-%{multilibdir}/libstdc++.so.%{stdcxx_major}
-%{multilibdir}/libstdc++.so.%{stdcxx_major}.*
+%{multirootlibdir}/libstdc++.so.%{stdcxx_major}
+%{multirootlibdir}/libstdc++.so.%{stdcxx_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1400,8 +1401,8 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files		-n %{libgomp}
-%{_libdir}/libgomp.so.%{gomp_major}
-%{_libdir}/libgomp.so.%{gomp_major}.*
+/%{_lib}/libgomp.so.%{gomp_major}
+/%{_lib}/libgomp.so.%{gomp_major}.*
 
 #-----------------------------------------------------------------------
 %if %{build_multilib}
@@ -1416,8 +1417,8 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files		-n %{multilibgomp}
-%{multilibdir}/libgomp.so.%{gomp_major}
-%{multilibdir}/libgomp.so.%{gomp_major}.*
+%{multirootlibdir}/libgomp.so.%{gomp_major}
+%{multirootlibdir}/libgomp.so.%{gomp_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2019,18 +2020,63 @@ pushd %{buildroot}%{_bindir}
 	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
 	%{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
+
+    mkdir -p %{buildroot}/%{_lib}
+    mv %{buildroot}%{_libdir}/libstdc++.so.%{stdcxx_major}* \
+        %{buildroot}/%{_lib}
+    ln -srf %{buildroot}/%{_lib}/libstdc++.so.%{stdcxx_major}.*.* \
+	%{buildroot}%{_libdir}/libstdc++.so
+
     %if %{build_multilib}
 	mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
 	mv -f %{buildroot}%{multilibdir}/libstdc++.so.*.py		\
 	%{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
 	perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
 	    %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
+
+	mkdir -p %{buildroot}%{multirootlibdir}
+	mv %{buildroot}%{multilibdir}/libstdc++.so.%{stdcxx_major}* \
+	    %{buildroot}%{multirootlibdir}
+	ln -srf %{buildroot}%{multirootlibdir}/libstdc++.so.%{stdcxx_major}.*.* \
+	    %{buildroot}%{multilibdir}/libstdc++.so
     %endif
 %endif
 %if %{build_java}
     ln -sf gcjh %{_target_platform}-gcjh
 %endif
 popd
+
+%if %{build_gomp}
+    mkdir -p %{buildroot}/%{_lib}
+    mv %{buildroot}%{_libdir}/libgomp.so.%{gomp_major}* \
+        %{buildroot}/%{_lib}
+    ln -srf %{buildroot}/%{_lib}/libgomp.so.%{gomp_major}.*.* \
+	%{buildroot}%{_libdir}/libgomp.so
+
+    %if %{build_multilib}
+	mkdir -p %{buildroot}%{multirootlibdir}
+	mv %{buildroot}%{multilibdir}/libgomp.so.%{gomp_major}* \
+	    %{buildroot}%{multirootlibdir}
+	ln -srf %{buildroot}%{multirootlibdir}/libgomp.so.%{gomp_major}.*.* \
+	    %{buildroot}%{multilibdir}/libgomp.so
+    %endif
+%endif
+
+%if %{system_compiler}
+    mkdir -p %{buildroot}/%{_lib}
+    mv %{buildroot}%{_libdir}/libgcc_s.so.%{gcc_major}* \
+        %{buildroot}/%{_lib}
+    ln -srf %{buildroot}/%{_lib}/libgcc_s.so.%{gcc_major}.*.* \
+	%{buildroot}%{_libdir}/libgcc_s.so
+
+    %if %{build_multilib}
+	mkdir -p %{buildroot}%{multirootlibdir}
+	mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major}* \
+	    %{buildroot}%{multirootlibdir}
+	ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major}.*.* \
+	    %{buildroot}%{multilibdir}/libgcc.so
+    %endif
+%endif
 
 %if %{build_ada}
     for lib in libgnarl libgnat; do
