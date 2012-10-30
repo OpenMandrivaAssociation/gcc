@@ -2064,16 +2064,16 @@ popd
 
 %if %{system_compiler}
     mkdir -p %{buildroot}/%{_lib}
-    mv %{buildroot}%{_libdir}/libgcc_s.so.%{gcc_major}* \
+    mv %{buildroot}%{_libdir}/libgcc_s.so.%{gcc_major} \
         %{buildroot}/%{_lib}
-    ln -srf %{buildroot}/%{_lib}/libgcc_s.so.%{gcc_major}.*.* \
+    ln -srf %{buildroot}/%{_lib}/libgcc_s.so.%{gcc_major} \
 	%{buildroot}%{_libdir}/libgcc_s.so
 
     %if %{build_multilib}
 	mkdir -p %{buildroot}%{multirootlibdir}
-	mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major}* \
+	mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major} \
 	    %{buildroot}%{multirootlibdir}
-	ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major}.*.* \
+	ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
 	    %{buildroot}%{multilibdir}/libgcc_s.so
     %endif
 %endif
