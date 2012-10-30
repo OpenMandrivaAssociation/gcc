@@ -140,6 +140,9 @@
   %define	build_objcxx		%{system_compiler}
 %endif
 
+%define		build_doc		0
+%define		build_pdf		0
+
 %define		package_ffi		0
 
 # Adapted from fedora procedure:
