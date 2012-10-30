@@ -2074,7 +2074,7 @@ popd
 	mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major}* \
 	    %{buildroot}%{multirootlibdir}
 	ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major}.*.* \
-	    %{buildroot}%{multilibdir}/libgcc.so
+	    %{buildroot}%{multilibdir}/libgcc_s.so
     %endif
 %endif
 
