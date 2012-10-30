@@ -2212,7 +2212,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
-%if 0
+%if 1
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
