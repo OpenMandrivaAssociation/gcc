@@ -140,9 +140,6 @@
   %define	build_objcxx		%{system_compiler}
 %endif
 
-%define		build_doc		0
-%define		build_pdf		0
-
 %define		package_ffi		0
 
 # Adapted from fedora procedure:
@@ -162,7 +159,6 @@ Name:		gcc
 Name:		gcc%branch
 %endif
 Release:	3.1
-ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -2216,7 +2212,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
-%if 1
+%if 0
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
