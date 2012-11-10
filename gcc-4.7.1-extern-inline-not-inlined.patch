@@ -1,0 +1,26 @@
+--- gcc-linaro-4.7-2012.07/gcc/c-decl.c.ext_inline~	2012-08-20 12:47:13.151991184 +0200
++++ gcc-linaro-4.7-2012.07/gcc/c-decl.c	2012-08-20 12:47:17.172051876 +0200
+@@ -1854,21 +1854,10 @@ diagnose_mismatched_decls (tree newdecl,
+ 	{
+ 	  if (DECL_INITIAL (olddecl))
+ 	    {
+-	      /* If both decls are in the same TU and the new declaration
+-		 isn't overriding an extern inline reject the new decl.
++             /* If both decls are in the same TU reject the new decl.
+ 		 In c99, no overriding is allowed in the same translation
+ 		 unit.  */
+-	      if ((!DECL_EXTERN_INLINE (olddecl)
+-		   || DECL_EXTERN_INLINE (newdecl)
+-		   || (!flag_gnu89_inline
+-		       && (!DECL_DECLARED_INLINE_P (olddecl)
+-			   || !lookup_attribute ("gnu_inline",
+-						 DECL_ATTRIBUTES (olddecl)))
+-		       && (!DECL_DECLARED_INLINE_P (newdecl)
+-			   || !lookup_attribute ("gnu_inline",
+-						 DECL_ATTRIBUTES (newdecl))))
+-		  )
+-		  && same_translation_unit_p (newdecl, olddecl))
++             if (same_translation_unit_p (newdecl, olddecl))
+ 		{
+ 		  error ("redefinition of %q+D", newdecl);
+ 		  locate_old_decl (olddecl);
