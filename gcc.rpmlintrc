@@ -1,0 +1,13 @@
+# rpmlint detects the *.gox files for Go language support as
+# unstripped binaries
+addFilter("E: unstripped-binary-or-object")
+# rpmlint detects the *.ads and *.adb files for Ada language support
+# as scripts without shebang
+addFilter("E: script-without-shebang")
+# GCJ tools are packaged with the gcj libraries for now
+addFilter("E: executable-in-library-package")
+# Jar files in gcj library package
+addFilter("E: non-versioned-file-in-library-package")
+addFilter("E: outside-libdir-files")
+# Let's not fail local rpm --rebuilds with default rpm config
+addFilter("E: no-packager-tag")

@@ -140,6 +140,9 @@
   %define	build_objcxx		%{system_compiler}
 %endif
 
+%define		build_doc		0
+%define		build_pdf		0
+
 %define		package_ffi		0
 
 # Adapted from fedora procedure:
@@ -159,6 +162,7 @@ Name:		gcc
 Name:		gcc%branch
 %endif
 Release:	3.1
+#ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -989,7 +993,6 @@ bytecode into native code.
 %package	-n %{libgcj}
 Summary:	Java runtime library for gcc
 Group:		System/Libraries
-Provides:	gcj-tools = %{version}-%{release}
 Provides:	libgcj = %{version}-%{release}
 Provides:	%{libgcj_bc} = %{version}-%{release}
 %if %{build_multilib}
@@ -1081,7 +1084,7 @@ Requires:	awk
 Provides:	libgcj-devel = %{version}-%{release}
 Provides:	gcj-devel = %{version}-%{release}
 # libgcj and friends are no longer built statically for 4.7.x
-Obsoletes:	%{libgcj_static_devel}
+Obsoletes:	%{libgcj_static_devel} < {version}-%{release}
 
 %description	-n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
@@ -2212,7 +2215,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
-%if 0
+%if 1
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
