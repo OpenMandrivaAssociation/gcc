@@ -247,7 +247,6 @@ Patch5:		gcc-4.7.1-linker-selection.patch
 Patch6:		gcc-4.7.1-autoconf-2.69.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
-Patch9:		gcc-4.7-bug33763.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1747,7 +1746,6 @@ to compile Transactional Memory support.
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
-%patch9 -p0 -b .33763~
 
 aclocal -I config
 autoconf
