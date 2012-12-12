@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.3
-%define		linaro			2012.11
+%define		linaro			2012.12
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
