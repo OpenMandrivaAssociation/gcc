@@ -330,7 +330,9 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %package	-n %{libgcc}
 Summary:	GNU C library
 Group:		System/Libraries
+%if "%libgcc" != "libgcc"
 Provides:	libgcc = %{version}-%{release}
+%endif
 %if %mdkversion <= 201200
 Obsoletes:	libgcc3.0 < %{version}-%{release}
 Obsoletes:	libgcc3.2 < %{version}-%{release}
@@ -485,7 +487,9 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %package	-n %{libstdcxx}
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
+%if "%libstdcxx" != "libstdc++"
 Provides:	libstdc++ = %{version}-%{release}
+%endif
 %if %{build_doc}
 BuildRequires:	doxygen
 BuildRequires:	graphviz
@@ -526,10 +530,15 @@ Requires:	%{libstdcxx} = %{version}-%{release}
 %if %{build_multilib}
 Requires:	%{multilibstdcxx} = %{version}-%{release}
 %endif
+%if "%libstdcxx_devel" != "libstdc++-devel"
 Provides:	libstdc++-devel = %{version}-%{release}
+%endif
 Provides:	stdc++-devel = %{version}-%{release}
 %if "%ver" != "%version"
 # 4.7.2_2010.10 should provide 4.7.2 so clang can pick up the dep
+%if "%libstdcxx_devel" != "libstdc++-devel"
+Provides:	%libstdcxx_devel = %ver-%release
+%endif
 Provides:	libstdc++-devel = %ver-%release
 Provides:	stdc++-devel = %ver-%release
 %endif
@@ -561,7 +570,9 @@ development. This includes rewritten implementation of STL.
 Summary:	Static libraries for the GNU standard C++ library
 Group:		Development/C++
 Requires:	%{libstdcxx_devel} = %{version}-%{release}
+%if "%libstdcxx_static_devel" != "libstdc++-static-devel"
 Provides:	libstdc++-static-devel = %{version}-%{release}
+%endif
 Provides:	stdc++-static-devel = %{version}-%{release}
 %if %{obsolete_devmajor}
 Obsoletes:	libstdc++4.5-static-devel < %{version}-%{release}
@@ -1532,7 +1543,9 @@ Requires:	%{libmudflap} = %{version}-%{release}
 %if %{build_multilib}
 Requires:	%{multilibmudflap} = %{version}-%{release}
 %endif
+%if "%libmudflap_devel" != "libmudflap-devel"
 Provides:	libmudflap-devel = %{version}-%{release}
+%endif
 Provides:	mudflap-devel = %{version}-%{release}
 
 %description	-n %{libmudflap_devel}
