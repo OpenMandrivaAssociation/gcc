@@ -1,0 +1,66 @@
+--- gcc-linaro-4.7-2012.12/gcc/config/linux-android.h.bero	2013-01-03 20:39:55.843625931 +0100
++++ gcc-linaro-4.7-2012.12/gcc/config/linux-android.h	2013-01-03 20:40:20.059328679 +0100
+@@ -47,7 +47,8 @@
+ 
+ #define ANDROID_CC1PLUS_SPEC						\
+   "%{!fexceptions:%{!fno-exceptions: -fno-exceptions}} "		\
+-  "%{!frtti:%{!fno-rtti: -fno-rtti}}"
++  "%{!frtti:%{!fno-rtti: -fno-rtti}}"					\
++  "%{!nostdinc: -isystem /system/include/stlport}"
+ 
+ #define ANDROID_LIB_SPEC \
+   "%{!static: -ldl}"
+--- gcc-linaro-4.7-2012.12/gcc/cp/g++spec.c.bero	2013-01-03 20:40:43.748037236 +0100
++++ gcc-linaro-4.7-2012.12/gcc/cp/g++spec.c	2013-01-03 20:53:42.716591603 +0100
+@@ -326,6 +326,17 @@ lang_specific_driver (struct cl_decoded_
+ 		       CL_DRIVER, &new_decoded_options[j]);
+       added_libraries++;
+       j++;
++
++      /* For Android targets, we need to add STLport as well */
++      if (OPTION_BIONIC)
++        {
++          generate_option (OPT_l,
++                           "stlport", 1,
++                           CL_DRIVER, &new_decoded_options[j]);
++          added_libraries++;
++          j++;
++        }
++
+       /* Add target-dependent static library, if necessary.  */
+       if ((static_link || library > 1) && LIBSTDCXX_STATIC != NULL)
+ 	{
+--- gcc-linaro-4.7-2012.12/libgomp/env.c.bero	2013-01-03 20:36:51.015887023 +0100
++++ gcc-linaro-4.7-2012.12/libgomp/env.c	2013-01-03 20:37:06.466697110 +0100
+@@ -44,6 +44,9 @@
+ #endif
+ #include <limits.h>
+ #include <errno.h>
++#ifdef __BIONIC__
++# include <asm/page.h>
++#endif
+ 
+ #ifndef HAVE_STRTOULL
+ # define strtoull(ptr, eptr, base) strtoul (ptr, eptr, base)
+--- gcc-linaro-4.7-2012.12/libitm/config/arm/hwcap.cc.bero	2013-01-03 20:37:52.578142933 +0100
++++ gcc-linaro-4.7-2012.12/libitm/config/arm/hwcap.cc	2013-01-03 20:39:35.144880430 +0100
+@@ -40,7 +40,19 @@ int GTM_hwcap HIDDEN = 0
+ 
+ #ifdef __linux__
+ #include <unistd.h>
++#ifdef __BIONIC__
++# include <fcntl.h>
++/* copied from glibc elf.h */
++typedef struct
++{
++  uint32_t a_type;
++  union {
++    uint32_t a_val;
++  } a_un;
++} Elf32_auxv_t;
++#else
+ #include <sys/fcntl.h>
++#endif
+ #include <elf.h>
+ 
+ static void __attribute__((constructor))
