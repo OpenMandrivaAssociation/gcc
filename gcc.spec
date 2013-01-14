@@ -1272,8 +1272,8 @@ This package contains GCC shared support library which is needed
 for FFI support.
 
 %files		-n %{multilibffi}
-%{multilibdir}/libffi.so.%{ffi_major}
-%{multilibdir}/libffi.so.%{ffi_major}.*
+%{multirootlibdir}/libffi.so.%{ffi_major}
+%{multirootlibdir}/libffi.so.%{ffi_major}.*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2142,6 +2142,20 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
     rm -f %{buildroot}%{_libdir}/libffi.*
     rm -f %{buildroot}%{multilibdir}/libffi.*
     rm -f %{buildroot}%{_mandir}/man3/ffi*
+%else
+    mkdir -p %{buildroot}/%{_lib}
+    mv %{buildroot}%{_libdir}/libffi.so.%{ffi_major}* \
+        %{buildroot}/%{_lib}
+    ln -srf %{buildroot}/%{_lib}/libffi.so.%{ffi_major}.*.* \
+	%{buildroot}%{_libdir}/libffi.so
+
+    %if %{build_multilib}
+	mkdir -p %{buildroot}%{multirootlibdir}
+	mv %{buildroot}%{multilibdir}/libffi.so.%{ffi_major}* \
+	    %{buildroot}%{multirootlibdir}
+	ln -srf %{buildroot}%{multirootlibdir}/libffi.so.%{ffi_major}.*.* \
+	    %{buildroot}%{multilibdir}/libffi.so
+    %endif
 %endif
 
 %if %{build_doc}
