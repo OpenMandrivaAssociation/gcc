@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.3
-%define		linaro			2012.12
+%define		linaro			2013.01
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -169,7 +169,7 @@ Group:		Development/C
 URL:		http://gcc.gnu.org/
 %if "%linaro" != ""
 Version:	%{ver}_%linaro
-Source0:	https://launchpad.net/gcc-linaro/%branch/%branch-%linaro/+download/gcc-linaro-%branch-%linaro.tar.bz2
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro.tar.bz2
 %else
 Version:	%ver
 %if %{official}
@@ -231,7 +231,8 @@ BuildRequires:	zlib-devel
 BuildRequires:	ppl-devel >= 0.11
 BuildRequires:	pwl-devel >= 0.11
 BuildRequires:	ppl_c-devel >= 0.11
-BuildRequires:	cloog-ppl-devel >= 0.16.1
+#BuildRequires:	cloog-ppl-devel >= 0.16.1
+BuildRequires:	cloog-devel isl-devel
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
@@ -1852,7 +1853,8 @@ XCFLAGS="$OPT_FLAGS"						\
 %else
 	--with-cloog						\
 	--with-ppl						\
-	--enable-cloog-backend=ppl				\
+	--enable-cloog-backend=isl				\
+	--disable-cloog-version-check				\
 %endif
 %if !%{build_ffi}
 	--disable-libffi					\
