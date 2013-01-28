@@ -2010,7 +2010,7 @@ pushd %{buildroot}%{_bindir}
     %if %{build_go}
 	PROGRAMS="$PROGRAMS gccgo"
     %endif
-      %if %{build_java}
+    %if %{build_java}
 	PROGRAMS="$PROGRAMS gcj"
     %endif
     %if %{build_fortran}
@@ -2062,6 +2062,8 @@ pushd %{buildroot}%{_bindir}
 %endif
 %if %{build_java}
     ln -sf gcjh %{_target_platform}-gcjh
+    # For some reason, the .so file is a real file, not a symlink
+    ln -sf libgcj_bc.so.1.0.0 %buildroot%_libdir/libgcj_bc.so
 %endif
 popd
 
