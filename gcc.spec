@@ -1026,7 +1026,7 @@ Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 %endif
 Requires:	zip >= 2.1
 %if %{without java_bootstrap}
-BuildRequires:	antlr
+BuildRequires:	antlr-java
 %endif
 BuildRequires:	gtk2-devel >= 2.4.0
 BuildRequires:	glib2-devel >= 2.4.0
