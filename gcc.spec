@@ -549,6 +549,9 @@ Provides:	stdc++-devel = %ver-%release
 Obsoletes:	libstdc++4.5-devel < %{version}-%{release}
 Obsoletes:	libstdc++6-devel < %{version}-%{release}
 %endif
+# We don't want to pull in an entire Python environment just because of
+# libstdc++'s python based gdb plugin...
+%define __noautoreq '.*python.*'
 
 %description	-n %{libstdcxx_devel}
 This is the GNU implementation of the standard C++ libraries.  This
