@@ -1,2 +1,4 @@
-sources:
+removed_sources:
   gcc-linaro-4.7-2013.01.tar.bz2: c8a551f4cfd3e956c6813d515f5989bba3b0fc34
+sources:
+  gcc-linaro-4.7-2013.02.tar.bz2: fd694d7aac9332368f53f7960badf1669f7be773
