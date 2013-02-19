@@ -20,6 +20,7 @@
 %define		branch			4.7
 %define		ver			%branch.3
 %define		linaro			2013.02
+%define		linaro_spin		01
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -169,7 +170,11 @@ Group:		Development/C
 URL:		http://gcc.gnu.org/
 %if "%linaro" != ""
 Version:	%{ver}_%linaro
+%if "%linaro_spin" != ""
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro-%linaro_spin.tar.bz2
+%else
 Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro.tar.bz2
+%endif
 %else
 Version:	%ver
 %if %{official}
@@ -1746,7 +1751,11 @@ to compile Transactional Memory support.
 ########################################################################
 %prep
 %if "%linaro" != ""
+%if "%linaro_spin" != ""
+  %setup -q -n gcc-linaro-%branch-%linaro-%linaro_spin
+%else
   %setup -q -n gcc-linaro-%branch-%linaro
+%endif
 %else
 %if %{official}
   %setup -q -n gcc-%{version}%{snapshot}
