@@ -19,8 +19,8 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.3
-%define		linaro			2013.02
-%define		linaro_spin		01
+%define		linaro			2013.03
+%define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
 %define		obsolete_devmajor	0
@@ -255,6 +255,7 @@ Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
 Patch9:		gcc-4.7-androidcompat.patch
+Patch10:	gcc-4.7.3-texinfo-5.0.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1775,6 +1776,7 @@ to compile Transactional Memory support.
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
 %patch9 -p1 -b .android~
+%patch10 -p1 -b .texi50~
 
 aclocal -I config
 autoconf

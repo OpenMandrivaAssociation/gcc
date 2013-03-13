@@ -11,3 +11,5 @@ addFilter("E: non-versioned-file-in-library-package")
 addFilter("E: outside-libdir-files")
 # Let's not fail local rpm --rebuilds with default rpm config
 addFilter("E: no-packager-tag")
+# Seems to be a false positive on libgnat
+addFilter("E: incoherent-version-in-name")
