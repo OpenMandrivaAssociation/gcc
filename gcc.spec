@@ -1013,7 +1013,7 @@ bytecode into native code.
 
 #-----------------------------------------------------------------------
 %package	-n %{libgcj}
-Summary:	Java runtime library for gcc
+Summary:	Java runtime library for gcc (platform dependent parts)
 Group:		System/Libraries
 Provides:	libgcj = %{version}-%{release}
 Provides:	%{libgcj_bc} = %{version}-%{release}
@@ -1034,6 +1034,7 @@ Obsoletes:	%{libgcj11} < %{version}-%{release}
 Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 %endif
 Requires:	zip >= 2.1
+Requires:	libgcj-java = %EVRD
 %if %{without java_bootstrap}
 BuildRequires:	antlr-java
 %endif
@@ -1050,7 +1051,6 @@ The Java(tm) runtime library. You will need this package to run your Java
 programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 
 %files		-n %{libgcj}
-%{_javadir}/libgcj*.jar
 %dir %{_libdir}/gcj-%{ver}-%{gcj_major}
 %{_libdir}/gcj-%{ver}-%{gcj_major}/*.so
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
@@ -1062,6 +1062,19 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %{_libdir}/libgcj_bc.so.%{gcj_bc_major}.*
 %{_libdir}/libgij.so.%{gcj_major}
 %{_libdir}/libgij.so.%{gcj_major}.*
+
+#-----------------------------------------------------------------------
+%package -n libgcj-java
+Summary:	Java runtime library for gcc (Java parts)
+Group:		System/Libraries
+Requires:	%libgcj = %EVRD
+
+%description -n libgcj-java
+The Java(tm) runtime library. You will need this package to run your Java
+programs compiled using the Java compiler from GNU Compiler Collection (gcj).
+
+%files -n libgcj-java
+%{_javadir}/libgcj*.jar
 
 #-----------------------------------------------------------------------
 %package	-n gcj-tools
@@ -2261,7 +2274,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
-%if 1
+#if 1
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
@@ -2282,4 +2295,4 @@ strip --strip-unneeded \
 	%buildroot%_bindir/jv-convert \
 	%buildroot%_bindir/gtnameserv \
 	%buildroot%_bindir/gcjh
-%endif
+#endif
