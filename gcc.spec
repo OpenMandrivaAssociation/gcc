@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.3
-%define		linaro			2013.03
+%define		linaro			2013.04
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
@@ -1789,7 +1789,7 @@ to compile Transactional Memory support.
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
 %patch9 -p1 -b .android~
-%patch10 -p1 -b .texi50~
+#patch10 -p1 -b .texi50~
 
 aclocal -I config
 autoconf
