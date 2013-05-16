@@ -18,8 +18,8 @@
 %endif
 %define		system_compiler		1
 %define		branch			4.7
-%define		ver			%branch.3
-%define		linaro			2013.04
+%define		ver			%branch.4
+%define		linaro			2013.05
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
@@ -1038,12 +1038,12 @@ Requires:	libgcj-java = %EVRD
 %if %{without java_bootstrap}
 BuildRequires:	antlr-java
 %endif
-BuildRequires:	gtk2-devel >= 2.4.0
-BuildRequires:	glib2-devel >= 2.4.0
-BuildRequires:	libart_lgpl-devel >= 2.1.0
+BuildRequires:	pkgconfig(gtk+-2.0)
+BuildRequires:	pkgconfig(glib-2.0)
+BuildRequires:	pkgconfig(libart-2.0)
 BuildRequires:	pkgconfig(alsa)
-BuildRequires:	libxtst-devel
-BuildRequires:	libxt-devel
+BuildRequires:	pkgconfig(xtst)
+BuildRequires:	pkgconfig(xt)
 BuildRequires:	spec-helper >= 0.31.10
 
 %description	-n %{libgcj}
