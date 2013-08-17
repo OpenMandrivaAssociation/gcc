@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.7
 %define		ver			%branch.4
-%define		linaro			2013.07
+%define		linaro			2013.08
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
@@ -162,7 +162,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	2
+Release:	1
 #ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
