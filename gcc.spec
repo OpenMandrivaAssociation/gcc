@@ -17,8 +17,8 @@
   %define	snapshot		-20120413
 %endif
 %define		system_compiler		1
-%define		branch			4.7
-%define		ver			%branch.4
+%define		branch			4.8
+%define		ver			%branch.2
 %define		linaro			2013.10
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
@@ -44,7 +44,7 @@
 %define		libstdcxx_devel		%mklibname -d stdc++
 %define		libstdcxx_static_devel	%mklibname -d -s stdc++
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		13
+%define		gcj_major		14
 %define		libgcj			%mklibname gcj %{gcj_major}
 %define		libgcj_devel		%mklibname -d gcj
 %define		libgcj_static_devel	%mklibname -d -s gcj
@@ -66,7 +66,7 @@
 %define		libgnat_devel		%mklibname -d gnat
 %define		libgnat_static_devel	%mklibname -d -s gnat
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		0
+%define		go_major		4
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname -d go
 %define		libgo_static_devel	%mklibname -d -s go
@@ -101,6 +101,18 @@
 %define		libitm_devel		%mklibname -d itm
 %define		libitm_static_devel	%mklibname -d -s itm
 %define		multilibitm		libitm%{itm_major}
+%define		asan_major		0
+%define		libasan			%mklibname asan %{asan_major}
+%define		libasan_static_devel	%mklibname -d -s asan
+%define		multilibasan		libasan%{asan_major}
+%define		tsan_major		0
+%define		libtsan			%mklibname tsan %{tsan_major}
+%define		libtsan_static_devel	%mklibname -d -s tsan
+%define		multilibtsan		libtsan%{tsan_major}
+%define		atomic_major		1
+%define		libatomic		%mklibname atomic %{atomic_major}
+%define		libatomic_static_devel	%mklibname -d -s atomic
+%define		multilibatomic		libatomic%{atomic_major}
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
@@ -171,9 +183,9 @@ URL:		http://gcc.gnu.org/
 %if "%linaro" != ""
 Version:	%{ver}_%linaro
 %if "%linaro_spin" != ""
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro-%linaro_spin.tar.bz2
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro-%linaro_spin.tar.xz
 %else
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro.tar.bz2
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro.tar.xz
 %endif
 %else
 Version:	%ver
@@ -246,10 +258,10 @@ Obsoletes:	gcc-doc < %{version}-%{release}
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
-Patch2:		gcc-4.6.0-make-pdf.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
-Patch5:		gcc-4.7.1-linker-selection.patch
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
+Patch5:		gcc-4.8-disable-dependency-tracking.patch
 Patch6:		gcc-4.7.1-autoconf-2.69.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
@@ -1762,6 +1774,135 @@ to compile Transactional Memory support.
 # build itm
 %endif
 
+#-----------------------------------------------------------------------
+# Address Sanitizer
+#-----------------------------------------------------------------------
+%package	-n %{libasan}
+Summary:	GCC Address Sanitizer library
+Group:		Development/C
+
+%description	-n %{libasan}
+GCC Address Sanitizer Library
+
+%files		-n %{libasan}
+%{_libdir}/libasan.so.%{asan_major}*
+%{_libdir}/libasan.so
+%{_libdir}/libasan_preinit.o
+
+%if %{build_multilib}
+%package	-n %{multilibasan}
+Summary:	GCC Address Sanitizer library
+Group:		Development/C
+
+%description	-n %{multilibasan}
+GCC Address Sanitizer Library
+
+%files		-n %{multilibasan}
+%{multilibdir}/libasan.so.%{asan_major}*
+%{multilibdir}/libasan.so
+%{multilibdir}/libasan_preinit.o
+%endif
+
+%package	-n %{libasan_static_devel}
+Summary:	Static libasan
+Group:		Development/C
+Requires:	%{libasan} = %{EVRD}
+
+%description	-n %{libasan_static_devel}
+Static libasan
+
+%files		-n %{libasan_static_devel}
+%{_libdir}/libasan.a
+%if %{build_multilib}
+%{multilibdir}/libasan.a
+%endif
+
+#-----------------------------------------------------------------------
+# Thread Sanitizer
+#-----------------------------------------------------------------------
+%package	-n %{libtsan}
+Summary:	GCC Thread Sanitizer library
+Group:		Development/C
+
+%description	-n %{libtsan}
+GCC Address Sanitizer Library
+
+%files		-n %{libtsan}
+%{_libdir}/libtsan.so.%{tsan_major}*
+%{_libdir}/libtsan.so
+
+# Currently libtsan doesn't get built for multilib
+# This seems to be a bug though...
+%if 0
+# %{build_multilib}
+%package	-n %{multilibtsan}
+Summary:	GCC Thread Sanitizer library
+Group:		Development/C
+
+%description	-n %{multilibtsan}
+GCC Thread Sanitizer Library
+
+%files		-n %{multilibtsan}
+%{multilibdir}/libtsan.so.%{tsan_major}*
+%{multilibdir}/libtsan.so
+%endif
+
+%package	-n %{libtsan_static_devel}
+Summary:	Static libtsan
+Group:		Development/C
+Requires:	%{libtsan} = %{EVRD}
+
+%description	-n %{libtsan_static_devel}
+Static libtsan
+
+%files		-n %{libtsan_static_devel}
+%{_libdir}/libtsan.a
+#if %{build_multilib}
+%if 0
+%{multilibdir}/libtsan.a
+%endif
+
+#-----------------------------------------------------------------------
+# Atomic operations
+#-----------------------------------------------------------------------
+%package	-n %{libatomic}
+Summary:	GCC Atomic operations library
+Group:		Development/C
+
+%description	-n %{libatomic}
+GCC Atomic operations Library
+
+%files		-n %{libatomic}
+%{_libdir}/libatomic.so.%{atomic_major}*
+%{_libdir}/libatomic.so
+
+#if %{build_multilib}
+%package	-n %{multilibatomic}
+Summary:	GCC Atomic optimizer library
+Group:		Development/C
+
+%description	-n %{multilibatomic}
+GCC Atomic optimizer Library
+
+%files		-n %{multilibatomic}
+%{_prefix}/lib/libatomic.so.%{atomic_major}*
+%{_prefix}/lib/libatomic.so
+#endif
+
+%package	-n %{libatomic_static_devel}
+Summary:	Static libatomic
+Group:		Development/C
+Requires:	%{libtsan} = %{EVRD}
+
+%description	-n %{libatomic_static_devel}
+Static libtsan
+
+%files		-n %{libatomic_static_devel}
+%{_libdir}/libatomic.a
+%if %{build_multilib}
+%{multilibdir}/libatomic.a
+%endif
+
 ########################################################################
 %prep
 %if "%linaro" != ""
@@ -1780,15 +1921,14 @@ to compile Transactional Memory support.
 
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .java~
-%patch2 -p1 -b .pdf~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
-%patch5 -p1 -b .linker-selection~
+%patch5 -p1 -b .deptrack~
 %patch6 -p1 -b .ac269~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
-%patch9 -p1 -b .android~
+#patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
 
 aclocal -I config
