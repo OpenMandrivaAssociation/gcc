@@ -1873,7 +1873,7 @@ GCC Atomic optimizer Library
 %package	-n %{libatomic_static_devel}
 Summary:	Static libatomic
 Group:		Development/C
-Requires:	%{libtsan} = %{EVRD}
+Requires:	%{libatomic} = %{EVRD}
 
 %description	-n %{libatomic_static_devel}
 Static libtsan
