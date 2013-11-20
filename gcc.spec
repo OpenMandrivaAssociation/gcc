@@ -108,7 +108,6 @@
 %define		tsan_major		0
 %define		libtsan			%mklibname tsan %{tsan_major}
 %define		libtsan_static_devel	%mklibname -d -s tsan
-%define		multilibtsan		libtsan%{tsan_major}
 %define		atomic_major		1
 %define		libatomic		%mklibname atomic %{atomic_major}
 %define		libatomic_static_devel	%mklibname -d -s atomic
@@ -1820,6 +1819,7 @@ Static libasan
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
+%ifarch x86_64
 %package	-n %{libtsan}
 Summary:	GCC Thread Sanitizer library
 Group:		Development/C
@@ -1831,22 +1831,6 @@ GCC Address Sanitizer Library
 %{_libdir}/libtsan.so.%{tsan_major}*
 %{_libdir}/libtsan.so
 
-# Currently libtsan doesn't get built for multilib
-# This seems to be a bug though...
-%if 0
-# %{build_multilib}
-%package	-n %{multilibtsan}
-Summary:	GCC Thread Sanitizer library
-Group:		Development/C
-
-%description	-n %{multilibtsan}
-GCC Thread Sanitizer Library
-
-%files		-n %{multilibtsan}
-%{multilibdir}/libtsan.so.%{tsan_major}*
-%{multilibdir}/libtsan.so
-%endif
-
 %package	-n %{libtsan_static_devel}
 Summary:	Static libtsan
 Group:		Development/C
@@ -1857,9 +1841,6 @@ Static libtsan
 
 %files		-n %{libtsan_static_devel}
 %{_libdir}/libtsan.a
-#if %{build_multilib}
-%if 0
-%{multilibdir}/libtsan.a
 %endif
 
 #-----------------------------------------------------------------------
@@ -1876,7 +1857,7 @@ GCC Atomic operations Library
 %{_libdir}/libatomic.so.%{atomic_major}*
 %{_libdir}/libatomic.so
 
-#if %{build_multilib}
+%if %{build_multilib}
 %package	-n %{multilibatomic}
 Summary:	GCC Atomic optimizer library
 Group:		Development/C
@@ -1887,7 +1868,7 @@ GCC Atomic optimizer Library
 %files		-n %{multilibatomic}
 %{_prefix}/lib/libatomic.so.%{atomic_major}*
 %{_prefix}/lib/libatomic.so
-#endif
+%endif
 
 %package	-n %{libatomic_static_devel}
 Summary:	Static libatomic
