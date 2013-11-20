@@ -18,8 +18,8 @@
 %endif
 %define		system_compiler		1
 %define		branch			4.8
-%define		ver			%branch.2
-%define		linaro			2013.10
+%define		ver			%branch.3
+%define		linaro			2013.11
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
