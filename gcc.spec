@@ -267,6 +267,8 @@ Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
 Patch9:		gcc-4.7-androidcompat.patch
 Patch10:	gcc-4.7.3-texinfo-5.0.patch
+# suse patch
+Patch11:	libjava-aarch64-support.diff
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1911,6 +1913,7 @@ Static libtsan
 #patch8 -p1 -b .ext_inline~
 #patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
+%patch11 -p0 -b .aarch64
 
 aclocal -I config
 autoconf
