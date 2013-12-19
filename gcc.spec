@@ -1913,7 +1913,7 @@ Static libtsan
 #patch8 -p1 -b .ext_inline~
 #patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
-%patch11 -p1 -b .aarch64
+%patch11 -p0 -b .aarch64
 
 aclocal -I config
 autoconf

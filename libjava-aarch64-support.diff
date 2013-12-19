@@ -1,28 +1,8 @@
-diff --git a/boehm-gc/include/private/gcconfig.h b/boehm-gc/include/private/gcconfig.h
-index 475bb2c..6fe4a47 100644
---- a/boehm-gc/include/private/gcconfig.h
-+++ b/boehm-gc/include/private/gcconfig.h
-@@ -1846,6 +1846,7 @@
- # endif
- 
- # ifdef AARCH64
-+#   define USE_GENERIC_PUSH_REGS
- #   define CPP_WORDSZ 64
- #   define MACH_TYPE "AARCH64"
- #   define ALIGNMENT 8
-@@ -1855,7 +1856,6 @@
- #   ifdef LINUX
- #     define OS_TYPE "LINUX"
- #     define LINUX_STACKBOTTOM
--#     define USE_GENERIC_PUSH_REGS
- #     define DYNAMIC_LOADING
-       extern int __data_start[];
- #     define DATASTART ((ptr_t)__data_start)
-diff --git a/configure b/configure
-index 1e55feb..b2601cc 100755
---- a/configure
-+++ b/configure
-@@ -3309,6 +3309,8 @@ esac
+Index: configure
+===================================================================
+--- configure.orig
++++ configure
+@@ -3272,6 +3272,8 @@ esac
  
  # Disable Java if libffi is not supported.
  case "${target}" in
@@ -31,10 +11,10 @@ index 1e55feb..b2601cc 100755
    alpha*-*-*)
      ;;
    arm*-*-*)
-diff --git a/configure.ac b/configure.ac
-index 637da1e..cf56677 100644
---- a/configure.ac
-+++ b/configure.ac
+Index: configure.ac
+===================================================================
+--- configure.ac.orig
++++ configure.ac
 @@ -611,6 +611,8 @@ esac
  
  # Disable Java if libffi is not supported.
@@ -44,10 +24,10 @@ index 637da1e..cf56677 100644
    alpha*-*-*)
      ;;
    arm*-*-*)
-diff --git a/libjava/classpath/native/fdlibm/ieeefp.h b/libjava/classpath/native/fdlibm/ieeefp.h
-index c230bbb..7ef2ae7 100644
---- a/libjava/classpath/native/fdlibm/ieeefp.h
-+++ b/libjava/classpath/native/fdlibm/ieeefp.h
+Index: libjava/classpath/native/fdlibm/ieeefp.h
+===================================================================
+--- libjava/classpath/native/fdlibm/ieeefp.h.orig
++++ libjava/classpath/native/fdlibm/ieeefp.h
 @@ -4,6 +4,14 @@
  #ifndef __IEEE_BIG_ENDIAN
  #ifndef __IEEE_LITTLE_ENDIAN
@@ -63,10 +43,10 @@ index c230bbb..7ef2ae7 100644
  #ifdef __alpha__
  #define __IEEE_LITTLE_ENDIAN
  #endif
-diff --git a/libjava/configure.host b/libjava/configure.host
-index 0c3b41c..f2d1bb5 100644
---- a/libjava/configure.host
-+++ b/libjava/configure.host
+Index: libjava/configure.host
+===================================================================
+--- libjava/configure.host.orig
++++ libjava/configure.host
 @@ -81,6 +81,11 @@ ATOMICSPEC=
  
  # This case statement supports per-CPU defaults.
@@ -92,3 +72,66 @@ index 0c3b41c..f2d1bb5 100644
    arm*-linux* )
  	slow_pthread_self=no
  	can_unwind_signal=no
+Index: libjava/sysdep/aarch64/locks.h
+===================================================================
+--- /dev/null
++++ libjava/sysdep/aarch64/locks.h
+@@ -0,0 +1,58 @@
++// locks.h - Thread synchronization primitives. AArch64 implementation.
++
++#ifndef __SYSDEP_LOCKS_H__
++#define __SYSDEP_LOCKS_H__
++
++typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
++				/* address.				*/
++
++// Atomically replace *addr by new_val if it was initially equal to old.
++// Return true if the comparison succeeded.
++// Assumed to have acquire semantics, i.e. later memory operations
++// cannot execute before the compare_and_swap finishes.
++inline static bool
++compare_and_swap(volatile obj_addr_t *addr,
++                 obj_addr_t old,
++                 obj_addr_t new_val)
++{
++  return __sync_bool_compare_and_swap(addr, old, new_val);
++}
++
++// Set *addr to new_val with release semantics, i.e. making sure
++// that prior loads and stores complete before this
++// assignment.
++inline static void
++release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
++{
++  __sync_synchronize();
++  *(addr) = new_val;
++}
++
++// Compare_and_swap with release semantics instead of acquire semantics.
++// On many architecture, the operation makes both guarantees, so the
++// implementation can be the same.
++inline static bool
++compare_and_swap_release(volatile obj_addr_t *addr,
++			 obj_addr_t old,
++			 obj_addr_t new_val)
++{
++  return __sync_bool_compare_and_swap(addr, old, new_val);
++}
++
++// Ensure that subsequent instructions do not execute on stale
++// data that was loaded from memory before the barrier.
++// On X86, the hardware ensures that reads are properly ordered.
++inline static void
++read_barrier()
++{
++  __sync_synchronize();
++}
++
++// Ensure that prior stores to memory are completed with respect to other
++// processors.
++inline static void
++write_barrier()
++{
++  __sync_synchronize();
++}
++#endif
