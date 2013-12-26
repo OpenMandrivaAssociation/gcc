@@ -115,6 +115,7 @@
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
+%define		build_asan		0
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
@@ -142,12 +143,13 @@
 %endif
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
+  %define	build_asan		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		%{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
 %endif
-%ifarch %{ix86} x86_64 %{arm}
+%ifarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
 %endif
@@ -1776,6 +1778,7 @@ to compile Transactional Memory support.
 # build itm
 %endif
 
+%if %{build_asan}
 #-----------------------------------------------------------------------
 # Address Sanitizer
 #-----------------------------------------------------------------------
@@ -1817,6 +1820,7 @@ Static libasan
 %{_libdir}/libasan.a
 %if %{build_multilib}
 %{multilibdir}/libasan.a
+%endif
 %endif
 
 #-----------------------------------------------------------------------
