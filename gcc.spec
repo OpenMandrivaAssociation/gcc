@@ -124,7 +124,12 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
+%ifarch	%{ix86} x86_64 %{arm}
 %define		build_itm		1
+%else
+# aarch64 libitm support not implemented yet
+%define		build_itm		0
+%endif
 %define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
 %define		build_doc		0
