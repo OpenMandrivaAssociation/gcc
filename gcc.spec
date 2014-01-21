@@ -2123,7 +2123,7 @@ XCFLAGS="$OPT_FLAGS"						\
 	--with-abi=aapcs-linux					\
 %endif
 	--host=%{_target_platform}				\
-	--build=%{_build_platform}				\
+	--build=%{_build}					\
 	--target=%{_target_platform}
 
 GCJFLAGS="$OPT_FLAGS"						\
