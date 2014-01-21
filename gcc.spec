@@ -1080,7 +1080,7 @@ Requires:	zip >= 2.1
 Requires:	libgcj-java = %EVRD
 %if %{without java_bootstrap}
 # We need antlr
-BuildRequires:	javapackages-tools
+BuildRequires:	antlr-tool
 %endif
 BuildRequires:	pkgconfig(gtk+-2.0)
 BuildRequires:	pkgconfig(glib-2.0)
