@@ -1,0 +1,24 @@
+--- gcc~linaro-4.8-2013.12/libstdc++-v3/src/c++98/istream.cc.omv~	2013-12-23 01:48:21.088356339 +0100
++++ gcc~linaro-4.8-2013.12/libstdc++-v3/src/c++98/istream.cc	2013-12-23 01:48:33.931689840 +0100
+@@ -112,8 +112,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     basic_istream<char>::
+     ignore(streamsize __n, int_type __delim)
+     {
++#if 0
+       if (traits_type::eq_int_type(__delim, traits_type::eof()))
+ 	return ignore(__n);
++#endif
+ 
+       _M_gcount = 0;
+       sentry __cerb(*this, true);
+@@ -517,8 +519,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     basic_istream<wchar_t>::
+     ignore(streamsize __n, int_type __delim)
+     {
++#if 0
+       if (traits_type::eq_int_type(__delim, traits_type::eof()))
+ 	return ignore(__n);
++#endif
+ 
+       _M_gcount = 0;
+       sentry __cerb(*this, true);

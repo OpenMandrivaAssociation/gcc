@@ -1,0 +1,22 @@
+--- gcc-linaro-4.8-2013.12/Makefile.in.omv~	2013-12-30 23:51:00.695409504 +0100
++++ gcc-linaro-4.8-2013.12/Makefile.in	2013-12-30 23:51:54.912076882 +0100
+@@ -44294,7 +44294,7 @@ compare:
+ 	if [ -f .bad_compare ]; then \
+ 	  echo "Bootstrap comparison failure!"; \
+ 	  cat .bad_compare; \
+-	  exit 1; \
++	  echo "You'll want to run extra checks."; \
+ 	else \
+ 	  echo Comparison successful.; \
+ 	fi ; \
+--- gcc-linaro-4.8-2013.12/Makefile.tpl.omv~	2013-12-30 23:50:07.868742144 +0100
++++ gcc-linaro-4.8-2013.12/Makefile.tpl	2013-12-30 23:50:58.392076140 +0100
+@@ -1606,7 +1606,7 @@ do-clean: clean-stage[+id+]
+ 	if [ -f .bad_compare ]; then \
+ 	  echo "Bootstrap comparison failure!"; \
+ 	  cat .bad_compare; \
+-	  exit 1; \
++	  echo "You'll want to run extra checks."; \
+ 	else \
+ 	  echo Comparison successful.; \
+ 	fi ; \

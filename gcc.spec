@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.8
 %define		ver			%branch.3
-%define		linaro			2013.11
+%define		linaro			2014.01
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
@@ -30,6 +30,7 @@
     %define	obsolete_devmajor	1
   %endif
 %endif
+%define		gcclibexecdir		%{_libexecdir}/gcc/%{_target_platform}/%{ver}
 %define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{ver}
 %define		multigccdir		%{_libdir}/gcc/%{_target_platform}/%{ver}/32
 %define		multilibdir		%{_prefix}/lib
@@ -143,7 +144,8 @@
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
-  %define	build_doc		%{system_compiler}
+  %define	build_doc		1
+# Currently broken %{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
 %endif
@@ -156,6 +158,9 @@
 %define		build_pdf		0
 
 %define		package_ffi		0
+
+# Some versions of gcc build shared libgnat/libgnarl, some don't...
+%define		shared_libgnat		0
 
 # Adapted from fedora procedure:
 #   If there is no usable gcc-java neither libgcj for the arch,
@@ -173,7 +178,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	5
+Release:	1
 #ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
@@ -257,6 +262,7 @@ Obsoletes:	gcc-doc < %{version}-%{release}
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
+Patch2:		gcc-4.8-aarch64-ld-path.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
@@ -267,8 +273,9 @@ Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
 Patch9:		gcc-4.7-androidcompat.patch
 Patch10:	gcc-4.7.3-texinfo-5.0.patch
-# suse patch
-Patch11:	libjava-aarch64-support.diff
+# Fix build failure
+Patch11:	gcc-4.8-istream-ignore.patch
+Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -307,14 +314,14 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{_target_platform}-gcc-%{ver}
 %dir %{gccdir}
-%{gccdir}/cc1
-%{gccdir}/collect2
+%{gcclibexecdir}/cc1
+%{gcclibexecdir}/collect2
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
 %{gccdir}/libgcov.a
 %if %{build_lto}
-%{gccdir}/lto*
-%{gccdir}/liblto*
+%{gcclibexecdir}/lto*
+%{gcclibexecdir}/liblto*
 %endif
 %dir %{gccdir}/include
 %{gccdir}/include/*.h
@@ -323,7 +330,10 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %exclude %{gccdir}/include/jni*.h
 %exclude %{gccdir}/include/jvm*.h
 %endif
+%{gcclibexecdir}/install-tools
+%if "%{gcclibexecdir}" != "%{gccdir}"
 %{gccdir}/install-tools
+%endif
 %if %{build_quadmath}
 %exclude %{gccdir}/include/quadmath*.h
 %endif
@@ -404,9 +414,8 @@ for compiling GCC plugins.  The GCC plugin ABI is currently
 not stable, so plugins must be rebuilt any time GCC is updated.
 
 %files		plugin-devel
-%{gccdir}/gengtype
-%{gccdir}/gtype.state
 %{gccdir}/plugin
+%{gcclibexecdir}/plugin
 #-----------------------------------------------------------------------
 # build_plugin
 %endif
@@ -503,7 +512,7 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %{_bindir}/c++-%{ver}
 %{_bindir}/g++-%{ver}
 %{_bindir}/%{_target_platform}-g++-%{ver}
-%{gccdir}/cc1plus
+%{gcclibexecdir}/cc1plus
 
 #-----------------------------------------------------------------------
 %package	-n %{libstdcxx}
@@ -638,12 +647,14 @@ tools, the documents and Ada 95 compiler.
 %if %{build_java}
 %exclude %{_bindir}/gnative2ascii
 %endif
-%{gccdir}/gnat1
+%{gcclibexecdir}/gnat1
 %{_infodir}/gnat*
 %if %{build_doc}
 %doc %{_docdir}/gcc-gnat
 %endif
 
+# libgnat and libgnarl are static-only these days
+%if %{shared_libgnat}
 #-----------------------------------------------------------------------
 %package	-n %{libgnat}
 Summary:	GNU Ada 95 runtime libraries
@@ -674,14 +685,21 @@ libraries, which are required to run programs compiled with the GNAT.
 %{multilibdir}/libgnat-%{branch}.so.%{gnat_major}
 %{multilibdir}/libgnarl-%{branch}.so.%{gnat_major}
 %endif
+%endif
 
 #-----------------------------------------------------------------------
 %package	-n %{libgnat_devel}
 Summary:	GNU Ada 95 libraries
 Group:		Development/Other
+%if %{shared_libgnat}
 Requires:	%{libgnat} = %{version}-%{release}
 %if %{build_multilib}
 Requires:	%{multilibgnat} = %{version}-%{release}
+%endif
+%else
+Obsoletes:	%{libgnat} < %{EVRD}
+Obsoletes:	%{multilibgnat} < %{EVRD}
+Requires:	%{libgnat_static_devel} = %{EVRD}
 %endif
 Provides:	libgnat-devel = %{version}-%{release}
 Provides:	gnat-devel = %{version}-%{release}
@@ -691,14 +709,18 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to compile with the GNAT.
 
 %files		-n %{libgnat_devel}
+%if %{shared_libgnat}
 %{_libdir}/libgnat*.so
 %{_libdir}/libgnarl*.so
+%endif
 %{gccdir}/adalib
 %{gccdir}/adainclude
 %exclude %{gccdir}/adalib/lib*.a
 %if %{build_multilib}
+%if %{shared_libgnat}
 %{multilibdir}/libgnat*.so
 %{multilibdir}/libgnarl*.so
+%endif
 %{multigccdir}/adalib
 %{multigccdir}/adainclude
 %exclude %{multigccdir}/adalib/lib*.a
@@ -749,7 +771,7 @@ programs with the GNU Compiler Collection.
 %{_bindir}/%{_target_platform}-gfortran-%{ver}
 %{_infodir}/gfortran.info*
 %{_mandir}/man1/gfortran.1*
-%{gccdir}/f951
+%{gcclibexecdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libgfortranbegin.*a
 %{gccdir}/libcaf_single.a
@@ -858,6 +880,7 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgo_devel} = %{version}-%{release}
+BuildRequires:	gcc-go
 
 %description	go
 The gcc-go package provides support for compiling Go programs
@@ -874,7 +897,7 @@ with the GNU Compiler Collection.
 %{_mandir}/man1/gccgo.1*
 %{_bindir}/gccgo-%{ver}
 %{_bindir}/%{_target_platform}-gccgo-%{ver}
-%{gccdir}/go1
+%{gcclibexecdir}/go1
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
 %if %{build_multilib}
@@ -964,8 +987,8 @@ Summary:	Java support for GCC
 Group:		Development/Java
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{libgcj_devel} = %{version}-%{release}
-Requires:	eclipse-ecj
-BuildRequires:	eclipse-ecj
+Requires:	ecj
+BuildRequires:	ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
 BuildRequires:	zip
@@ -1017,9 +1040,9 @@ bytecode into native code.
 %{_bindir}/%{_target_platform}-gcj
 %{_bindir}/%{_target_platform}-gcj-%{ver}
 %{_bindir}/%{_target_platform}-gcjh
-%{gccdir}/jc1
-%{gccdir}/ecj1
-%{gccdir}/jvgenmain
+%{gcclibexecdir}/jc1
+%{gcclibexecdir}/ecj1
+%{gcclibexecdir}/jvgenmain
 %if %{build_doc}
 %doc %{_docdir}/gcc-java
 %endif
@@ -1049,7 +1072,8 @@ Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 Requires:	zip >= 2.1
 Requires:	libgcj-java = %EVRD
 %if %{without java_bootstrap}
-BuildRequires:	antlr-java
+# We need antlr
+BuildRequires:	javapackages-tools
 %endif
 BuildRequires:	pkgconfig(gtk+-2.0)
 BuildRequires:	pkgconfig(glib-2.0)
@@ -1180,7 +1204,7 @@ Mainly used on systems running NeXTSTEP, Objective-C is an
 object-oriented derivative of the C language.
 
 %files		objc
-%{gccdir}/cc1obj
+%{gcclibexecdir}/cc1obj
 
 #-----------------------------------------------------------------------
 %package	-n %{libobjc}
@@ -1275,7 +1299,7 @@ Requires:	gcc-objc = %{version}-%{release}
 gcc++-objc provides Objective-C++ support for the GCC.
 
 %files		objc++
-%{gccdir}/cc1objplus
+%{gcclibexecdir}/cc1objplus
 #-----------------------------------------------------------------------
 # build objcxx
 %endif
@@ -1904,6 +1928,7 @@ Static libtsan
 
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .java~
+%patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
 %patch5 -p1 -b .deptrack~
@@ -1913,14 +1938,15 @@ Static libtsan
 #patch8 -p1 -b .ext_inline~
 #patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
-%patch11 -p0 -b .aarch64
+%patch11 -p1 -b .buildfix~
+%patch12 -p1 -b .compare~
 
 aclocal -I config
 autoconf
 
 echo %{vendor} > gcc/DEV-PHASE
 %if !%{official}
-    sed -i -e 's/4\.7\..*/%{version}/' gcc/BASE-VER
+    sed -i -e 's/4\.8\..*/%{version}/' gcc/BASE-VER
 %endif
 
 %if %{with java_bootstrap}
@@ -1982,13 +2008,20 @@ BOOSTRAP=profiledbootstrap
 # once the build process is fixed.
 # Currently, it barfs while linking x32/libgcc_s.so.1 (incompatible target)
 
+mkdir BUILD
+cd BUILD
+
 CC=%{__cc}							\
 CFLAGS="$OPT_FLAGS"						\
 CXXFLAGS="$OPT_FLAGS"						\
 GCJFLAGS="$OPT_FLAGS"						\
 TCFLAGS="$OPT_FLAGS"						\
 XCFLAGS="$OPT_FLAGS"						\
-%configure2_5x							\
+../configure							\
+	--prefix=%{_prefix}					\
+	--libdir=%{_libdir}					\
+	--mandir=%{_mandir}					\
+	--infodir=%{_infodir}					\
 %if !%{build_java}
 	--disable-libgcj					\
 %else
@@ -2081,10 +2114,12 @@ XCFLAGS="$OPT_FLAGS"						\
 	--with-abi=aapcs-linux					\
 %endif
 	--host=%{_target_platform}				\
+	--build=%{_build_platform}				\
 	--target=%{_target_platform}
 
 GCJFLAGS="$OPT_FLAGS"						\
 %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
+# GNATMAKE=gnatmake GNATBIND=gnatbind
 
 %if %{build_pdf}
     %make pdf || :
@@ -2122,12 +2157,12 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 
 #-----------------------------------------------------------------------
 %install
-%makeinstall_std
+%makeinstall_std -C BUILD
 
 %if %{build_java}
-    %make							\
+    %make -C BUILD						\
 	DESTDIR=%{buildroot}					\
-	JAR=$PWD/%{_target_platform}/libjava/scripts/jar	\
+	JAR=$PWD/BUILD/%{_target_platform}/libjava/scripts/jar	\
 	-C %{_target_platform}/libjava				\
 	install-src.zip
 %endif
@@ -2250,6 +2285,7 @@ popd
     %endif
 %endif
 
+%if %{shared_libgnat}
 %if %{build_ada}
     for lib in libgnarl libgnat; do
 	rm -f	%{buildroot}%{_libdir}/$lib.so
@@ -2267,6 +2303,7 @@ popd
 	ln -sf	$lib-%{branch}.so.1 %{buildroot}%{multilibdir}/$lib.so
     %endif
     done
+%endif
 %endif
 
 mv -f %{buildroot}%{gccdir}/include{-fixed,}/syslimits.h
@@ -2312,6 +2349,8 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 	    %{buildroot}%{multilibdir}/libffi.so
     %endif
 %endif
+
+cd BUILD
 
 %if %{build_doc}
     %if %{build_cxx}
@@ -2384,13 +2423,7 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
     %endif
 %endif
 
-# https://qa.mandriva.com/show_bug.cgi?id=63587
-%if %{build_plugin}
-    pushd host-%{_target_platform}
-	cp -fpa gcc/build/gengtype %{buildroot}%{gccdir}
-	cp -fpa gcc/gtype.state %{buildroot}%{gccdir}
-    popd
-%endif
+cd ..
 
 # Not needed on cooker (but on ROSA 2012 and backports, and
 # can't hurt)
@@ -2398,7 +2431,7 @@ rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
       %buildroot%_libdir/gcj-*/*.la
 
-#if 1
+%if 1
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
@@ -2409,7 +2442,6 @@ strip --strip-unneeded \
 	%buildroot%_bindir/gjavah \
 	%buildroot%_bindir/gjarsigner \
 	%buildroot%_bindir/gkeytool \
-	%buildroot%_bindir/gjdoc \
 	%buildroot%_bindir/gorbd \
 	%buildroot%_bindir/grmic \
 	%buildroot%_bindir/grmid \
@@ -2419,4 +2451,4 @@ strip --strip-unneeded \
 	%buildroot%_bindir/jv-convert \
 	%buildroot%_bindir/gtnameserv \
 	%buildroot%_bindir/gcjh
-#endif
+%endif

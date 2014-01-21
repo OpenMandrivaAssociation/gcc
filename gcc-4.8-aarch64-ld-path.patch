@@ -1,0 +1,11 @@
+--- gcc-linaro-4.8-2013.12/gcc/config/aarch64/aarch64-linux.h.omv~	2013-12-30 21:28:59.508631009 +0100
++++ gcc-linaro-4.8-2013.12/gcc/config/aarch64/aarch64-linux.h	2013-12-30 21:29:06.171964429 +0100
+@@ -21,7 +21,7 @@
+ #ifndef GCC_AARCH64_LINUX_H
+ #define GCC_AARCH64_LINUX_H
+ 
+-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64.so.1"
++#define GLIBC_DYNAMIC_LINKER "/lib64/ld-linux-aarch64.so.1"
+ 
+ #define CPP_SPEC "%{pthread:-D_REENTRANT}"
+ 

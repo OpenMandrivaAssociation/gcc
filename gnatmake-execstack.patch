@@ -1,16 +1,15 @@
---- gcc-linaro-4.7-2012.06/gcc/ada/gcc-interface/Makefile.in.bero	2012-06-29 18:54:54.768909625 +0200
-+++ gcc-linaro-4.7-2012.06/gcc/ada/gcc-interface/Makefile.in	2012-06-29 18:56:12.438910031 +0200
-@@ -2408,11 +2408,11 @@ gnatlink-re: ../stamp-tools link.o targe
+--- gcc-linaro-4.8-2014.01/gcc/ada/gcc-interface/Makefile.in.execstack~	2014-01-21 11:52:57.964317637 +0100
++++ gcc-linaro-4.8-2014.01/gcc/ada/gcc-interface/Makefile.in	2014-01-21 11:54:03.084315578 +0100
+@@ -2519,10 +2519,10 @@ gnatlink-re: ../stamp-tools link.o targe
  
  # Likewise for the tools
  ../../gnatmake$(exeext): $(P) b_gnatm.o link.o targext.o $(GNATMAKE_OBJS)
--	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
-+	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) -Wl,-z,execstack \
- 		    $(TOOLS_LIBS)
+-	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS)
++	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS) -Wl,-z,execstack
  
  ../../gnatlink$(exeext): $(P) b_gnatl.o link.o targext.o $(GNATLINK_OBJS)
--	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
-+	$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) -Wl,-z,execstack \
- 		    $(TOOLS_LIBS)
+-	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS)
++	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS) -Wl,-z,execstack
  
  ../stamp-gnatlib-$(RTSDIR):
+ 	@if [ ! -f stamp-gnatlib-$(RTSDIR) ] ; \
