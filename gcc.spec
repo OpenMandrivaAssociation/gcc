@@ -116,6 +116,7 @@
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
+%define		build_asan		0
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
@@ -124,7 +125,12 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
+%ifarch	%{ix86} x86_64 %{arm}
 %define		build_itm		1
+%else
+# aarch64 libitm support not implemented yet
+%define		build_itm		0
+%endif
 %define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
 %define		build_doc		0
@@ -143,13 +149,14 @@
 %endif
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
+  %define	build_asan		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # Currently broken %{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
 %endif
-%ifarch %{ix86} x86_64 %{arm}
+%ifarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
 %endif
@@ -276,6 +283,9 @@ Patch10:	gcc-4.7.3-texinfo-5.0.patch
 # Fix build failure
 Patch11:	gcc-4.8-istream-ignore.patch
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
+# suse patch
+Patch13:	libjava-aarch64-support.diff
+Patch14:	libatomic-enable-aarch64-4.8.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1799,6 +1809,7 @@ to compile Transactional Memory support.
 # build itm
 %endif
 
+%if %{build_asan}
 #-----------------------------------------------------------------------
 # Address Sanitizer
 #-----------------------------------------------------------------------
@@ -1840,6 +1851,7 @@ Static libasan
 %{_libdir}/libasan.a
 %if %{build_multilib}
 %{multilibdir}/libasan.a
+%endif
 %endif
 
 #-----------------------------------------------------------------------
@@ -1940,6 +1952,8 @@ Static libtsan
 #patch10 -p1 -b .texi50~
 %patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
+%patch13 -p0 -b .aarch64~
+%patch14 -p1 -b .atomic~
 
 aclocal -I config
 autoconf
