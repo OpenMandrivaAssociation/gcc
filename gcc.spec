@@ -283,9 +283,6 @@ Patch10:	gcc-4.7.3-texinfo-5.0.patch
 # Fix build failure
 Patch11:	gcc-4.8-istream-ignore.patch
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
-# suse patch
-Patch13:	libjava-aarch64-support.diff
-Patch14:	libatomic-enable-aarch64-4.8.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1952,8 +1949,6 @@ Static libtsan
 #patch10 -p1 -b .texi50~
 %patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
-%patch13 -p0 -b .aarch64~
-%patch14 -p1 -b .atomic~
 
 aclocal -I config
 autoconf
