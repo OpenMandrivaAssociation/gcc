@@ -167,7 +167,7 @@
 %define		package_ffi		0
 
 # Some versions of gcc build shared libgnat/libgnarl, some don't...
-%define		shared_libgnat		0
+%define		shared_libgnat		1
 
 # Adapted from fedora procedure:
 #   If there is no usable gcc-java neither libgcj for the arch,
