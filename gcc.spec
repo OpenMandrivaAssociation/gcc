@@ -149,7 +149,6 @@
 %endif
 %ifarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
-  %define	build_asan		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # Currently broken %{system_compiler}
@@ -159,6 +158,7 @@
 %ifarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
+  %define	build_asan		%{system_compiler}
 %endif
 
 %define		build_doc		0
