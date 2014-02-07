@@ -1018,7 +1018,9 @@ bytecode into native code.
 %{_bindir}/gjar
 %{_bindir}/gjarsigner
 %if %{without java_bootstrap}
+%if %mdvver > 201400
 %{_bindir}/gjdoc
+%endif
 %endif
 %{_bindir}/gnative2ascii
 %{_bindir}/grmic
