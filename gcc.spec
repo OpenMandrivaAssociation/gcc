@@ -2091,7 +2091,7 @@ XCFLAGS="$OPT_FLAGS"						\
 %endif
 	--enable-threads=posix					\
 	--with-system-zlib					\
-	--with-bugurl=https://qa.mandriva.com/			\
+	--with-bugurl=%{bugurl}					\
 %ifarch %{ix86} x86_64
 	--with-tune=generic					\
 %endif
