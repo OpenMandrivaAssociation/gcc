@@ -185,7 +185,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	2
+Release:	3
 #ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
@@ -283,6 +283,8 @@ Patch10:	gcc-4.7.3-texinfo-5.0.patch
 # Fix build failure
 Patch11:	gcc-4.8-istream-ignore.patch
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
+# https://bugs.launchpad.net/gcc-linaro/+bug/1225317
+Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -1949,6 +1951,7 @@ Static libtsan
 #patch10 -p1 -b .texi50~
 %patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
+%patch13 -p1 -b .short
 
 aclocal -I config
 autoconf

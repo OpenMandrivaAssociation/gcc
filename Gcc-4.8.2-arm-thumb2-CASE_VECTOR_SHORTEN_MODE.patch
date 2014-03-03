@@ -1,0 +1,13 @@
+--- ./gcc/config/arm/arm.h.orig	2013-08-06 08:48:59.000000000 -0600
++++ ./gcc/config/arm/arm.h	2013-09-10 06:43:19.373829439 -0600
+@@ -1975,8 +1975,8 @@ enum arm_auto_incmodes
+       : min >= -4096 && max < 4096					\
+       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
+       : SImode)								\
+-   : ((min < 0 || max >= 0x20000 || !TARGET_THUMB2) ? SImode		\
+-      : (max >= 0x200) ? HImode						\
++   : ((min < 0 || max >= 0x10000 || !TARGET_THUMB2) ? SImode		\
++      : (max >= 0x100) ? HImode						\
+       : QImode))
+ 
+ /* signed 'char' is most compatible, but RISC OS wants it unsigned.
