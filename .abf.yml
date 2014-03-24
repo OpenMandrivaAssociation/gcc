@@ -1,2 +1,3 @@
 sources:
   gcc-linaro-4.8-2014.01.tar.xz: 35c36518e256faabe92fa454d6ca7d178c971fb1
+  gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47

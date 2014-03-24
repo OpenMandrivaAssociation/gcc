@@ -179,6 +179,8 @@
 %bcond_with	java_build_tar
 %bcond_with	java_bootstrap
 
+%bcond_with	x32_bootstrap
+
 #-----------------------------------------------------------------------
 %if %{system_compiler}
 Name:		gcc
@@ -216,8 +218,9 @@ Source5:	c99
 %if %{with java_bootstrap}
 Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 %endif
+Source7:	gcc-x32-seed.tar.xz
 
-Source100:	%name.rpmlintrc
+Source100:	%{name}.rpmlintrc
 
 %if %{system_compiler}
 Requires:	gcc-cpp >= %{version}-%{release}
@@ -1965,6 +1968,14 @@ echo %{vendor} > gcc/DEV-PHASE
     tar xjf %{SOURCE6}
 %endif
 
+%if %{with x32_bootstrap}
+pushd gcc
+tar -xf %{SOURCE7}
+mkdir gnu
+ln -s /usr/include/gnu/stubs-64.h gnu/stubs-x32.h
+popd
+%endif
+
 #-----------------------------------------------------------------------
 %build
 # The -gdwarf-4 removal is a workaround for gcc bug #52420
@@ -2013,12 +2024,6 @@ BOOTSTRAP=bootstrap
 BOOSTRAP=profiledbootstrap
   %endif
 %endif
-
-# FIXME: Replace
-#	--with-multilib-list=m32,m64
-# with	--with-multilib-list=m32,m64,mx32
-# once the build process is fixed.
-# Currently, it barfs while linking x32/libgcc_s.so.1 (incompatible target)
 
 mkdir BUILD
 cd BUILD
@@ -2104,7 +2109,11 @@ XCFLAGS="$OPT_FLAGS"						\
 %ifarch x86_64
   %if %{build_multilib}
 	--with-arch_32=i586					\
+    %if %{with x32_boostrap}
+	--with-multilib-list=m32,m64,mx32			\
+    %else
 	--with-multilib-list=m32,m64				\
+    %endif
   %else
 	--disable-multilib					\
   %endif
