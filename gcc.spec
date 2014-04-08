@@ -131,7 +131,8 @@
 # aarch64 libitm support not implemented yet
 %define		build_itm		0
 %endif
-%define		build_cloog		%{system_compiler}
+# Temporarily disable cloog/ppl during ppl upgrade to avoid abf issues
+%define		build_cloog		0
 %define		build_cxx		%{system_compiler}
 %define		build_doc		0
 %define		build_ffi		%{system_compiler}
@@ -187,7 +188,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	3
+Release:	3.1
 #ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
