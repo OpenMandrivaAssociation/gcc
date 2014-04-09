@@ -139,7 +139,11 @@
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
 # system_compiler && build_ffi
-%define		build_java		%{system_compiler}
+%ifarch %{ix86} x86_64 %{arm}
+%  define	build_java		%{system_compiler}
+%else
+%  define	build_java		0
+%endif
 # need to build if major does not conflict with current system_compiler
 %define		build_libgcc		%{system_compiler}
 %define		build_mudflap		%{system_compiler}
@@ -152,7 +156,6 @@
   %define	build_ada		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
-# Currently broken %{system_compiler}
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
 %endif
@@ -2453,9 +2456,13 @@ cd ..
 # can't hurt)
 rm -f %buildroot%_libdir/libitm.la \
       %buildroot%_prefix/lib/libitm.la \
+%if %{build_java}
       %buildroot%_libdir/gcj-*/*.la
+%else
 
-%if 1
+%endif
+
+%if %{build_java}
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
