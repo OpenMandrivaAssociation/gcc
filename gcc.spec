@@ -131,8 +131,7 @@
 # aarch64 libitm support not implemented yet
 %define		build_itm		0
 %endif
-# Temporarily disable cloog/ppl during ppl upgrade to avoid abf issues
-%define		build_cloog		0
+%define		build_cloog		%{system_compiler}
 %define		build_cxx		%{system_compiler}
 %define		build_doc		0
 %define		build_ffi		%{system_compiler}
@@ -191,7 +190,7 @@ Name:		gcc
 %else
 Name:		gcc%branch
 %endif
-Release:	3.1
+Release:	3.2
 #ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
@@ -264,7 +263,6 @@ BuildRequires:	texlive
 BuildRequires:	zlib-devel
 %if %{build_cloog}
 BuildRequires:	ppl-devel >= 0.11
-BuildRequires:	pwl-devel >= 0.11
 BuildRequires:	ppl_c-devel >= 0.11
 #BuildRequires:	cloog-ppl-devel >= 0.16.1
 BuildRequires:	cloog-devel isl-devel
