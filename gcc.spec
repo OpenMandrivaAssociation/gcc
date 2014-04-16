@@ -17,8 +17,8 @@
   %define	snapshot		-20120413
 %endif
 %define		system_compiler		1
-%define		branch			4.8
-%define		ver			%branch.3
+%define		branch			4.9
+%define		ver			%branch.0
 %define		linaro			2014.04
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
@@ -45,7 +45,7 @@
 %define		libstdcxx_devel		%mklibname -d stdc++
 %define		libstdcxx_static_devel	%mklibname -d -s stdc++
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		14
+%define		gcj_major		15
 %define		libgcj			%mklibname gcj %{gcj_major}
 %define		libgcj_devel		%mklibname -d gcj
 %define		libgcj_static_devel	%mklibname -d -s gcj
@@ -67,7 +67,7 @@
 %define		libgnat_devel		%mklibname -d gnat
 %define		libgnat_static_devel	%mklibname -d -s gnat
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		4
+%define		go_major		5
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname -d go
 %define		libgo_static_devel	%mklibname -d -s go
@@ -77,11 +77,6 @@
 %define		libgomp_devel		%mklibname -d gomp
 %define		libgomp_static_devel	%mklibname -d -s gomp
 %define		multilibgomp		libgomp%{gomp_major}
-%define		mudflap_major		0
-%define		libmudflap		%mklibname mudflap %{mudflap_major}
-%define		libmudflap_devel	%mklibname -d mudflap
-%define		libmudflap_static_devel %mklibname -d -s mudflap
-%define		multilibmudflap		libmudflap%{mudflap_major}
 %define		objc_major		4
 %define		libobjc			%mklibname objc %{objc_major}
 %define		libobjc_devel		%mklibname -d objc
@@ -102,7 +97,7 @@
 %define		libitm_devel		%mklibname -d itm
 %define		libitm_static_devel	%mklibname -d -s itm
 %define		multilibitm		libitm%{itm_major}
-%define		asan_major		0
+%define		asan_major		1
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_static_devel	%mklibname -d -s asan
 %define		multilibasan		libasan%{asan_major}
@@ -113,6 +108,22 @@
 %define		libatomic		%mklibname atomic %{atomic_major}
 %define		libatomic_static_devel	%mklibname -d -s atomic
 %define		multilibatomic		libatomic%{atomic_major}
+%define		cilk_major		5
+%define		libcilkrts		%mklibname cilkrts %{cilk_major}
+%define		libcilkrts_devel	%mklibname -d cilkrts
+%define		libcilkrts_static_devel	%mklibname -d -s cilkrts
+%define		multilibcilkrts		libcilkrts%{cilk_major}
+%define		ubsan_major		0
+%define		libubsan		%mklibname ubsan %{ubsan_major}
+%define		libubsan_static_devel	%mklibname -d -s ubsan
+%define		multilibubsan		libubsan%{ubsan_major}
+%define		vtv_major		0
+%define		libvtv			%mklibname vtv %{vtv_major}
+%define		libvtv_static_devel	%mklibname -d -s vtv
+%define		multilibvtv		libvtv%{vtv_major}
+%define		lsan_major		0
+%define		liblsan			%mklibname lsan %{lsan_major}
+%define		liblsan_static_devel	%mklibname -d -s lsan
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
@@ -145,7 +156,6 @@
 %endif
 # need to build if major does not conflict with current system_compiler
 %define		build_libgcc		%{system_compiler}
-%define		build_mudflap		%{system_compiler}
 %define		build_pdf		%{build_doc}
 %define		build_plugin		%{system_compiler}
 %ifarch x86_64
@@ -353,9 +363,6 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %endif
 %if %{build_gomp}
 %exclude %{gccdir}/include/omp*.h
-%endif
-%if %{build_mudflap}
-%exclude %{gccdir}/include/mf-runtime.h
 %endif
 %if %{build_multilib}
 %dir %{multigccdir}
@@ -1561,106 +1568,6 @@ to compile OpenMP v3.0 support.
 %endif
 
 ########################################################################
-%if %{build_mudflap}
-#-----------------------------------------------------------------------
-%package	-n %{libmudflap}
-Summary:	GCC mudflap shared support libraries
-Group:		System/Libraries
-Provides:	libmudflap = %{version}-%{release}
-
-%description	-n %{libmudflap}
-This package contains GCC shared libraries which are needed
-for mudflap support.
-
-For front-ends that support it (C and C++), instrument all risky
-pointer/array dereferencing operations, some standard library
-string/heap functions, and some other associated constructs with
-range/validity tests.  Modules so instrumented should be immune to
-buffer overflows, invalid heap use, and some other classes of C/C++
-programming errors.
-
-%files		-n %{libmudflap}
-%{_libdir}/libmudflap.so.%{mudflap_major}
-%{_libdir}/libmudflap.so.%{mudflap_major}.*
-%{_libdir}/libmudflapth.so.%{mudflap_major}
-%{_libdir}/libmudflapth.so.%{mudflap_major}.*
-
-#-----------------------------------------------------------------------
-%if %{build_multilib}
-%package	-n %{multilibmudflap}
-Summary:	GCC mudflap shared support libraries
-Group:		System/Libraries
-Conflicts:	%{libmudflap} < 4.6.2-11
-
-%description	-n %{multilibmudflap}
-This package contains GCC shared libraries which are needed
-for mudflap support.
-
-For front-ends that support it (C and C++), instrument all risky
-pointer/array dereferencing operations, some standard library
-string/heap functions, and some other associated constructs with
-range/validity tests.  Modules so instrumented should be immune to
-buffer overflows, invalid heap use, and some other classes of C/C++
-programming errors.
-
-%files		-n %{multilibmudflap}
-%{multilibdir}/libmudflap.so.%{mudflap_major}
-%{multilibdir}/libmudflap.so.%{mudflap_major}.*
-%{multilibdir}/libmudflapth.so.%{mudflap_major}
-%{multilibdir}/libmudflapth.so.%{mudflap_major}.*
-%endif
-
-#-----------------------------------------------------------------------
-%package	-n %{libmudflap_devel}
-Summary:	GCC mudflap development support
-Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libmudflap} = %{version}-%{release}
-%if %{build_multilib}
-Requires:	%{multilibmudflap} = %{version}-%{release}
-%endif
-%if "%libmudflap_devel" != "libmudflap-devel"
-Provides:	libmudflap-devel = %{version}-%{release}
-%endif
-Provides:	mudflap-devel = %{version}-%{release}
-
-%description	-n %{libmudflap_devel}
-This package contains GCC libraries which are needed
-to compile mudflap support.
-
-%files		-n %{libmudflap_devel}
-%{_libdir}/libmudflap.so
-%{_libdir}/libmudflapth.so
-%if %{build_multilib}
-%{multilibdir}/libmudflap.so
-%{multilibdir}/libmudflapth.so
-%endif
-%{gccdir}/include/mf-runtime.h
-
-#-----------------------------------------------------------------------
-%package	-n %{libmudflap_static_devel}
-Summary:	GCC mudflap static libraries
-Group:		Development/C
-Requires:	%{libmudflap_devel} = %{version}-%{release}
-Provides:	libmudflap-static-devel = %{version}-%{release}
-Provides:	mudflap-static-devel = %{version}-%{release}
-
-%description	-n %{libmudflap_static_devel}
-This package contains GCC static libraries which are needed
-to compile mudflap support.
-
-%files		-n %{libmudflap_static_devel}
-%{_libdir}/libmudflap.*a
-%{_libdir}/libmudflapth.*a
-%if %{build_multilib}
-%{multilibdir}/libmudflap.*a
-%{multilibdir}/libmudflapth.*a
-%endif
-#-----------------------------------------------------------------------
-# build mudflap
-%endif
-
-########################################################################
 %if %{build_ssp}
 #-----------------------------------------------------------------------
 %package	-n %{libssp}
@@ -1918,12 +1825,177 @@ Group:		Development/C
 Requires:	%{libatomic} = %{EVRD}
 
 %description	-n %{libatomic_static_devel}
-Static libtsan
+Static libatomic
 
 %files		-n %{libatomic_static_devel}
 %{_libdir}/libatomic.a
 %if %{build_multilib}
 %{multilibdir}/libatomic.a
+%endif
+
+########################################################################
+# Intel CILK
+########################################################################
+%package	-n %{libcilkrts}
+Summary:	CILK (multithreading programming language) runtime
+Group:		Development/C
+
+%description	-n %{libcilkrts}
+CILK (multithreading programming language) runtime
+
+%files		-n %{libcilkrts}
+%{_libdir}/libcilkrts.so.%{cilk_major}*
+
+%package	-n %{libcilkrts_devel}
+Summary:	Development files for the CILK multithreading programming language
+Group:		Development/C
+Requires:	%{libcilkrts} = %{EVRD}
+
+%description	-n %{libcilkrts_devel}
+Development files for the CILK multithreading programming language
+
+%files		-n %{libcilkrts_devel}
+%{_libdir}/libcilkrts.so
+%{_libdir}/libcilkrts.spec
+%{gccdir}/include/cilk
+
+%if %{build_multilib}
+%package	-n %{multilibcilkrts}
+Summary:	CILK (multithreading programming language) runtime
+Group:		Development/C
+
+%description	-n %{multilibcilkrts}
+CILK (multithreading programming language) runtime
+
+%files		-n %{multilibcilkrts}
+%{_prefix}/lib/libcilkrts.so.%{cilk_major}*
+%{_prefix}/lib/libcilkrts.so
+%{_prefix}/lib/libcilkrts.spec
+%endif
+
+%package	-n %{libcilkrts_static_devel}
+Summary:	Static libcilkrts
+Group:		Development/C
+Requires:	%{libcilkrts_devel} = %{EVRD}
+
+%description	-n %{libcilkrts_static_devel}
+Static libcilkrts
+
+%files		-n %{libcilkrts_static_devel}
+%{_libdir}/libcilkrts.a
+%if %{build_multilib}
+%{multilibdir}/libcilkrts.a
+%endif
+
+########################################################################
+# VTV (VTable Verification)
+########################################################################
+%package	-n %{libvtv}
+Summary:	VTable Verification library
+Group:		Development/C
+
+%description	-n %{libvtv}
+VTable Verification library
+
+%files		-n %{libvtv}
+%{_libdir}/libvtv.so.%{vtv_major}*
+%{_libdir}/libvtv.so
+
+%if %{build_multilib}
+%package	-n %{multilibvtv}
+Summary:	VTable Verification library
+Group:		Development/C
+
+%description	-n %{multilibvtv}
+VTable Verification library
+
+%files		-n %{multilibvtv}
+%{_prefix}/lib/libvtv.so.%{vtv_major}*
+%{_prefix}/lib/libvtv.so
+%endif
+
+%package	-n %{libvtv_static_devel}
+Summary:	Static libvtv
+Group:		Development/C
+Requires:	%{libvtv} = %{EVRD}
+
+%description	-n %{libvtv_static_devel}
+Static libvtv
+
+%files		-n %{libvtv_static_devel}
+%{_libdir}/libvtv.a
+%if %{build_multilib}
+%{multilibdir}/libvtv.a
+%endif
+
+########################################################################
+# UBSan (Undefined Behavior Sanitizer)
+########################################################################
+%package	-n %{libubsan}
+Summary:	Undefined Behavior Sanitizer library
+Group:		Development/C
+
+%description	-n %{libubsan}
+Undefined Behavior Sanitizer library
+
+%files		-n %{libubsan}
+%{_libdir}/libubsan.so.%{ubsan_major}*
+%{_libdir}/libubsan.so
+%{_libdir}/libsanitizer.spec
+
+%if %{build_multilib}
+%package	-n %{multilibubsan}
+Summary:	Undefined Behavior Sanitizer library
+Group:		Development/C
+
+%description	-n %{multilibubsan}
+Undefined Behavior Sanitizer library
+
+%files		-n %{multilibubsan}
+%{_prefix}/lib/libubsan.so.%{ubsan_major}*
+%{_prefix}/lib/libubsan.so
+%{_prefix}/lib/libsanitizer.spec
+%endif
+
+%package	-n %{libubsan_static_devel}
+Summary:	Static libubsan
+Group:		Development/C
+Requires:	%{libubsan} = %{EVRD}
+
+%description	-n %{libubsan_static_devel}
+Static libubsan
+
+%files		-n %{libubsan_static_devel}
+%{_libdir}/libubsan.a
+%if %{build_multilib}
+%{multilibdir}/libubsan.a
+%endif
+
+########################################################################
+# LSan (Leak Sanitizer)
+########################################################################
+%ifarch x86_64
+%package	-n %{liblsan}
+Summary:	Leak Sanitizer library
+Group:		Development/C
+
+%description	-n %{liblsan}
+Leak Sanitizer library
+
+%files		-n %{liblsan}
+%{_libdir}/liblsan.so.%{lsan_major}*
+%{_libdir}/liblsan.so
+
+%package	-n %{liblsan_static_devel}
+Summary:	Static liblsan
+Group:		Development/C
+Requires:	%{liblsan} = %{EVRD}
+
+%description	-n %{liblsan_static_devel}
+Static liblsan
+
+%files		-n %{liblsan_static_devel}
+%{_libdir}/liblsan.a
 %endif
 
 ########################################################################
@@ -2070,9 +2142,6 @@ XCFLAGS="$OPT_FLAGS"						\
   %if %{build_fortran}
 	--disable-libquadmath-support				\
   %endif
-%endif
-%if !%{build_mudflap}
-	--disable-libmudflap					\
 %endif
 %if !%{build_ssp}
 	--disable-libssp					\

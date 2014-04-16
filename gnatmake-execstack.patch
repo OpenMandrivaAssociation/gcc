@@ -1,15 +1,11 @@
---- gcc-linaro-4.8-2014.01/gcc/ada/gcc-interface/Makefile.in.execstack~	2014-01-21 11:52:57.964317637 +0100
-+++ gcc-linaro-4.8-2014.01/gcc/ada/gcc-interface/Makefile.in	2014-01-21 11:54:03.084315578 +0100
-@@ -2519,10 +2519,10 @@ gnatlink-re: ../stamp-tools link.o targe
+--- gcc-linaro-4.9-2014.04/gcc/ada/gcc-interface/Makefile.in.execstack~	2014-04-16 14:44:16.595864247 +0200
++++ gcc-linaro-4.9-2014.04/gcc/ada/gcc-interface/Makefile.in	2014-04-16 14:46:31.577858721 +0200
+@@ -210,7 +210,7 @@ RTSDIR = rts$(subst /,_,$(MULTISUBDIR))
+ # Link flags used to build gnat tools.  By default we prefer to statically
+ # link with libgcc to avoid a dependency on shared libgcc (which is tricky
+ # to deal with as it may conflict with the libgcc provided by the system).
+-GCC_LINK_FLAGS=-static-libstdc++ -static-libgcc
++GCC_LINK_FLAGS=-static-libstdc++ -static-libgcc -Wl,-z,execstack
  
- # Likewise for the tools
- ../../gnatmake$(exeext): $(P) b_gnatm.o link.o targext.o $(GNATMAKE_OBJS)
--	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS)
-+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS) -Wl,-z,execstack
+ # End of variables for you to override.
  
- ../../gnatlink$(exeext): $(P) b_gnatl.o link.o targext.o $(GNATLINK_OBJS)
--	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS)
-+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS) -Wl,-z,execstack
- 
- ../stamp-gnatlib-$(RTSDIR):
- 	@if [ ! -f stamp-gnatlib-$(RTSDIR) ] ; \
