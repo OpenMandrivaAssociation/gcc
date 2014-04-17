@@ -1836,6 +1836,7 @@ Static libatomic
 ########################################################################
 # Intel CILK
 ########################################################################
+%ifarch %ix86 x86_64
 %package	-n %{libcilkrts}
 Summary:	CILK (multithreading programming language) runtime
 Group:		Development/C
@@ -1886,10 +1887,12 @@ Static libcilkrts
 %if %{build_multilib}
 %{multilibdir}/libcilkrts.a
 %endif
+%endif
 
 ########################################################################
 # VTV (VTable Verification)
 ########################################################################
+%ifarch %ix86 x86_64
 %package	-n %{libvtv}
 Summary:	VTable Verification library
 Group:		Development/C
@@ -1926,6 +1929,7 @@ Static libvtv
 %{_libdir}/libvtv.a
 %if %{build_multilib}
 %{multilibdir}/libvtv.a
+%endif
 %endif
 
 ########################################################################
