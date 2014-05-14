@@ -19,7 +19,7 @@
 %define		system_compiler		1
 %define		branch			4.9
 %define		ver			%branch.1
-%define		linaro			2014.04
+%define		linaro			2014.05
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		remove_alternatives	0
