@@ -416,12 +416,14 @@ Requires:	ppl_c-devel
 
 %description plugin-devel
 This package contains header files and other support files
-for compiling GCC plugins.  The GCC plugin ABI is currently
+for compiling GCC plugins. The GCC plugin ABI is currently
 not stable, so plugins must be rebuilt any time GCC is updated.
 
 %files plugin-devel
 %{gccdir}/plugin
+%if "%{gccdir}" != "%{gcclibexecdir}"
 %{gcclibexecdir}/plugin
+%endif
 
 #-----------------------------------------------------------------------
 # build_plugin
