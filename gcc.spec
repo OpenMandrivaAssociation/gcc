@@ -34,94 +34,94 @@
 %define		multilibgcc		libgcc%{gcc_major}
 %define		stdcxx_major		6
 %define		libstdcxx		%mklibname stdc++ %{stdcxx_major}
-%define		libstdcxx_devel		%mklibname -d stdc++
-%define		libstdcxx_static_devel	%mklibname -d -s stdc++
+%define		libstdcxx_devel		%mklibname stdc++ -d
+%define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
 %define		gcj_major		15
 %define		libgcj			%mklibname gcj %{gcj_major}
-%define		libgcj_devel		%mklibname -d gcj
-%define		libgcj_static_devel	%mklibname -d -s gcj
+%define		libgcj_devel		%mklibname gcj -d
+%define		libgcj_static_devel	%mklibname gcj -d -s
 %define		gcj_bc_major		1
 %define		libgcj_bc		%mklibname gcj_bc %{gcj_bc_major}
 # gcj multilib explicitly disabled
 %define		gfortran_major		3
 %define		libgfortran		%mklibname gfortran %{gfortran_major}
-%define		libgfortran_devel	%mklibname -d gfortran
-%define		libgfortran_static_devel %mklibname -d -s gfortran
+%define		libgfortran_devel	%mklibname gfortran -d
+%define		libgfortran_static_devel %mklibname gfortran -d -s
 %define		multilibgfortran	libgfortran%{gfortran_major}
 %define		ffi_major		4
 %define		libffi			%mklibname ffi %{ffi_major}
-%define		libffi_devel		%mklibname -d ffi
-%define		libffi_static_devel	%mklibname -d -s ffi
+%define		libffi_devel		%mklibname ffi -d
+%define		libffi_static_devel	%mklibname ffi -d -s
 %define		multilibffi		libffi%{ffi_major}
 %define		gnat_major		1
 %define		libgnat			%mklibname gnat %{gnat_major}
-%define		libgnat_devel		%mklibname -d gnat
-%define		libgnat_static_devel	%mklibname -d -s gnat
+%define		libgnat_devel		%mklibname gnat -d
+%define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
 %define		go_major		5
 %define		libgo			%mklibname go %{go_major}
-%define		libgo_devel		%mklibname -d go
-%define		libgo_static_devel	%mklibname -d -s go
+%define		libgo_devel		%mklibname go -d
+%define		libgo_static_devel	%mklibname go -d -s
 %define		multilibgo		libgo%{go_major}
 %define		gomp_major		1
 %define		libgomp			%mklibname gomp %{gomp_major}
-%define		libgomp_devel		%mklibname -d gomp
-%define		libgomp_static_devel	%mklibname -d -s gomp
+%define		libgomp_devel		%mklibname gomp -d
+%define		libgomp_static_devel	%mklibname gomp -d -s
 %define		multilibgomp		libgomp%{gomp_major}
 %define		objc_major		4
 %define		libobjc			%mklibname objc %{objc_major}
-%define		libobjc_devel		%mklibname -d objc
-%define		libobjc_static_devel	%mklibname -d -s objc
+%define		libobjc_devel		%mklibname objc -d
+%define		libobjc_static_devel	%mklibname objc -d -s
 %define		multilibobjc		libobjc%{objc_major}
 %define		quadmath_major		0
 %define		libquadmath		%mklibname quadmath %{quadmath_major}
-%define		libquadmath_devel	%mklibname -d quadmath
-%define		libquadmath_static_devel %mklibname -d -s quadmath
+%define		libquadmath_devel	%mklibname quadmath -d
+%define		libquadmath_static_devel %mklibname quadmath -d -s
 %define		multilibquadmath	libquadmath%{quadmath_major}
 %define		ssp_major		0
 %define		libssp			%mklibname ssp %{ssp_major}
-%define		libssp_devel		%mklibname -d ssp
-%define		libssp_static_devel	%mklibname -d -s ssp
+%define		libssp_devel		%mklibname ssp -d
+%define		libssp_static_devel	%mklibname ssp -d -s
 %define		multilibssp		libssp%{ssp_major}
 %define		itm_major		1
 %define		libitm			%mklibname itm %{itm_major}
-%define		libitm_devel		%mklibname -d itm
-%define		libitm_static_devel	%mklibname -d -s itm
+%define		libitm_devel		%mklibname itm -d
+%define		libitm_static_devel	%mklibname itm -d -s
 %define		multilibitm		libitm%{itm_major}
 %define		asan_major		1
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_devel		%mklibname asan -d
-%define		libasan_static_devel	%mklibname -d -s asan
+%define		libasan_static_devel	%mklibname asan -d -s
 %define		multilibasan		libasan%{asan_major}
 %define		tsan_major		0
 %define		libtsan			%mklibname tsan %{tsan_major}
 %define		libtsan_devel		%mklibname tsan -d
-%define		libtsan_static_devel	%mklibname -d -s tsan
+%define		libtsan_static_devel	%mklibname tsan -d -s
 %define		atomic_major		1
 %define		libatomic		%mklibname atomic %{atomic_major}
 %define		libatomic_devel		%mklibname atomic -d
-%define		libatomic_static_devel	%mklibname -d -s atomic
+%define		libatomic_static_devel	%mklibname atomic -d -s
 %define		multilibatomic		libatomic%{atomic_major}
 %define		cilk_major		5
 %define		libcilkrts		%mklibname cilkrts %{cilk_major}
-%define		libcilkrts_devel	%mklibname -d cilkrts
-%define		libcilkrts_static_devel	%mklibname -d -s cilkrts
+%define		libcilkrts_devel	%mklibname cilkrts -d
+%define		libcilkrts_static_devel	%mklibname cilkrts -d -s
 %define		multilibcilkrts		libcilkrts%{cilk_major}
 %define		ubsan_major		0
 %define		libubsan		%mklibname ubsan %{ubsan_major}
 %define		libubsan_devel		%mklibname ubsan -d
-%define		libubsan_static_devel	%mklibname -d -s ubsan
+%define		libubsan_static_devel	%mklibname ubsan -d -s
 %define		multilibubsan		libubsan%{ubsan_major}
 %define		vtv_major		0
 %define		libvtv			%mklibname vtv %{vtv_major}
 %define		libvtv_devel		%mklibname vtv -d
-%define		libvtv_static_devel	%mklibname -d -s vtv
+%define		libvtv_static_devel	%mklibname vtv -d -s
 %define		multilibvtv		libvtv%{vtv_major}
 %define		lsan_major		0
 %define		liblsan			%mklibname lsan %{lsan_major}
 %define		liblsan_devel		%mklibname lsan -d
-%define		liblsan_static_devel	%mklibname -d -s lsan
+%define		liblsan_static_devel	%mklibname lsan -d -s
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
