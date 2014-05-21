@@ -187,16 +187,17 @@
 %bcond_with	x32_bootstrap
 
 #-----------------------------------------------------------------------
+
+Summary:	GNU Compiler Collection
 %if %{system_compiler}
 Name:		gcc
 %else
 Name:		gcc%{branch}
 %endif
 Release:	2
-Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
-URL:		http://gcc.gnu.org/
+Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
@@ -248,7 +249,6 @@ BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	gdb
 BuildRequires:	gettext
-BuildRequires:	gmp-devel, mpfr-devel, libmpc-devel
 BuildRequires:	sharutils
 BuildRequires:	texinfo
 %if %{build_doc}
@@ -257,12 +257,15 @@ BuildRequires:	texi2html
 %if %{build_pdf}
 BuildRequires:	texlive
 %endif
-BuildRequires:	zlib-devel
+BuildRequires:	gmp-devel
+BuildRequires:	mpfr-devel
+BuildRequires:	libmpc-devel
+BuildRequires:	pkgconfig(zlib)
 %if %{build_cloog}
 BuildRequires:	ppl-devel >= 0.11
 BuildRequires:	ppl_c-devel >= 0.11
-BuildRequires:	cloog-devel
-BuildRequires:	isl-devel
+BuildRequires:	pkgconfig(cloog-isl)
+BuildRequires:	pkgconfig(isl)
 %endif
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
@@ -1134,8 +1137,8 @@ Summary:	Libraries for Java development using GCC
 Group:		Development/Java
 Requires:	%{libgcj} = %{EVRD}
 Requires:	%{libgcj_bc} = %{EVRD}
-Requires:	pkgconfig(zlib)
 Requires:	awk
+Requires:	pkgconfig(zlib)
 Provides:	libgcj-devel = %{EVRD}
 Provides:	gcj-devel = %{EVRD}
 
