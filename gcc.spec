@@ -192,7 +192,7 @@ Name:		gcc
 %else
 Name:		gcc%{branch}
 %endif
-Release:	1
+Release:	2
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -309,9 +309,9 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
 %{_libdir}/libgcc_s.so
-  %if %{build_multilib}
+%if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-  %endif
+%endif
 %endif
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{_target_platform}-gcc-%{ver}
@@ -1030,14 +1030,12 @@ bytecode into native code.
 Summary:	Java runtime library for gcc (platform dependent parts)
 Group:		System/Libraries
 Provides:	libgcj = %{EVRD}
-Provides:	%{libgcj_bc} = %{EVRD}
 %if %{build_multilib}
 # for compatibility and/or make updates clean
 Provides:	libgcj%{gcj_major} = %{EVRD}
-Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
 %endif
 Requires:	zip >= 2.1
-Requires:	libgcj-java = %{EVRD}
+Requires:	libgcj-java >= %{EVRD}
 %if %{without java_bootstrap}
 # We need antlr
 BuildRequires:	antlr-tool
@@ -1046,8 +1044,8 @@ BuildRequires:	pkgconfig(gtk+-2.0)
 BuildRequires:	pkgconfig(glib-2.0)
 BuildRequires:	pkgconfig(libart-2.0)
 BuildRequires:	pkgconfig(alsa)
-BuildRequires:	pkgconfig(xtst)
 BuildRequires:	pkgconfig(xt)
+BuildRequires:	pkgconfig(xtst)
 BuildRequires:	spec-helper >= 0.31.10
 
 %description -n %{libgcj}
@@ -1060,14 +1058,32 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
 %{_libdir}/libgcj.so.%{gcj_major}*
 %{_libdir}/libgcj-tools.so.%{gcj_major}*
-%{_libdir}/libgcj_bc.so.%{gcj_bc_major}*
 %{_libdir}/libgij.so.%{gcj_major}*
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgcj_bc}
+Summary:	Java runtime library for gcc
+Group:		System/Libraries
+%if %{build_multilib}
+Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
+%endif
+Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
+Conflicts:	%{_lib}gcj15 < 4.9.1_2014.05-2
+
+%description -n %{libgcj_bc}
+The Java(tm) runtime library. You will need this package to run your Java
+programs compiled using the Java compiler from GNU Compiler Collection (gcj).
+
+%files -n %{libgcj_bc}
+%{_libdir}/libgcj_bc.so.%{gcj_bc_major}*
 
 #-----------------------------------------------------------------------
 
 %package -n libgcj-java
 Summary:	Java runtime library for gcc (Java parts)
 Group:		System/Libraries
+Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
 Requires:	%{libgcj} = %{EVRD}
 
 %description -n libgcj-java
@@ -1117,12 +1133,11 @@ need this package to run your Java programs in the Java Virtual Machine
 Summary:	Libraries for Java development using GCC
 Group:		Development/Java
 Requires:	%{libgcj} = %{EVRD}
-Requires:	zlib-devel
+Requires:	%{libgcj_bc} = %{EVRD}
+Requires:	pkgconfig(zlib)
 Requires:	awk
 Provides:	libgcj-devel = %{EVRD}
 Provides:	gcj-devel = %{EVRD}
-# libgcj and friends are no longer built statically for 4.7.x
-Obsoletes:	%{libgcj_static_devel} < %{EVRD}
 
 %description -n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
