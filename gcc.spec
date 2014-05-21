@@ -18,7 +18,7 @@
 %endif
 %define		system_compiler		1
 %define		branch			4.9
-%define		ver			%branch.1
+%define		ver			%{branch}.1
 %define		linaro			2014.05
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
@@ -198,7 +198,7 @@
 %if %{system_compiler}
 Name:		gcc
 %else
-Name:		gcc%branch
+Name:		gcc%{branch}
 %endif
 Release:	1
 #ExclusiveArch:	x86_64
@@ -206,15 +206,15 @@ Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 URL:		http://gcc.gnu.org/
-%if "%linaro" != ""
-Version:	%{ver}_%linaro
-%if "%linaro_spin" != ""
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro-%linaro_spin.tar.xz
+%if "%{linaro}" != ""
+Version:	%{ver}_%{linaro}
+%if "%{linaro_spin}" != ""
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%branch-%linaro.tar.xz
+Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
-Version:	%ver
+Version:	%{ver}
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
 Source0:	gcc-%{version}.tar.bz2
@@ -274,8 +274,8 @@ BuildRequires:	zlib-devel
 %if %{build_cloog}
 BuildRequires:	ppl-devel >= 0.11
 BuildRequires:	ppl_c-devel >= 0.11
-#BuildRequires:	cloog-ppl-devel >= 0.16.1
-BuildRequires:	cloog-devel isl-devel
+BuildRequires:	cloog-devel
+BuildRequires:	isl-devel
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
@@ -383,7 +383,7 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 %package	-n %{libgcc}
 Summary:	GNU C library
 Group:		System/Libraries
-%if "%libgcc" != "libgcc"
+%if "%{libgcc}" != "libgcc"
 Provides:	libgcc = %{version}-%{release}
 %endif
 %if %mdkversion <= 201200
@@ -539,7 +539,7 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 %package	-n %{libstdcxx}
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
-%if "%libstdcxx" != "libstdc++"
+%if "%{libstdcxx}" != "libstdc++"
 Provides:	libstdc++ = %{version}-%{release}
 %endif
 %if %{build_doc}
@@ -582,17 +582,17 @@ Requires:	%{libstdcxx} = %{version}-%{release}
 %if %{build_multilib}
 Requires:	%{multilibstdcxx} = %{version}-%{release}
 %endif
-%if "%libstdcxx_devel" != "libstdc++-devel"
+%if "%{libstdcxx_devel}" != "libstdc++-devel"
 Provides:	libstdc++-devel = %{version}-%{release}
 %endif
 Provides:	stdc++-devel = %{version}-%{release}
-%if "%ver" != "%version"
+%if "%{ver}" != "%{version}"
 # 4.7.2_2010.10 should provide 4.7.2 so clang can pick up the dep
-%if "%libstdcxx_devel" != "libstdc++-devel"
-Provides:	%libstdcxx_devel = %ver-%release
+%if "%{libstdcxx_devel}" != "libstdc++-devel"
+Provides:	%{libstdcxx_devel} = %{ver}-%{release}
 %endif
-Provides:	libstdc++-devel = %ver-%release
-Provides:	stdc++-devel = %ver-%release
+Provides:	libstdc++-devel = %{ver}-%{release}
+Provides:	stdc++-devel = %{ver}-%{release}
 %endif
 %if %{obsolete_devmajor}
 Obsoletes:	libstdc++4.5-devel < %{version}-%{release}
@@ -1091,7 +1091,7 @@ Obsoletes:	%{libgcj11} < %{version}-%{release}
 Obsoletes:	%{libgcj11}-base < %{version}-%{release}
 %endif
 Requires:	zip >= 2.1
-Requires:	libgcj-java = %EVRD
+Requires:	libgcj-java = %{EVRD}
 %if %{without java_bootstrap}
 # We need antlr
 BuildRequires:	antlr-tool
@@ -1125,7 +1125,7 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %package -n libgcj-java
 Summary:	Java runtime library for gcc (Java parts)
 Group:		System/Libraries
-Requires:	%libgcj = %EVRD
+Requires:	%{libgcj} = %{EVRD}
 
 %description -n libgcj-java
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1697,7 +1697,7 @@ to use Transactional Memory features.
 %{multilibdir}/libitm.so
 %{multilibdir}/libitm.spec
 %endif
-%_infodir/libitm.info*
+%{_infodir}/libitm.info*
 
 #-----------------------------------------------------------------------
 %package	-n %{libitm_static_devel}
@@ -2004,11 +2004,11 @@ Static liblsan
 
 ########################################################################
 %prep
-%if "%linaro" != ""
-%if "%linaro_spin" != ""
-  %setup -q -n gcc-linaro-%branch-%linaro-%linaro_spin
+%if "%{linaro}" != ""
+%if "%{linaro_spin}" != ""
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%branch-%linaro
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
@@ -2154,7 +2154,7 @@ XCFLAGS="$OPT_FLAGS"						\
 	--disable-werror					\
 	--enable-__cxa_atexit					\
 	--enable-gold=default					\
-	--with-plugin-ld=%_bindir/ld				\
+	--with-plugin-ld=%{_bindir}/ld				\
 %if %{system_compiler}
 	--enable-bootstrap					\
 %endif
@@ -2347,7 +2347,7 @@ pushd %{buildroot}%{_bindir}
 %if %{build_java}
     ln -sf gcjh %{_target_platform}-gcjh
     # For some reason, the .so file is a real file, not a symlink
-    ln -sf libgcj_bc.so.1.0.0 %buildroot%_libdir/libgcj_bc.so
+    ln -sf libgcj_bc.so.1.0.0 %{buildroot}%{_libdir}/libgcj_bc.so
 %endif
 popd
 
@@ -2388,14 +2388,14 @@ popd
     for lib in libgnarl libgnat; do
 	rm -f	%{buildroot}%{_libdir}/$lib.so
 	rm -f	%{buildroot}%{gccdir}/adalib/$lib.so
-	mv -f	%{buildroot}%{gccdir}/adalib/$lib-%{branch}.so		\
+	mv -f	%{buildroot}%{gccdir}/adalib/$lib-%{branch}.so \
 		%{buildroot}%{_libdir}/$lib-%{branch}.so.1
 	ln -sf	$lib-%{branch}.so.1 %{buildroot}%{_libdir}/$lib-%{branch}.so
 	ln -sf	$lib-%{branch}.so.1 %{buildroot}%{_libdir}/$lib.so
     %if %{build_multilib}
 	rm -f %{buildroot}%{multilibdir}/$lib.so
 	rm -f	%{buildroot}%{multigccdir}/adalib/$lib.so
-	mv -f	%{buildroot}%{multigccdir}/adalib/$lib-%{branch}.so	\
+	mv -f	%{buildroot}%{multigccdir}/adalib/$lib-%{branch}.so \
 		%{buildroot}%{multilibdir}/$lib-%{branch}.so.1
 	ln -sf	$lib-%{branch}.so.1 %{buildroot}%{multilibdir}/$lib-%{branch}.so
 	ln -sf	$lib-%{branch}.so.1 %{buildroot}%{multilibdir}/$lib.so
@@ -2525,10 +2525,10 @@ cd ..
 
 # Not needed on cooker (but on ROSA 2012 and backports, and
 # can't hurt)
-rm -f %buildroot%_libdir/libitm.la \
-      %buildroot%_prefix/lib/libitm.la \
+rm -f %{buildroot}%{_libdir}/libitm.la \
+      %{buildroot}%{_prefix}/lib/libitm.la \
 %if %{build_java}
-      %buildroot%_libdir/gcj-*/*.la
+      %{buildroot}%{_libdir}/gcj-*/*.la
 %else
 
 %endif
@@ -2537,20 +2537,20 @@ rm -f %buildroot%_libdir/libitm.la \
 # Workaround for all gcj related tools
 # somehow getting the same build ID
 strip --strip-unneeded \
-	%buildroot%_bindir/gc-analyze \
-	%buildroot%_bindir/gappletviewer \
-	%buildroot%_bindir/gjar \
-	%buildroot%_bindir/gij \
-	%buildroot%_bindir/gjavah \
-	%buildroot%_bindir/gjarsigner \
-	%buildroot%_bindir/gkeytool \
-	%buildroot%_bindir/gorbd \
-	%buildroot%_bindir/grmic \
-	%buildroot%_bindir/grmid \
-	%buildroot%_bindir/gnative2ascii \
-	%buildroot%_bindir/gserialver \
-	%buildroot%_bindir/grmiregistry \
-	%buildroot%_bindir/jv-convert \
-	%buildroot%_bindir/gtnameserv \
-	%buildroot%_bindir/gcjh
+	%{buildroot}%{_bindir}/gc-analyze \
+	%{buildroot}%{_bindir}/gappletviewer \
+	%{buildroot}%{_bindir}/gjar \
+	%{buildroot}%{_bindir}/gij \
+	%{buildroot}%{_bindir}/gjavah \
+	%{buildroot}%{_bindir}/gjarsigner \
+	%{buildroot}%{_bindir}/gkeytool \
+	%{buildroot}%{_bindir}/gorbd \
+	%{buildroot}%{_bindir}/grmic \
+	%{buildroot}%{_bindir}/grmid \
+	%{buildroot}%{_bindir}/gnative2ascii \
+	%{buildroot}%{_bindir}/gserialver \
+	%{buildroot}%{_bindir}/grmiregistry \
+	%{buildroot}%{_bindir}/jv-convert \
+	%{buildroot}%{_bindir}/gtnameserv \
+	%{buildroot}%{_bindir}/gcjh
 %endif
