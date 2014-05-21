@@ -2243,6 +2243,7 @@ XCFLAGS="$OPT_FLAGS" \
 ../configure \
         --prefix=%{_prefix} \
         --libdir=%{_libdir} \
+        --libexecdir=%{_libexecdir} \
         --mandir=%{_mandir} \
         --infodir=%{_infodir} \
 %if !%{build_java}
