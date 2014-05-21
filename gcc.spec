@@ -22,14 +22,6 @@
 %define		linaro			2014.05
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
-%define		remove_alternatives	0
-%define		obsolete_devmajor	0
-%if %mdkversion <= 201200
-  %if %{system_compiler}
-    %define	remove_alternatives	1
-    %define	obsolete_devmajor	1
-  %endif
-%endif
 %define		gcclibexecdir		%{_libexecdir}/gcc/%{_target_platform}/%{ver}
 %define		gccdir			%{_libdir}/gcc/%{_target_platform}/%{ver}
 %define		multigccdir		%{_libdir}/gcc/%{_target_platform}/%{ver}/32
@@ -201,7 +193,6 @@ Name:		gcc
 Name:		gcc%{branch}
 %endif
 Release:	1
-#ExclusiveArch:	x86_64
 Summary:	GNU Compiler Collection
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
@@ -239,10 +230,6 @@ Source100:	%{name}.rpmlintrc
 Requires:	gcc-cpp >= %{EVRD}
 Requires:	libgcc >= %{EVRD}
 Requires:	libgomp >= %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc4.4 < %{EVRD}
-# versioned and non versioned files
-Conflicts:	manbo-mandriva-files-gcc4.2 < %{EVRD}
 %endif
 %ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
@@ -277,10 +264,6 @@ BuildRequires:	ppl_c-devel >= 0.11
 BuildRequires:	cloog-devel
 BuildRequires:	isl-devel
 %endif
-%if %{remove_alternatives}
-Requires(pre):	update-alternatives
-%endif
-Obsoletes:	gcc-doc < %{EVRD}
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
@@ -303,11 +286,6 @@ Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
-
-%if %{remove_alternatives}
-%pre
-if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
-%endif
 
 %files
 %if %{system_compiler}
@@ -387,11 +365,6 @@ Group:		System/Libraries
 %if "%{libgcc}" != "libgcc"
 Provides:	libgcc = %{EVRD}
 %endif
-%if %mdkversion <= 201200
-Obsoletes:	libgcc3.0 < %{EVRD}
-Obsoletes:	libgcc3.2 < %{EVRD}
-Obsoletes:	libgcc4.5 < %{EVRD}
-%endif
 
 %description -n %{libgcc}
 The %{libgcc} package contains GCC shared libraries for gcc %{branch}
@@ -425,7 +398,6 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 %package plugin-devel
 Summary:	Headers to build gcc plugins
 Group:		Development/C
-Obsoletes:	gcc-plugins <= 4.5.2
 Requires:	%{name} = %{EVRD}
 Requires:	gmp-devel
 Requires:	mpfr-devel
@@ -455,9 +427,6 @@ Summary:	The C Preprocessor
 Group:		Development/C
 Provides:	cpp = %{EVRD}
 Requires:	%{name} = %{EVRD}
-%if %{remove_alternatives}
-Requires(pre):	update-alternatives
-%endif
 
 %description cpp
 Cpp is the GNU C-Compatible Compiler Preprocessor.
@@ -480,11 +449,6 @@ The C preprocessor provides four separate functionalities:
 * Line control. If you use a program to combine or rearrange source files
   into an intermediate file which is then compiled, you can use line
   control to inform the compiler about where each source line originated.
-
-%if %{remove_alternatives}
-%pre cpp
-if [ -f %{_bindir}/cpp ]; then %{alternatives} --remove-all cpp; fi
-%endif
 
 %files cpp
 /lib/cpp
@@ -510,25 +474,12 @@ Group:		Development/C++
 Requires:	%{name} = %{EVRD}
 %if %{system_compiler}
 Requires:	%{libstdcxx_devel} = %{version}
-Obsoletes:	manbo-mandriva-files-g++ < %{EVRD}
-Obsoletes:	manbo-mandriva-files-g++4.4 < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-c++ < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-c++4.2 < %{EVRD}
-%endif
-%if %{remove_alternatives}
-Requires(pre):	update-alternatives
 %endif
 
 %description c++
 This package adds C++ support to the GNU Compiler Collection.
 It includes support for most of the current C++ specification,
 including templates and exception handling.
-
-%if %{remove_alternatives}
-%pre c++
-if [ -f %{_bindir}/c++ ]; then %{alternatives} --remove-all c++; fi
-if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
-%endif
 
 %files c++
 %if %{system_compiler}
@@ -603,10 +554,6 @@ Provides:	%{libstdcxx_devel} = %{ver}-%{release}
 Provides:	libstdc++-devel = %{ver}-%{release}
 Provides:	stdc++-devel = %{ver}-%{release}
 %endif
-%if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-devel < %{EVRD}
-Obsoletes:	libstdc++6-devel < %{EVRD}
-%endif
 # We don't want to pull in an entire Python environment just because of
 # libstdc++'s python based gdb plugin...
 %define __noautoreq '.*python.*'
@@ -639,10 +586,6 @@ Requires:	%{libstdcxx_devel} = %{EVRD}
 Provides:	libstdc++-static-devel = %{EVRD}
 %endif
 Provides:	stdc++-static-devel = %{EVRD}
-%if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-static-devel < %{EVRD}
-Obsoletes:	libstdc++%{stdcxx_major}-static-devel < %{EVRD}
-%endif
 
 %description -n %{libstdcxx_static_devel}
 Static libraries for the GNU standard C++ library.
@@ -793,10 +736,6 @@ Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgfortran_devel} = %{EVRD}
-Obsoletes:	manbo-mandriva-files-gfortran < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gfortran4.4 < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-gfortran < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2 < %{EVRD}
 
 %description gfortran
 The gcc-gfortran package provides support for compiling Fortran
@@ -832,9 +771,6 @@ Requires:	%{libquadmath} = %{EVRD}
 Provides:	libgfortran = %{EVRD}
 %if %{build_multilib}
 Provides:	%{multilibgfortran} = %{EVRD}
-%endif
-%if %mdkversion <= 201200
-Obsoletes:	libgfortran4.5 < %{EVRD}
 %endif
 
 %description -n %{libgfortran}
@@ -1037,10 +973,6 @@ BuildRequires:	ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
 BuildRequires:	zip
-Obsoletes:	manbo-mandriva-files-java < %{EVRD}
-Obsoletes:	manbo-mandriva-files-java4.4 < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-java < %{EVRD}
-Obsoletes:	manbo-mandriva-files-gcc-java4.2 < %{EVRD}
 
 %description java
 This package adds support for compiling Java(tm) programs and
@@ -1103,17 +1035,6 @@ Provides:	%{libgcj_bc} = %{EVRD}
 # for compatibility and/or make updates clean
 Provides:	libgcj%{gcj_major} = %{EVRD}
 Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
-%endif
-%if %mdkversion <= 201200
-Provides:	libgcj%{gcj_major}-base = %{EVRD}
-Provides:	%{libgcj}-base = %{EVRD}
-Obsoletes:	gcc-libgcj < %{EVRD}
-Obsoletes:	libgcj4.5 < %{EVRD}
-Obsoletes:	gcj4.5-tools < %{EVRD}
-Obsoletes:	gcj-tools <= 4.5.2
-%define		libgcj11 %{mklibname gcj 11}
-Obsoletes:	%{libgcj11} < %{EVRD}
-Obsoletes:	%{libgcj11}-base < %{EVRD}
 %endif
 Requires:	zip >= 2.1
 Requires:	libgcj-java = %{EVRD}
@@ -1260,10 +1181,6 @@ object-oriented derivative of the C language.
 Summary:	Objective-C runtime
 Group:		System/Libraries
 Provides:	libobjc = %{EVRD}
-%if %mdkversion <= 201200
-Obsoletes:	libobjc3.0 < %{EVRD}
-Obsoletes:	libobjc3.1 < %{EVRD}
-%endif
 
 %description -n %{libobjc}
 This package contains Objective-C shared library which is needed to run
@@ -1279,10 +1196,6 @@ Objective-C dynamically linked programs.
 Summary:	Objective-C runtime
 Group:		System/Libraries
 Provides:	libobjc = %{EVRD}
-%if %mdkversion <= 201200
-Obsoletes:	libobjc3.0 < %{EVRD}
-Obsoletes:	libobjc3.1 < %{EVRD}
-%endif
 Conflicts:	%{libobjc} < 4.6.2-11
 
 %description -n %{multilibobjc}
@@ -1399,9 +1312,6 @@ Requires:	%{multilibffi} = %{EVRD}
 %endif
 Provides:	libffi-devel = %{EVRD}
 Provides:	ffi-devel = %{EVRD}
-%if %{obsolete_devmajor}
-Obsoletes: libffi4-devel < %{EVRD}
-%endif
 
 %description -n %{libffi_devel}
 This package contains GCC development which is needed
@@ -2595,16 +2505,6 @@ cd BUILD
 %endif
 
 cd ..
-
-# Not needed on cooker (but on ROSA 2012 and backports, and
-# can't hurt)
-rm -f %{buildroot}%{_libdir}/libitm.la \
-      %{buildroot}%{_prefix}/lib/libitm.la \
-%if %{build_java}
-      %{buildroot}%{_libdir}/gcj-*/*.la
-%else
-
-%endif
 
 %if %{build_java}
 # Workaround for all gcj related tools
