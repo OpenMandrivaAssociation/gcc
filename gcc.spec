@@ -561,8 +561,7 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files -n %{libstdcxx}
-/%{_lib}/libstdc++.so.%{stdcxx_major}
-/%{_lib}/libstdc++.so.%{stdcxx_major}.*
+/%{_lib}/libstdc++.so.%{stdcxx_major}*
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
 %endif
@@ -580,8 +579,7 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files -n %{multilibstdcxx}
-%{multirootlibdir}/libstdc++.so.%{stdcxx_major}
-%{multirootlibdir}/libstdc++.so.%{stdcxx_major}.*
+%{multirootlibdir}/libstdc++.so.%{stdcxx_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -844,8 +842,7 @@ This package contains Fortran 95 shared library which is needed to run
 Fortran 95 dynamically linked programs.
 
 %files -n %{libgfortran}
-%{_libdir}/libgfortran.so.%{gfortran_major}
-%{_libdir}/libgfortran.so.%{gfortran_major}.*
+%{_libdir}/libgfortran.so.%{gfortran_major}*
 
 #-----------------------------------------------------------------------
 
@@ -863,8 +860,7 @@ This package contains Fortran 95 shared library which is needed to run
 Fortran 95 dynamically linked programs.
 
 %files -n %{multilibgfortran}
-%{multilibdir}/libgfortran.so.%{gfortran_major}
-%{multilibdir}/libgfortran.so.%{gfortran_major}.*
+%{multilibdir}/libgfortran.so.%{gfortran_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -965,8 +961,7 @@ This package contains Go shared library which is needed to run
 Go dynamically linked programs.
 
 %files -n %{libgo}
-%{_libdir}/libgo.so.%{go_major}
-%{_libdir}/libgo.so.%{go_major}.*
+%{_libdir}/libgo.so.%{go_major}*
 
 #-----------------------------------------------------------------------
 
@@ -981,8 +976,7 @@ This package contains Go shared library which is needed to run
 Go dynamically linked programs.
 
 %files -n %{multilibgo}
-%{multilibdir}/libgo.so.%{go_major}
-%{multilibdir}/libgo.so.%{go_major}.*
+%{multilibdir}/libgo.so.%{go_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1143,14 +1137,10 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %dir %{_libdir}/gcj-%{ver}-%{gcj_major}
 %{_libdir}/gcj-%{ver}-%{gcj_major}/*.so
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
-%{_libdir}/libgcj.so.%{gcj_major}
-%{_libdir}/libgcj.so.%{gcj_major}.*
-%{_libdir}/libgcj-tools.so.%{gcj_major}
-%{_libdir}/libgcj-tools.so.%{gcj_major}.*
-%{_libdir}/libgcj_bc.so.%{gcj_bc_major}
-%{_libdir}/libgcj_bc.so.%{gcj_bc_major}.*
-%{_libdir}/libgij.so.%{gcj_major}
-%{_libdir}/libgij.so.%{gcj_major}.*
+%{_libdir}/libgcj.so.%{gcj_major}*
+%{_libdir}/libgcj-tools.so.%{gcj_major}*
+%{_libdir}/libgcj_bc.so.%{gcj_bc_major}*
+%{_libdir}/libgij.so.%{gcj_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1280,8 +1270,7 @@ This package contains Objective-C shared library which is needed to run
 Objective-C dynamically linked programs.
 
 %files -n %{libobjc}
-%{_libdir}/libobjc.so.%{objc_major}
-%{_libdir}/libobjc.so.%{objc_major}.*
+%{_libdir}/libobjc.so.%{objc_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1301,8 +1290,7 @@ This package contains Objective-C shared library which is needed to run
 Objective-C dynamically linked programs.
 
 %files -n %{multilibobjc}
-%{multilibdir}/libobjc.so.%{objc_major}
-%{multilibdir}/libobjc.so.%{objc_major}.*
+%{multilibdir}/libobjc.so.%{objc_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1381,8 +1369,7 @@ This package contains GCC shared support library which is needed
 for FFI support.
 
 %files -n %{libffi}
-%{_libdir}/libffi.so.%{ffi_major}
-%{_libdir}/libffi.so.%{ffi_major}.*
+%{_libdir}/libffi.so.%{ffi_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1397,8 +1384,7 @@ This package contains GCC shared support library which is needed
 for FFI support.
 
 %files -n %{multilibffi}
-%{multirootlibdir}/libffi.so.%{ffi_major}
-%{multirootlibdir}/libffi.so.%{ffi_major}.*
+%{multirootlibdir}/libffi.so.%{ffi_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1465,8 +1451,7 @@ This package contains GCC shared support library which is needed
 for __float128 math support and for Fortran REAL*16 support.
 
 %files -n %{libquadmath}
-%{_libdir}/libquadmath.so.%{quadmath_major}
-%{_libdir}/libquadmath.so.%{quadmath_major}.*
+%{_libdir}/libquadmath.so.%{quadmath_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1481,8 +1466,7 @@ This package contains GCC shared support library which is needed
 for __float128 math support and for Fortran REAL*16 support.
 
 %files -n %{multilibquadmath}
-%{multilibdir}/libquadmath.so.%{quadmath_major}
-%{multilibdir}/libquadmath.so.%{quadmath_major}.*
+%{multilibdir}/libquadmath.so.%{quadmath_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1550,8 +1534,7 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files -n %{libgomp}
-/%{_lib}/libgomp.so.%{gomp_major}
-/%{_lib}/libgomp.so.%{gomp_major}.*
+/%{_lib}/libgomp.so.%{gomp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1567,8 +1550,7 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files -n %{multilibgomp}
-%{multirootlibdir}/libgomp.so.%{gomp_major}
-%{multirootlibdir}/libgomp.so.%{gomp_major}.*
+%{multirootlibdir}/libgomp.so.%{gomp_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1638,8 +1620,7 @@ This package contains GCC shared support library which is needed
 for SSP support.
 
 %files -n %{libssp}
-%{_libdir}/libssp.so.%{ssp_major}
-%{_libdir}/libssp.so.%{ssp_major}.*
+%{_libdir}/libssp.so.%{ssp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1655,8 +1636,7 @@ This package contains GCC shared support library which is needed
 for SSP support.
 
 %files -n %{multilibssp}
-%{multilibdir}/libssp.so.%{ssp_major}
-%{multilibdir}/libssp.so.%{ssp_major}.*
+%{multilibdir}/libssp.so.%{ssp_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1719,8 +1699,7 @@ Provides:	libitm = %{EVRD}
 This package contains GCC's Transactional Memory support library.
 
 %files -n %{libitm}
-%{_libdir}/libitm.so.%{itm_major}
-%{_libdir}/libitm.so.%{itm_major}.*
+%{_libdir}/libitm.so.%{itm_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1734,8 +1713,7 @@ Provides:	libitm = %{EVRD}
 This package contains GCC's Transactional Memory support library.
 
 %files -n %{multilibitm}
-%{multilibdir}/libitm.so.%{itm_major}
-%{multilibdir}/libitm.so.%{itm_major}.*
+%{multilibdir}/libitm.so.%{itm_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2075,7 +2053,7 @@ Summary:	Leak Sanitizer library
 Group:		Development/C
 
 %description -n %{liblsan}
-Leak Sanitizer library
+Leak Sanitizer library.
 
 %files -n %{liblsan}
 %{_libdir}/liblsan.so.%{lsan_major}*
