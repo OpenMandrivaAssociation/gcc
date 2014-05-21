@@ -91,13 +91,16 @@
 %define		multilibitm		libitm%{itm_major}
 %define		asan_major		1
 %define		libasan			%mklibname asan %{asan_major}
+%define		libasan_devel		%mklibname asan -d
 %define		libasan_static_devel	%mklibname -d -s asan
 %define		multilibasan		libasan%{asan_major}
 %define		tsan_major		0
 %define		libtsan			%mklibname tsan %{tsan_major}
+%define		libtsan_devel		%mklibname tsan -d
 %define		libtsan_static_devel	%mklibname -d -s tsan
 %define		atomic_major		1
 %define		libatomic		%mklibname atomic %{atomic_major}
+%define		libatomic_devel		%mklibname atomic -d
 %define		libatomic_static_devel	%mklibname -d -s atomic
 %define		multilibatomic		libatomic%{atomic_major}
 %define		cilk_major		5
@@ -107,14 +110,17 @@
 %define		multilibcilkrts		libcilkrts%{cilk_major}
 %define		ubsan_major		0
 %define		libubsan		%mklibname ubsan %{ubsan_major}
+%define		libubsan_devel		%mklibname ubsan -d
 %define		libubsan_static_devel	%mklibname -d -s ubsan
 %define		multilibubsan		libubsan%{ubsan_major}
 %define		vtv_major		0
 %define		libvtv			%mklibname vtv %{vtv_major}
+%define		libvtv_devel		%mklibname vtv -d
 %define		libvtv_static_devel	%mklibname -d -s vtv
 %define		multilibvtv		libvtv%{vtv_major}
 %define		lsan_major		0
 %define		liblsan			%mklibname lsan %{lsan_major}
+%define		liblsan_devel		%mklibname lsan -d
 %define		liblsan_static_devel	%mklibname -d -s lsan
 
 #-----------------------------------------------------------------------
@@ -1706,8 +1712,6 @@ GCC Address Sanitizer Library.
 
 %files -n %{libasan}
 %{_libdir}/libasan.so.%{asan_major}*
-%{_libdir}/libasan.so
-%{_libdir}/libasan_preinit.o
 
 #-----------------------------------------------------------------------
 
@@ -1721,6 +1725,29 @@ GCC Address Sanitizer Library.
 
 %files -n %{multilibasan}
 %{multilibdir}/libasan.so.%{asan_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libasan_devel}
+Summary:	GCC Address Sanitizer development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libasan} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibasan} = %{EVRD}
+%endif
+Provides:	libasan-devel = %{EVRD}
+Provides:	asan-devel = %{EVRD}
+
+%description -n %{libasan_devel}
+This package contains GCC libraries which are needed
+to use Address Sanitizer features.
+
+%files -n %{libasan_devel}
+%{_libdir}/libasan.so
+%{_libdir}/libasan_preinit.o
+%if %{build_multilib}
 %{multilibdir}/libasan.so
 %{multilibdir}/libasan_preinit.o
 %endif
@@ -1730,7 +1757,7 @@ GCC Address Sanitizer Library.
 %package -n %{libasan_static_devel}
 Summary:	Static libasan
 Group:		Development/C
-Requires:	%{libasan} = %{EVRD}
+Requires:	%{libasan_devel} = %{EVRD}
 
 %description -n %{libasan_static_devel}
 Static libasan.
@@ -1755,6 +1782,22 @@ GCC Address Sanitizer Library.
 
 %files -n %{libtsan}
 %{_libdir}/libtsan.so.%{tsan_major}*
+
+#-----------------------------------------------------------------------
+
+%package -n %{libtsan_devel}
+Summary:	GCC Thread Sanitizer development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libtsan} = %{EVRD}
+Provides:	libtsan-devel = %{EVRD}
+Provides:	tsan-devel = %{EVRD}
+
+%description -n %{libtsan_devel}
+This package contains GCC libraries which are needed
+to use Thread Sanitizer features.
+
+%files -n %{libtsan_devel}
 %{_libdir}/libtsan.so
 
 #-----------------------------------------------------------------------
@@ -1762,7 +1805,7 @@ GCC Address Sanitizer Library.
 %package -n %{libtsan_static_devel}
 Summary:	Static libtsan
 Group:		Development/C
-Requires:	%{libtsan} = %{EVRD}
+Requires:	%{libtsan_devel} = %{EVRD}
 
 %description -n %{libtsan_static_devel}
 Static libtsan.
@@ -1783,7 +1826,6 @@ GCC Atomic operations Library.
 
 %files -n %{libatomic}
 %{_libdir}/libatomic.so.%{atomic_major}*
-%{_libdir}/libatomic.so
 
 #-----------------------------------------------------------------------
 
@@ -1797,7 +1839,29 @@ GCC Atomic optimizer Library.
 
 %files -n %{multilibatomic}
 %{_prefix}/lib/libatomic.so.%{atomic_major}*
-%{_prefix}/lib/libatomic.so
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libatomic_devel}
+Summary:	GCC Atomic optimizer development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libatomic} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibatomic} = %{EVRD}
+%endif
+Provides:	libatomic-devel = %{EVRD}
+Provides:	atomic-devel = %{EVRD}
+
+%description -n %{libatomic_devel}
+This package contains GCC libraries which are needed
+to use Atomic optimizer features.
+
+%files -n %{libatomic_devel}
+%{_libdir}/libatomic.so
+%if %{build_multilib}
+%{multilibdir}/libatomic.so
 %endif
 
 #-----------------------------------------------------------------------
@@ -1805,7 +1869,7 @@ GCC Atomic optimizer Library.
 %package -n %{libatomic_static_devel}
 Summary:	Static libatomic
 Group:		Development/C
-Requires:	%{libatomic} = %{EVRD}
+Requires:	%{libatomic_devel} = %{EVRD}
 
 %description -n %{libatomic_static_devel}
 Static libatomic.
@@ -1832,21 +1896,6 @@ CILK (multithreading programming language) runtime.
 
 #-----------------------------------------------------------------------
 
-%package -n %{libcilkrts_devel}
-Summary:	Development files for the CILK multithreading programming language
-Group:		Development/C
-Requires:	%{libcilkrts} = %{EVRD}
-
-%description -n %{libcilkrts_devel}
-Development files for the CILK multithreading programming language.
-
-%files -n %{libcilkrts_devel}
-%{_libdir}/libcilkrts.so
-%{_libdir}/libcilkrts.spec
-%{gccdir}/include/cilk
-
-#-----------------------------------------------------------------------
-
 %if %{build_multilib}
 %package -n %{multilibcilkrts}
 Summary:	CILK (multithreading programming language) runtime
@@ -1857,9 +1906,31 @@ CILK (multithreading programming language) runtime.
 
 %files -n %{multilibcilkrts}
 %{_prefix}/lib/libcilkrts.so.%{cilk_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libcilkrts_devel}
+Summary:	Development files for the CILK multithreading programming language
+Group:		Development/C
+Requires:	%{libcilkrts} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibcilkrts} = %{EVRD}
+%endif
+Provides:	libcilkrts-devel = %{EVRD}
+Provides:	cilkrts-devel = %{EVRD}
+
+%description -n %{libcilkrts_devel}
+Development files for the CILK multithreading programming language.
+
+%files -n %{libcilkrts_devel}
+%{_libdir}/libcilkrts.so
+%{_libdir}/libcilkrts.spec
+%if %{build_multilib}
 %{_prefix}/lib/libcilkrts.so
 %{_prefix}/lib/libcilkrts.spec
 %endif
+%{gccdir}/include/cilk
 
 #-----------------------------------------------------------------------
 
@@ -1891,7 +1962,6 @@ VTable Verification library.
 
 %files -n %{libvtv}
 %{_libdir}/libvtv.so.%{vtv_major}*
-%{_libdir}/libvtv.so
 
 #-----------------------------------------------------------------------
 
@@ -1905,6 +1975,28 @@ VTable Verification library.
 
 %files -n %{multilibvtv}
 %{_prefix}/lib/libvtv.so.%{vtv_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libvtv_devel}
+Summary:	GCC VTable Verification development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libvtv} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibvtv} = %{EVRD}
+%endif
+Provides:	libvtv-devel = %{EVRD}
+Provides:	vtv-devel = %{EVRD}
+
+%description -n %{libvtv_devel}
+This package contains GCC libraries which are needed
+to use VTable Verification features.
+
+%files -n %{libvtv_devel}
+%{_libdir}/libvtv.so
+%if %{build_multilib}
 %{_prefix}/lib/libvtv.so
 %endif
 
@@ -1913,7 +2005,7 @@ VTable Verification library.
 %package -n %{libvtv_static_devel}
 Summary:	Static libvtv
 Group:		Development/C
-Requires:	%{libvtv} = %{EVRD}
+Requires:	%{libvtv_devel} = %{EVRD}
 
 %description -n %{libvtv_static_devel}
 Static libvtv
@@ -1937,8 +2029,6 @@ Undefined Behavior Sanitizer library.
 
 %files -n %{libubsan}
 %{_libdir}/libubsan.so.%{ubsan_major}*
-%{_libdir}/libubsan.so
-%{_libdir}/libsanitizer.spec
 
 #-----------------------------------------------------------------------
 
@@ -1952,6 +2042,29 @@ Undefined Behavior Sanitizer library.
 
 %files -n %{multilibubsan}
 %{_prefix}/lib/libubsan.so.%{ubsan_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libubsan_devel}
+Summary:	GCC Undefined Behavior Sanitizer development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libubsan} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibubsan} = %{EVRD}
+%endif
+Provides:	libubsan-devel = %{EVRD}
+Provides:	ubsan-devel = %{EVRD}
+
+%description -n %{libubsan_devel}
+This package contains GCC libraries which are needed
+to use Undefined Behavior Sanitizer features.
+
+%files -n %{libubsan_devel}
+%{_libdir}/libubsan.so
+%{_libdir}/libsanitizer.spec
+%if %{build_multilib}
 %{_prefix}/lib/libubsan.so
 %{_prefix}/lib/libsanitizer.spec
 %endif
@@ -1961,7 +2074,7 @@ Undefined Behavior Sanitizer library.
 %package -n %{libubsan_static_devel}
 Summary:	Static libubsan
 Group:		Development/C
-Requires:	%{libubsan} = %{EVRD}
+Requires:	%{libubsan_devel} = %{EVRD}
 
 %description -n %{libubsan_static_devel}
 Static libubsan.
@@ -1985,6 +2098,22 @@ Leak Sanitizer library.
 
 %files -n %{liblsan}
 %{_libdir}/liblsan.so.%{lsan_major}*
+
+#-----------------------------------------------------------------------
+
+%package -n %{liblsan_devel}
+Summary:	GCC Leak Sanitizer development support
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{liblsan} = %{EVRD}
+Provides:	liblsan-devel = %{EVRD}
+Provides:	lsan-devel = %{EVRD}
+
+%description -n %{liblsan_devel}
+This package contains GCC libraries which are needed
+to use Leak Sanitizer features.
+
+%files -n %{liblsan_devel}
 %{_libdir}/liblsan.so
 
 #-----------------------------------------------------------------------
@@ -1992,7 +2121,7 @@ Leak Sanitizer library.
 %package -n %{liblsan_static_devel}
 Summary:	Static liblsan
 Group:		Development/C
-Requires:	%{liblsan} = %{EVRD}
+Requires:	%{liblsan_devel} = %{EVRD}
 
 %description -n %{liblsan_static_devel}
 Static liblsan.
