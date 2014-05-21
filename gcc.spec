@@ -236,17 +236,17 @@ Source7:	gcc-x32-seed.tar.xz
 Source100:	%{name}.rpmlintrc
 
 %if %{system_compiler}
-Requires:	gcc-cpp >= %{version}-%{release}
-Requires:	libgcc >= %{version}-%{release}
-Requires:	libgomp >= %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc4.4 < %{version}-%{release}
+Requires:	gcc-cpp >= %{EVRD}
+Requires:	libgcc >= %{EVRD}
+Requires:	libgomp >= %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc4.4 < %{EVRD}
 # versioned and non versioned files
-Conflicts:	manbo-mandriva-files-gcc4.2 < %{version}-%{release}
+Conflicts:	manbo-mandriva-files-gcc4.2 < %{EVRD}
 %endif
 %ifarch armv7l armv7hl
 # find-provides fail to provide devel(libgcc_s) because it is a linker script
-Provides:	devel(libgcc_s) = %{version}-%{release}
+Provides:	devel(libgcc_s) = %{EVRD}
 %endif
 BuildRequires:	binutils >= 2.20.51.0.2
 Requires:	binutils >= 2.20.51.0.2
@@ -280,7 +280,7 @@ BuildRequires:	isl-devel
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
-Obsoletes:	gcc-doc < %{version}-%{release}
+Obsoletes:	gcc-doc < %{EVRD}
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		gcc-4.6.0-java-nomulti.patch
@@ -385,12 +385,12 @@ if [ -f %{_bindir}/gcc ]; then %{alternatives} --remove-all gcc; fi
 Summary:	GNU C library
 Group:		System/Libraries
 %if "%{libgcc}" != "libgcc"
-Provides:	libgcc = %{version}-%{release}
+Provides:	libgcc = %{EVRD}
 %endif
 %if %mdkversion <= 201200
-Obsoletes:	libgcc3.0 < %{version}-%{release}
-Obsoletes:	libgcc3.2 < %{version}-%{release}
-Obsoletes:	libgcc4.5 < %{version}-%{release}
+Obsoletes:	libgcc3.0 < %{EVRD}
+Obsoletes:	libgcc3.2 < %{EVRD}
+Obsoletes:	libgcc4.5 < %{EVRD}
 %endif
 
 %description -n %{libgcc}
@@ -426,7 +426,7 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 Summary:	Headers to build gcc plugins
 Group:		Development/C
 Obsoletes:	gcc-plugins <= 4.5.2
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
 Requires:	gmp-devel
 Requires:	mpfr-devel
 Requires:	libmpc-devel
@@ -453,8 +453,8 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 %package cpp
 Summary:	The C Preprocessor
 Group:		Development/C
-Provides:	cpp = %{version}-%{release}
-Requires:	%{name} = %{version}-%{release}
+Provides:	cpp = %{EVRD}
+Requires:	%{name} = %{EVRD}
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
 %endif
@@ -507,13 +507,13 @@ if [ -f %{_bindir}/cpp ]; then %{alternatives} --remove-all cpp; fi
 %package c++
 Summary:	C++ support for gcc
 Group:		Development/C++
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
 %if %{system_compiler}
 Requires:	%{libstdcxx_devel} = %{version}
-Obsoletes:	manbo-mandriva-files-g++ < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-g++4.4 < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-c++ < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-c++4.2 < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-g++ < %{EVRD}
+Obsoletes:	manbo-mandriva-files-g++4.4 < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-c++ < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-c++4.2 < %{EVRD}
 %endif
 %if %{remove_alternatives}
 Requires(pre):	update-alternatives
@@ -549,7 +549,7 @@ if [ -f %{_bindir}/g++ ]; then %{alternatives} --remove-all g++; fi
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
 %if "%{libstdcxx}" != "libstdc++"
-Provides:	libstdc++ = %{version}-%{release}
+Provides:	libstdc++ = %{EVRD}
 %endif
 %if %{build_doc}
 BuildRequires:	doxygen
@@ -589,14 +589,14 @@ GCC Standard C++ Library.
 %package -n %{libstdcxx_devel}
 Summary:	Header files and libraries for C++ development
 Group:		Development/C++
-Requires:	%{libstdcxx} = %{version}-%{release}
+Requires:	%{libstdcxx} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibstdcxx} = %{version}-%{release}
+Requires:	%{multilibstdcxx} = %{EVRD}
 %endif
 %if "%{libstdcxx_devel}" != "libstdc++-devel"
-Provides:	libstdc++-devel = %{version}-%{release}
+Provides:	libstdc++-devel = %{EVRD}
 %endif
-Provides:	stdc++-devel = %{version}-%{release}
+Provides:	stdc++-devel = %{EVRD}
 %if "%{ver}" != "%{version}"
 # 4.7.2_2010.10 should provide 4.7.2 so clang can pick up the dep
 %if "%{libstdcxx_devel}" != "libstdc++-devel"
@@ -606,8 +606,8 @@ Provides:	libstdc++-devel = %{ver}-%{release}
 Provides:	stdc++-devel = %{ver}-%{release}
 %endif
 %if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-devel < %{version}-%{release}
-Obsoletes:	libstdc++6-devel < %{version}-%{release}
+Obsoletes:	libstdc++4.5-devel < %{EVRD}
+Obsoletes:	libstdc++6-devel < %{EVRD}
 %endif
 # We don't want to pull in an entire Python environment just because of
 # libstdc++'s python based gdb plugin...
@@ -636,14 +636,14 @@ development. This includes rewritten implementation of STL.
 %package -n %{libstdcxx_static_devel}
 Summary:	Static libraries for the GNU standard C++ library
 Group:		Development/C++
-Requires:	%{libstdcxx_devel} = %{version}-%{release}
+Requires:	%{libstdcxx_devel} = %{EVRD}
 %if "%{libstdcxx_static_devel}" != "libstdc++-static-devel"
-Provides:	libstdc++-static-devel = %{version}-%{release}
+Provides:	libstdc++-static-devel = %{EVRD}
 %endif
-Provides:	stdc++-static-devel = %{version}-%{release}
+Provides:	stdc++-static-devel = %{EVRD}
 %if %{obsolete_devmajor}
-Obsoletes:	libstdc++4.5-static-devel < %{version}-%{release}
-Obsoletes:	libstdc++%{stdcxx_major}-static-devel < %{version}-%{release}
+Obsoletes:	libstdc++4.5-static-devel < %{EVRD}
+Obsoletes:	libstdc++%{stdcxx_major}-static-devel < %{EVRD}
 %endif
 
 %description -n %{libstdcxx_static_devel}
@@ -668,8 +668,8 @@ Static libraries for the GNU standard C++ library.
 %package gnat
 Summary:	Ada 95 support for gcc
 Group:		Development/Other
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libgnat_devel} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libgnat_devel} = %{EVRD}
 # no bootstrap support
 BuildRequires:	gcc-gnat >= 3.1, libgnat >= 3.1
 
@@ -695,8 +695,8 @@ tools, the documents and Ada 95 compiler.
 %package -n %{libgnat}
 Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
-Provides:	libgnat = %{version}-%{release}
-Obsoletes:	gnat-runtime < %{version}-%{release}
+Provides:	libgnat = %{EVRD}
+Obsoletes:	gnat-runtime < %{EVRD}
 
 %description -n %{libgnat}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -730,17 +730,17 @@ libraries, which are required to run programs compiled with the GNAT.
 Summary:	GNU Ada 95 libraries
 Group:		Development/Other
 %if %{shared_libgnat}
-Requires:	%{libgnat} = %{version}-%{release}
+Requires:	%{libgnat} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibgnat} = %{version}-%{release}
+Requires:	%{multilibgnat} = %{EVRD}
 %endif
 %else
 Obsoletes:	%{libgnat} < %{EVRD}
 Obsoletes:	%{multilibgnat} < %{EVRD}
 Requires:	%{libgnat_static_devel} = %{EVRD}
 %endif
-Provides:	libgnat-devel = %{version}-%{release}
-Provides:	gnat-devel = %{version}-%{release}
+Provides:	libgnat-devel = %{EVRD}
+Provides:	gnat-devel = %{EVRD}
 
 %description -n %{libgnat_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -769,9 +769,9 @@ libraries, which are required to compile with the GNAT.
 %package -n %{libgnat_static_devel}
 Summary:	GNU Ada 95 static libraries
 Group:		Development/Other
-Requires:	%{libgnat_devel} = %{version}-%{release}
-Provides:	libgnat-static-devel = %{version}-%{release}
-Provides:	gnat-static-devel = %{version}-%{release}
+Requires:	%{libgnat_devel} = %{EVRD}
+Provides:	libgnat-static-devel = %{EVRD}
+Provides:	gnat-static-devel = %{EVRD}
 
 %description -n %{libgnat_static_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes static
@@ -793,12 +793,12 @@ libraries.
 %package gfortran
 Summary:	Fortran 95 support for gcc
 Group:		Development/Other
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libgfortran_devel} = %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gfortran < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gfortran4.4 < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-gfortran < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2 < %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libgfortran_devel} = %{EVRD}
+Obsoletes:	manbo-mandriva-files-gfortran < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gfortran4.4 < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-gfortran < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-gfortran4.2 < %{EVRD}
 
 %description gfortran
 The gcc-gfortran package provides support for compiling Fortran
@@ -829,14 +829,14 @@ programs with the GNU Compiler Collection.
 Summary:	Fortran 95 runtime libraries
 Group:		System/Libraries
 %if %{build_quadmath}
-Requires:	%{libquadmath} = %{version}-%{release}
+Requires:	%{libquadmath} = %{EVRD}
 %endif
-Provides:	libgfortran = %{version}-%{release}
+Provides:	libgfortran = %{EVRD}
 %if %{build_multilib}
-Provides:	%{multilibgfortran} = %{version}-%{release}
+Provides:	%{multilibgfortran} = %{EVRD}
 %endif
 %if %mdkversion <= 201200
-Obsoletes:	libgfortran4.5 < %{version}-%{release}
+Obsoletes:	libgfortran4.5 < %{EVRD}
 %endif
 
 %description -n %{libgfortran}
@@ -854,7 +854,7 @@ Fortran 95 dynamically linked programs.
 Summary:	Fortran 95 runtime libraries
 Group:		System/Libraries
 %if %{build_quadmath}
-Requires:	%{multilibquadmath} = %{version}-%{release}
+Requires:	%{multilibquadmath} = %{EVRD}
 %endif
 Conflicts:	%{libgfortran} < 4.6.2-11
 
@@ -872,15 +872,15 @@ Fortran 95 dynamically linked programs.
 %package -n %{libgfortran_devel}
 Summary:	Fortran 95 libraries
 Group:		System/Libraries
-Requires:	%{libgfortran} = %{version}-%{release}
+Requires:	%{libgfortran} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibgfortran} = %{version}-%{release}
+Requires:	%{multilibgfortran} = %{EVRD}
 %endif
 %if %{build_quadmath}
-Requires:	%{libquadmath_devel} = %{version}-%{release}
+Requires:	%{libquadmath_devel} = %{EVRD}
 %endif
-Provides:	libgfortran-devel = %{version}-%{release}
-Provides:	gfortran-devel = %{version}-%{release}
+Provides:	libgfortran-devel = %{EVRD}
+Provides:	gfortran-devel = %{EVRD}
 
 %description -n %{libgfortran_devel}
 This package contains Fortran 95 shared library which is needed to
@@ -899,9 +899,9 @@ compile Fortran 95 programs.
 %package -n %{libgfortran_static_devel}
 Summary:	Fortran 95 static libraries
 Group:		System/Libraries
-Requires:	%{libgfortran_devel} = %{version}-%{release}
-Provides:	libgfortran-static-devel = %{version}-%{release}
-Provides:	gfortran-static-devel = %{version}-%{release}
+Requires:	%{libgfortran_devel} = %{EVRD}
+Provides:	libgfortran-static-devel = %{EVRD}
+Provides:	gfortran-static-devel = %{EVRD}
 
 %description -n %{libgfortran_static_devel}
 This package contains Fortran 95 static library which is needed to
@@ -923,8 +923,8 @@ compile Fortran 95 programs.
 %package go
 Summary:	Go support for gcc
 Group:		Development/Other
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libgo_devel} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libgo_devel} = %{EVRD}
 BuildRequires:	gcc-go
 
 %description go
@@ -958,7 +958,7 @@ with the GNU Compiler Collection.
 %package -n %{libgo}
 Summary:	Go runtime libraries
 Group:		System/Libraries
-Provides:	libgo = %{version}-%{release}
+Provides:	libgo = %{EVRD}
 
 %description -n %{libgo}
 This package contains Go shared library which is needed to run
@@ -990,12 +990,12 @@ Go dynamically linked programs.
 %package -n %{libgo_devel}
 Summary:	Go development libraries
 Group:		Development/Other
-Requires:	%{libgo} = %{version}-%{release}
+Requires:	%{libgo} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibgo} = %{version}-%{release}
+Requires:	%{multilibgo} = %{EVRD}
 %endif
-Provides:	libgo-devel = %{version}-%{release}
-Provides:	go-devel = %{version}-%{release}
+Provides:	libgo-devel = %{EVRD}
+Provides:	go-devel = %{EVRD}
 
 %description -n %{libgo_devel}
 This package includes libraries and support files for compiling
@@ -1012,9 +1012,9 @@ Go programs.
 %package -n %{libgo_static_devel}
 Summary:	Static Go libraries
 Group:		Development/Other
-Requires:	%{libgo_devel} = %{version}-%{release}
-Provides:	libgo-static-devel = %{version}-%{release}
-Provides:	go-static-devel = %{version}-%{release}
+Requires:	%{libgo_devel} = %{EVRD}
+Provides:	libgo-static-devel = %{EVRD}
+Provides:	go-static-devel = %{EVRD}
 
 %description -n %{libgo_static_devel}
 This package contains static Go libraries.
@@ -1036,17 +1036,17 @@ This package contains static Go libraries.
 %package java
 Summary:	Java support for GCC
 Group:		Development/Java
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libgcj_devel} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libgcj_devel} = %{EVRD}
 Requires:	ecj
 BuildRequires:	ecj
 BuildRequires:	jpackage-utils
 BuildRequires:	unzip
 BuildRequires:	zip
-Obsoletes:	manbo-mandriva-files-java < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-java4.4 < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-java < %{version}-%{release}
-Obsoletes:	manbo-mandriva-files-gcc-java4.2 < %{version}-%{release}
+Obsoletes:	manbo-mandriva-files-java < %{EVRD}
+Obsoletes:	manbo-mandriva-files-java4.4 < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-java < %{EVRD}
+Obsoletes:	manbo-mandriva-files-gcc-java4.2 < %{EVRD}
 
 %description java
 This package adds support for compiling Java(tm) programs and
@@ -1103,23 +1103,23 @@ bytecode into native code.
 %package -n %{libgcj}
 Summary:	Java runtime library for gcc (platform dependent parts)
 Group:		System/Libraries
-Provides:	libgcj = %{version}-%{release}
-Provides:	%{libgcj_bc} = %{version}-%{release}
+Provides:	libgcj = %{EVRD}
+Provides:	%{libgcj_bc} = %{EVRD}
 %if %{build_multilib}
 # for compatibility and/or make updates clean
-Provides:	libgcj%{gcj_major} = %{version}-%{release}
-Provides:	libgcj_bc%{gcj_bc_major} = %{version}-%{release}
+Provides:	libgcj%{gcj_major} = %{EVRD}
+Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
 %endif
 %if %mdkversion <= 201200
-Provides:	libgcj%{gcj_major}-base = %{version}-%{release}
-Provides:	%{libgcj}-base = %{version}-%{release}
-Obsoletes:	gcc-libgcj < %{version}-%{release}
-Obsoletes:	libgcj4.5 < %{version}-%{release}
-Obsoletes:	gcj4.5-tools < %{version}-%{release}
+Provides:	libgcj%{gcj_major}-base = %{EVRD}
+Provides:	%{libgcj}-base = %{EVRD}
+Obsoletes:	gcc-libgcj < %{EVRD}
+Obsoletes:	libgcj4.5 < %{EVRD}
+Obsoletes:	gcj4.5-tools < %{EVRD}
 Obsoletes:	gcj-tools <= 4.5.2
 %define		libgcj11 %{mklibname gcj 11}
-Obsoletes:	%{libgcj11} < %{version}-%{release}
-Obsoletes:	%{libgcj11}-base < %{version}-%{release}
+Obsoletes:	%{libgcj11} < %{EVRD}
+Obsoletes:	%{libgcj11}-base < %{EVRD}
 %endif
 Requires:	zip >= 2.1
 Requires:	libgcj-java = %{EVRD}
@@ -1171,7 +1171,7 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 %package -n gcj-tools
 Summary:	Tools needed to use applications in the GCJ Java runtime
 Group:		System/Libraries
-Requires:	%{libgcj} = %{version}-%{release}
+Requires:	%{libgcj} = %{EVRD}
 Requires:	zip >= 2.1
 
 %description -n gcj-tools
@@ -1205,13 +1205,13 @@ need this package to run your Java programs in the Java Virtual Machine
 %package -n %{libgcj_devel}
 Summary:	Libraries for Java development using GCC
 Group:		Development/Java
-Requires:	%{libgcj} = %{version}-%{release}
+Requires:	%{libgcj} = %{EVRD}
 Requires:	zlib-devel
 Requires:	awk
-Provides:	libgcj-devel = %{version}-%{release}
-Provides:	gcj-devel = %{version}-%{release}
+Provides:	libgcj-devel = %{EVRD}
+Provides:	gcj-devel = %{EVRD}
 # libgcj and friends are no longer built statically for 4.7.x
-Obsoletes:	%{libgcj_static_devel} < {version}-%{release}
+Obsoletes:	%{libgcj_static_devel} < %{EVRD}
 
 %description -n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
@@ -1233,8 +1233,8 @@ package to compile your Java programs using the GCC Java compiler (gcj).
 %package -n libgcj%{gcj_major}-src
 Summary:	Java library sources
 Group:		Development/Java
-Requires:	%{libgcj} = %{version}-%{release}
-Provides:	libgcj-src = %{version}-%{release}
+Requires:	%{libgcj} = %{EVRD}
+Provides:	libgcj-src = %{EVRD}
 
 %description -n libgcj%{gcj_major}-src
 The Java(tm) runtime library sources.
@@ -1253,8 +1253,8 @@ The Java(tm) runtime library sources.
 %package objc
 Summary:	Objective-C support for GCC
 Group:		Development/Other
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libobjc_devel} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libobjc_devel} = %{EVRD}
 
 %description objc
 gcc-objc provides Objective-C support for the GCC.
@@ -1269,10 +1269,10 @@ object-oriented derivative of the C language.
 %package -n %{libobjc}
 Summary:	Objective-C runtime
 Group:		System/Libraries
-Provides:	libobjc = %{version}-%{release}
+Provides:	libobjc = %{EVRD}
 %if %mdkversion <= 201200
-Obsoletes:	libobjc3.0 < %{version}-%{release}
-Obsoletes:	libobjc3.1 < %{version}-%{release}
+Obsoletes:	libobjc3.0 < %{EVRD}
+Obsoletes:	libobjc3.1 < %{EVRD}
 %endif
 
 %description -n %{libobjc}
@@ -1289,10 +1289,10 @@ Objective-C dynamically linked programs.
 %package -n %{multilibobjc}
 Summary:	Objective-C runtime
 Group:		System/Libraries
-Provides:	libobjc = %{version}-%{release}
+Provides:	libobjc = %{EVRD}
 %if %mdkversion <= 201200
-Obsoletes:	libobjc3.0 < %{version}-%{release}
-Obsoletes:	libobjc3.1 < %{version}-%{release}
+Obsoletes:	libobjc3.0 < %{EVRD}
+Obsoletes:	libobjc3.1 < %{EVRD}
 %endif
 Conflicts:	%{libobjc} < 4.6.2-11
 
@@ -1310,12 +1310,12 @@ Objective-C dynamically linked programs.
 %package -n %{libobjc_devel}
 Summary:	Objective-C development libraries
 Group:		Development/Other
-Requires:	%{libobjc} = %{version}-%{release}
+Requires:	%{libobjc} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibobjc} = %{version}-%{release}
+Requires:	%{multilibobjc} = %{EVRD}
 %endif
-Provides:	libobjc-devel = %{version}-%{release}
-Provides:	objc-devel = %{version}-%{release}
+Provides:	libobjc-devel = %{EVRD}
+Provides:	objc-devel = %{EVRD}
 
 %description -n %{libobjc_devel}
 This package includes libraries and support files for compiling
@@ -1333,9 +1333,9 @@ Objective-C programs.
 %package -n %{libobjc_static_devel}
 Summary:	Static Objective-C libraries
 Group:		Development/Other
-Requires:	%{libobjc_devel} = %{version}-%{release}
-Provides:	libobjc-static-devel = %{version}-%{release}
-Provides:	objc-static-devel = %{version}-%{release}
+Requires:	%{libobjc_devel} = %{EVRD}
+Provides:	libobjc-static-devel = %{EVRD}
+Provides:	objc-static-devel = %{EVRD}
 
 %description -n %{libobjc_static_devel}
 This package contains static Objective-C libraries.
@@ -1356,7 +1356,7 @@ This package contains static Objective-C libraries.
 %package objc++
 Summary:	Objective-C++ support for GCC
 Group:		Development/Other
-Requires:	gcc-objc = %{version}-%{release}
+Requires:	gcc-objc = %{EVRD}
 
 %description objc++
 gcc++-objc provides Objective-C++ support for the GCC.
@@ -1374,7 +1374,7 @@ gcc++-objc provides Objective-C++ support for the GCC.
 %package -n %{libffi}
 Summary:	GCC support library for FFI
 Group:		System/Libraries
-Provides:	libffi = %{version}-%{release}
+Provides:	libffi = %{EVRD}
 
 %description -n %{libffi}
 This package contains GCC shared support library which is needed
@@ -1406,15 +1406,15 @@ for FFI support.
 %package -n %{libffi_devel}
 Summary:	GCC development for FFI
 Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libffi} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libffi} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibffi} = %{version}-%{release}
+Requires:	%{multilibffi} = %{EVRD}
 %endif
-Provides:	libffi-devel = %{version}-%{release}
-Provides:	ffi-devel = %{version}-%{release}
+Provides:	libffi-devel = %{EVRD}
+Provides:	ffi-devel = %{EVRD}
 %if %{obsolete_devmajor}
-Obsoletes: libffi4-devel < %{version}-%{release}
+Obsoletes: libffi4-devel < %{EVRD}
 %endif
 
 %description -n %{libffi_devel}
@@ -1433,9 +1433,9 @@ to compile FFI support.
 %package -n %{libffi_static_devel}
 Summary:	GCC FFI static library
 Group:		Development/C
-Requires:	%{libffi_devel} = %{version}-%{release}
-Provides:	libffi-static-devel = %{version}-%{release}
-Provides:	ffi-static-devel = %{version}-%{release}
+Requires:	%{libffi_devel} = %{EVRD}
+Provides:	libffi-static-devel = %{EVRD}
+Provides:	ffi-static-devel = %{EVRD}
 
 %description -n %{libffi_static_devel}
 This package contains GCC static libraries which are needed
@@ -1458,7 +1458,7 @@ to compile FFI support.
 %package -n %{libquadmath}
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
-Provides:	libquadmath = %{version}-%{release}
+Provides:	libquadmath = %{EVRD}
 
 %description -n %{libquadmath}
 This package contains GCC shared support library which is needed
@@ -1490,13 +1490,13 @@ for __float128 math support and for Fortran REAL*16 support.
 %package -n %{libquadmath_devel}
 Summary:	GCC __float128 support
 Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libquadmath} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libquadmath} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibquadmath} = %{version}-%{release}
+Requires:	%{multilibquadmath} = %{EVRD}
 %endif
-Provides:	libquadmath-devel = %{version}-%{release}
-Provides:	quadmath-devel = %{version}-%{release}
+Provides:	libquadmath-devel = %{EVRD}
+Provides:	quadmath-devel = %{EVRD}
 
 %description -n %{libquadmath_devel}
 This package contains support for building Fortran programs using
@@ -1518,9 +1518,9 @@ REAL*16 and programs using __float128 math.
 %package -n %{libquadmath_static_devel}
 Summary:	Static libraries for __float128 support
 Group:		Development/C
-Requires:	%{libquadmath_devel} = %{version}-%{release}
-Provides:	libquadmath-static-devel = %{version}-%{release}
-Provides:	quadmath-static-devel = %{version}-%{release}
+Requires:	%{libquadmath_devel} = %{EVRD}
+Provides:	libquadmath-static-devel = %{EVRD}
+Provides:	quadmath-static-devel = %{EVRD}
 
 %description -n %{libquadmath_static_devel}
 This package contains static libraries for building Fortran programs
@@ -1543,7 +1543,7 @@ using REAL*16 and programs using __float128 math.
 %package -n %{libgomp}
 Summary:	GCC OpenMP v3.0 shared support library
 Group:		System/Libraries
-Provides:	libgomp = %{version}-%{release}
+Provides:	libgomp = %{EVRD}
 
 %description -n %{libgomp}
 This package contains GCC shared library which is needed
@@ -1559,7 +1559,7 @@ for OpenMP v3.0 support.
 %package -n %{multilibgomp}
 Summary:	GCC OpenMP v3.0 shared support library
 Group:		System/Libraries
-Provides:	libgomp = %{version}-%{release}
+Provides:	libgomp = %{EVRD}
 Conflicts:	%{libgomp} < 4.6.2-11
 
 %description -n %{multilibgomp}
@@ -1576,13 +1576,13 @@ for OpenMP v3.0 support.
 %package -n %{libgomp_devel}
 Summary:	GCC OpenMP v3.0 development support
 Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libgomp} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libgomp} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibgomp} = %{version}-%{release}
+Requires:	%{multilibgomp} = %{EVRD}
 %endif
-Provides:	libgomp-devel = %{version}-%{release}
-Provides:	gomp-devel = %{version}-%{release}
+Provides:	libgomp-devel = %{EVRD}
+Provides:	gomp-devel = %{EVRD}
 
 %description -n %{libgomp_devel}
 This package contains GCC development which is needed
@@ -1606,9 +1606,9 @@ to compile OpenMP v3.0 support.
 %package -n %{libgomp_static_devel}
 Summary:	GCC OpenMP v3.0 static library
 Group:		Development/C
-Requires:	%{libgomp_devel} = %{version}-%{release}
-Provides:	libgomp-static-devel = %{version}-%{release}
-Provides:	gomp-static-devel = %{version}-%{release}
+Requires:	%{libgomp_devel} = %{EVRD}
+Provides:	libgomp-static-devel = %{EVRD}
+Provides:	gomp-static-devel = %{EVRD}
 
 %description -n %{libgomp_static_devel}
 This package contains GCC static libraries which are needed
@@ -1631,7 +1631,7 @@ to compile OpenMP v3.0 support.
 %package -n %{libssp}
 Summary:	GCC SSP shared support library
 Group:		System/Libraries
-Provides:	libssp = %{version}-%{release}
+Provides:	libssp = %{EVRD}
 
 %description -n %{libssp}
 This package contains GCC shared support library which is needed
@@ -1647,7 +1647,7 @@ for SSP support.
 %package -n %{multilibssp}
 Summary:	GCC SSP shared support library
 Group:		System/Libraries
-Provides:	libssp = %{version}-%{release}
+Provides:	libssp = %{EVRD}
 Conflicts:	%{libssp} < 4.6.2-11
 
 %description -n %{multilibssp}
@@ -1664,13 +1664,13 @@ for SSP support.
 %package -n %{libssp_devel}
 Summary:	GCC SSP development support
 Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libssp} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libssp} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibssp} = %{version}-%{release}
+Requires:	%{multilibssp} = %{EVRD}
 %endif
-Provides:	libssp-devel = %{version}-%{release}
-Provides:	ssp-devel = %{version}-%{release}
+Provides:	libssp-devel = %{EVRD}
+Provides:	ssp-devel = %{EVRD}
 
 %description -n %{libssp_devel}
 This package contains GCC libraries which are needed
@@ -1688,9 +1688,9 @@ to compile SSP support.
 %package -n %{libssp_static_devel}
 Summary:	GCC SSP static libraries
 Group:		Development/C
-Requires:	%{libssp_devel} = %{version}-%{release}
-Provides:	libssp-static-devel = %{version}-%{release}
-Provides:	ssp-static-devel = %{version}-%{release}
+Requires:	%{libssp_devel} = %{EVRD}
+Provides:	libssp-static-devel = %{EVRD}
+Provides:	ssp-static-devel = %{EVRD}
 
 %description -n %{libssp_static_devel}
 This package contains GCC static libraries which are needed
@@ -1713,7 +1713,7 @@ to compile SSP support.
 %package -n %{libitm}
 Summary:	GCC Transactional Memory support library
 Group:		System/Libraries
-Provides:	libitm = %{version}-%{release}
+Provides:	libitm = %{EVRD}
 
 %description -n %{libitm}
 This package contains GCC's Transactional Memory support library.
@@ -1728,7 +1728,7 @@ This package contains GCC's Transactional Memory support library.
 %package -n %{multilibitm}
 Summary:	GCC Transactional Memory support library
 Group:		System/Libraries
-Provides:	libitm = %{version}-%{release}
+Provides:	libitm = %{EVRD}
 
 %description -n %{multilibitm}
 This package contains GCC's Transactional Memory support library.
@@ -1743,13 +1743,13 @@ This package contains GCC's Transactional Memory support library.
 %package -n %{libitm_devel}
 Summary:	GCC Transactional Memory development support
 Group:		Development/C
-Requires:	%{name} = %{version}-%{release}
-Requires:	%{libitm} = %{version}-%{release}
+Requires:	%{name} = %{EVRD}
+Requires:	%{libitm} = %{EVRD}
 %if %{build_multilib}
-Requires:	%{multilibitm} = %{version}-%{release}
+Requires:	%{multilibitm} = %{EVRD}
 %endif
-Provides:	libitm-devel = %{version}-%{release}
-Provides:	itm-devel = %{version}-%{release}
+Provides:	libitm-devel = %{EVRD}
+Provides:	itm-devel = %{EVRD}
 
 %description -n %{libitm_devel}
 This package contains GCC libraries which are needed
@@ -1769,9 +1769,9 @@ to use Transactional Memory features.
 %package -n %{libitm_static_devel}
 Summary:	GCC Transactional Memory static libraries
 Group:		Development/C
-Requires:	%{libitm_devel} = %{version}-%{release}
-Provides:	libitm-static-devel = %{version}-%{release}
-Provides:	itm-static-devel = %{version}-%{release}
+Requires:	%{libitm_devel} = %{EVRD}
+Provides:	libitm-static-devel = %{EVRD}
+Provides:	itm-static-devel = %{EVRD}
 
 %description -n %{libitm_static_devel}
 This package contains GCC static libraries which are needed
