@@ -200,7 +200,7 @@ Name:		gcc
 %else
 Name:		gcc%{branch}
 %endif
-Release:	2
+Release:	3
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -233,24 +233,28 @@ Source7:	gcc-x32-seed.tar.xz
 
 Source100:	%{name}.rpmlintrc
 
-%if %{system_compiler}
-Requires:	gcc-cpp >= %{EVRD}
-Requires:	libgcc >= %{EVRD}
-Requires:	libgomp >= %{EVRD}
-%endif
-%ifarch armv7l armv7hl
-# find-provides fail to provide devel(libgcc_s) because it is a linker script
-Provides:	devel(libgcc_s) = %{EVRD}
-%endif
+Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
+Patch1:		gcc-4.6.0-java-nomulti.patch
+Patch2:		gcc-4.8-aarch64-ld-path.patch
+Patch3:		gcc-4.7.1-linux32.patch
+Patch4:		gnatmake-execstack.patch
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
+Patch5:		gcc-4.8-disable-dependency-tracking.patch
+Patch6:		gcc-4.7.1-autoconf-2.69.patch
+Patch7:		gcc-4.7.1-linker-plugin-detect.patch
+Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
+# Patch for Android compatibility (creating Linux->Android crosscompilers etc)
+Patch9:		gcc-4.7-androidcompat.patch
+Patch10:	gcc-4.7.3-texinfo-5.0.patch
+# Fix build failure
+Patch11:	gcc-4.8-istream-ignore.patch
+Patch12:	gcc-4.8-non-fatal-compare-failure.patch
+# https://bugs.launchpad.net/gcc-linaro/+bug/1225317
+Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
+
 BuildRequires:	binutils >= 2.20.51.0.2
-Requires:	binutils >= 2.20.51.0.2
-BuildRequires:	elfutils-devel >= 0.147
-
-# Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
-# have been addressed if using an older version
-Requires:	glibc-devel >= 2.13
-
 BuildRequires:	dejagnu
+BuildRequires:	elfutils-devel >= 0.147
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	gdb
@@ -274,24 +278,24 @@ BuildRequires:	pkgconfig(cloog-isl)
 BuildRequires:	pkgconfig(isl)
 %endif
 
-Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
-Patch1:		gcc-4.6.0-java-nomulti.patch
-Patch2:		gcc-4.8-aarch64-ld-path.patch
-Patch3:		gcc-4.7.1-linux32.patch
-Patch4:		gnatmake-execstack.patch
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
-Patch5:		gcc-4.8-disable-dependency-tracking.patch
-Patch6:		gcc-4.7.1-autoconf-2.69.patch
-Patch7:		gcc-4.7.1-linker-plugin-detect.patch
-Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
-# Patch for Android compatibility (creating Linux->Android crosscompilers etc)
-Patch9:		gcc-4.7-androidcompat.patch
-Patch10:	gcc-4.7.3-texinfo-5.0.patch
-# Fix build failure
-Patch11:	gcc-4.8-istream-ignore.patch
-Patch12:	gcc-4.8-non-fatal-compare-failure.patch
-# https://bugs.launchpad.net/gcc-linaro/+bug/1225317
-Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
+%if %{system_compiler}
+Requires:	gcc-cpp >= %{EVRD}
+Requires:	libgcc >= %{EVRD}
+Requires:	libgomp >= %{EVRD}
+%endif
+Requires:	binutils >= 2.20.51.0.2
+# Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
+# have been addressed if using an older version
+Requires:	glibc-devel >= 2.13
+
+%ifarch armv7l armv7hl
+# find-provides fail to provide devel(libgcc_s) because it is a linker script
+Provides:	devel(libgcc_s) = %{EVRD}
+%endif
+
+Obsoletes:	%{_lib}libmudflap0 < 4.9.1_2014.05
+Obsoletes:	%{_lib}libmudflap-devel < 4.9.1_2014.05
+Obsoletes:	%{_lib}libmudflap-static-devel < 4.9.1_2014.05
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
