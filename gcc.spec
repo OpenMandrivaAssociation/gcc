@@ -200,7 +200,7 @@ Name:		gcc
 %else
 Name:		gcc%{branch}
 %endif
-Release:	3
+Release:	5
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -293,9 +293,9 @@ Requires:	glibc-devel >= 2.13
 Provides:	devel(libgcc_s) = %{EVRD}
 %endif
 
-Obsoletes:	%{_lib}libmudflap0 < 4.9.1_2014.05
-Obsoletes:	%{_lib}libmudflap-devel < 4.9.1_2014.05
-Obsoletes:	%{_lib}libmudflap-static-devel < 4.9.1_2014.05
+Obsoletes:	%{_lib}mudflap0 < 4.9.1_2014.05
+Obsoletes:	%{_lib}mudflap-devel < 4.9.1_2014.05
+Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
