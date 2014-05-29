@@ -11,10 +11,11 @@
 
 #-----------------------------------------------------------------------
 
-%define name			%{cross_prefix}gcc%{package_suffix}
 %define nof_arches		noarch
 %define lsb_arches		i386 x86_64
 %define biarches		x86_64 mips64 mips64el
+
+%define		system_compiler		1
 
 %define		official		1
 %if %{official}
@@ -115,7 +116,6 @@
 %define gcc32_target_platform	%{multilib_32_arch}-%{_target_vendor}-%{_target_os}%{?_gnu}
 %endif
 
-%define		system_compiler		1
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.1
