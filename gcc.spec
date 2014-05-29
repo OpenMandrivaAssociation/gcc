@@ -30,8 +30,6 @@
 %{expand: %{?cross:		%%global build_cross 1}}
 %{expand: %{?cross_bootstrap:	%%global build_cross_bootstrap 1}}
 
-%define		system_compiler		1
-
 
 %if %{build_cross}
 %define system_compiler		0
@@ -117,6 +115,8 @@
 %define gcc32_target_platform	%{multilib_32_arch}-%{_target_vendor}-%{_target_os}%{?_gnu}
 %endif
 
+%define		system_compiler		1
+%define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.1
 %define		linaro			2014.05
@@ -355,7 +355,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	5
+Release:	6
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -475,9 +475,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/%{gcc_target_platform}-gcov
 %endif
 %if %{system_compiler}
-%{_bindir}/cc
-%{_bindir}/c89
-%{_bindir}/c99
 %{_bindir}/gcc
 %{_bindir}/gcc-ar
 %{_bindir}/gcc-nm
@@ -685,7 +682,6 @@ including templates and exception handling.
 
 %files c++
 %if %{system_compiler}
-%{_bindir}/c++
 %{_bindir}/g++
 %{_bindir}/%{gcc_target_platform}-c++
 %{_bindir}/%{gcc_target_platform}-g++
@@ -2552,7 +2548,10 @@ BOOTSTRAP=bootstrap
 
 pushd obj-%{gcc_target_platform}
 
-CC=%{__cc} \
+# We can't currently compile gcc with clang, even
+# though that would be great for bootstrapping
+CC=gcc \
+CXX=g++ \
 CFLAGS="$OPT_FLAGS" \
 CXXFLAGS="$OPT_FLAGS" \
 GCJFLAGS="$OPT_FLAGS" \
@@ -2992,6 +2991,16 @@ pushd obj-%{gcc_target_platform}
 %endif
 
 cd ..
+
+%if ! %{default_compiler}
+# Leave the cc, c89, c++, ... symlinks to clang
+# or whatever other compiler is the default
+rm -f \
+	%{buildroot}%{_bindir}/cc \
+	%{buildroot}%{_bindir}/c89 \
+	%{buildroot}%{_bindir}/c99 \
+	%{buildroot}%{_bindir}/c++
+%endif
 
 %if %{build_java}
 # Workaround for all gcj related tools
