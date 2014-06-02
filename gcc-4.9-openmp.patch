@@ -1,0 +1,393 @@
+commit 18927802fc8b991c35d7703427a53807e3c6d8c7
+Author: Andrew Hsieh <andrewhsieh@google.com>
+Date:   Wed May 14 17:46:52 2014 +0800
+
+    [4.9] Fix openmp support
+    
+    See the following CLs for 4.8
+      c27bd5a265e6aeecefa6bfebe52fcf26b08298cd # Support OpenMP
+      b6c94ff8e836a01ad3598135d19c49c9eb01a173 # needed OpenMP: Better CPU count detection for Linux
+      d88e126b2b303c95d94b939c21f8672637871dbd # Fix openmp support to use libgomp/config/linux
+    
+    Change-Id: Ib85a23669c03bcdc9dd5f83b9a0f18e5cad6033d
+
+diff --git a/gcc-4.9/libgomp/config/linux/futex.h b/gcc-4.9/libgomp/config/linux/futex.h
+index 63334c7..f96cd2a 100644
+--- a/gcc-4.9/libgomp/config/linux/futex.h
++++ b/gcc-4.9/libgomp/config/linux/futex.h
+@@ -38,6 +38,10 @@
+ 
+ #pragma GCC visibility pop
+ 
++#if !defined(SYS_futex)
++#define SYS_futex __NR_futex
++#endif
++
+ static inline void
+ futex_wait (int *addr, int val)
+ {
+diff --git a/gcc-4.9/libgomp/config/linux/mips/futex.h b/gcc-4.9/libgomp/config/linux/mips/futex.h
+index ae32b80..641308c 100644
+--- a/gcc-4.9/libgomp/config/linux/mips/futex.h
++++ b/gcc-4.9/libgomp/config/linux/mips/futex.h
+@@ -25,6 +25,11 @@
+ /* Provide target-specific access to the futex system call.  */
+ 
+ #include <sys/syscall.h>
++
++#if !defined(SYS_futex)
++#define SYS_futex __NR_futex
++#endif
++
+ #define FUTEX_WAIT 0
+ #define FUTEX_WAKE 1
+ 
+diff --git a/gcc-4.9/libgomp/config/linux/proc.c b/gcc-4.9/libgomp/config/linux/proc.c
+index fa89f1d..a6a5e99 100644
+--- a/gcc-4.9/libgomp/config/linux/proc.c
++++ b/gcc-4.9/libgomp/config/linux/proc.c
+@@ -31,8 +31,11 @@
+ #include "libgomp.h"
+ #include "proc.h"
+ #include <errno.h>
+-#include <stdlib.h>
+ #include <unistd.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <fcntl.h>
++#include <errno.h>
+ #ifdef HAVE_GETLOADAVG
+ # ifdef HAVE_SYS_LOADAVG_H
+ #  include <sys/loadavg.h>
+@@ -73,6 +76,186 @@ gomp_cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
+ }
+ #endif
+ 
++/* Read the content of a file.
++ * Return the length of the data, or -1 on error. Does *not*
++ * zero-terminate the content. Will not read more
++ * than 'buffsize' bytes.
++ */
++static int
++read_file(const char*  pathname, char*  buffer, size_t  buffsize)
++{
++    int  fd, len;
++
++    fd = open(pathname, O_RDONLY);
++    if (fd < 0)
++        return -1;
++
++    do {
++        len = read(fd, buffer, buffsize);
++    } while (len < 0 && errno == EINTR);
++
++    close(fd);
++
++    return len;
++}
++
++
++/* Parse a decimal integer starting from 'input', but not going further
++ * than 'limit'. Return the value into '*result'.
++ *
++ * NOTE: Does not skip over leading spaces, or deal with sign characters.
++ * NOTE: Ignores overflows.
++ *
++ * The function returns NULL in case of error (bad format), or the new
++ * position after the decimal number in case of success (which will always
++ * be <= 'limit').
++ */
++static const char*
++parse_decimal(const char* input, const char* limit, int* result)
++{
++    const char* p = input;
++    int val = 0;
++    while (p < limit) {
++        int d = (*p - '0');
++        if ((unsigned)d >= 10U)
++            break;
++        val = val*10 + d;
++        p++;
++    }
++    if (p == input)
++        return NULL;
++
++    *result = val;
++    return p;
++}
++
++
++/* This data type is used to represent a CPU list / mask, as read
++ * from sysfs on Linux. See http://www.kernel.org/doc/Documentation/cputopology.txt
++ */
++typedef struct {
++    int mask;
++} cpuList;
++
++/* Returns Actual CPUs (total installed CPUs) */
++static int
++cpuList_count (cpuList* list) {
++	return list->mask ;
++}
++
++/* Parse a textual list of cpus and store the result inside a cpuList object.
++ * Input format is the following:
++ * - comma-separated list of items (no spaces)
++ * - each item is either a single decimal number (cpu index), or a range made
++ *   of two numbers separated by a single dash (-). Ranges are inclusive.
++ * Examples:
++ *           0
++ *           2,4-127,128-143
++ *           0-1
++ */
++static void
++cpuList_parse (cpuList* list, const char* line, int line_len)
++{
++    const char* p = line;
++    const char* end = p + line_len;
++    const char* q;
++
++    /* NOTE: the input line coming from sysfs typically contains a
++    * trailing newline, so take care of it in the code below
++     */
++    while (p < end && *p != '\n')
++    {
++        int val, start_value, end_value;
++
++        /* Find the end of current item, and put it into 'q' */
++        q = memchr(p, ',', end-p);
++        if (q == NULL) {
++            q = end;
++        }
++
++        /* Get first value */
++        p = parse_decimal(p, q, &start_value);
++        if (p == NULL)
++            goto BAD_FORMAT;
++
++        end_value = start_value;
++
++        /* If we're not at the end of the item, expect a dash and
++         * and integer; extract end value.
++         */
++        if (p < q && *p == '-') {
++            p = parse_decimal(p+1, q, &end_value);
++            if (p == NULL)
++                goto BAD_FORMAT;
++        }
++
++        /* Set CPU list */
++        for (val = start_value; val <= end_value; val++) {
++            list->mask++;
++        }
++
++        /* Jump to next item */
++        p = q;
++        if (p < end)
++            p++;
++    }
++
++BAD_FORMAT:
++    ;
++}
++
++
++/* Read a CPU list from one sysfs file
++ * The below is CPU related sys interface by CPU topologoy.
++ */
++static void
++cpuList_read_from (cpuList* list, const char* filename)
++{
++    char file[64];
++    int filelen;
++
++    list->mask = 0;
++
++    filelen = read_file(filename, file, sizeof file);
++    if (filelen < 0) {
++        fprintf(stderr,"Could not read %s: %s\n", filename, strerror(errno));
++        return;
++    }
++
++    cpuList_parse(list, file, filelen);
++}
++
++
++/* Probe the number of actual CPUs on devices (e.g. Android devices) using
++ * CPU-Hotplug and CPU-DVFS to optimize battery life.
++ * Return the number of CPUs present on a given device.
++ * See http://www.kernel.org/doc/Documentation/cputopology.txt
++ */
++static int
++sc_nprocessors_actu ()
++{
++    char buffer[256];
++    int buffer_len;
++    int cpuCount = 1;
++    cpuList cpus_present[1];
++    char file_name[64] = "/sys/devices/system/cpu/present";
++
++    buffer_len = read_file(file_name, buffer, sizeof buffer);
++
++    if (buffer_len < 0)  /* should not happen */ {
++        fprintf(stderr,"Could not find %s: %s\n", file_name, strerror(errno));
++        return 1;
++    }
++
++    /* Count the CPU cores, the value may be 0 for single-core CPUs */
++    cpuList_read_from(cpus_present, file_name);
++    cpuCount = cpuList_count(cpus_present);
++    if (cpuCount == 0) {
++        cpuCount = 1;
++    }
++    return cpuCount;
++}
++
+ /* At startup, determine the default number of threads.  It would seem
+    this should be related to the number of cpus online.  */
+ 
+@@ -138,7 +321,9 @@ gomp_init_num_threads (void)
+   free (gomp_cpusetp);
+   gomp_cpusetp = NULL;
+ #endif
+-#ifdef _SC_NPROCESSORS_ONLN
++#if defined(__ANDROID__)
++  gomp_global_icv.nthreads_var = sc_nprocessors_actu ();
++#elif defined(_SC_NPROCESSORS_ONLN)
+   gomp_global_icv.nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
+ #endif
+ }
+@@ -169,7 +354,9 @@ get_num_procs (void)
+       return gomp_available_cpus;
+     }
+ #endif
+-#ifdef _SC_NPROCESSORS_ONLN
++#if defined(__ANDROID__)
++  return sc_nprocessors_actu ();
++#elif defined(_SC_NPROCESSORS_ONLN)
+   return sysconf (_SC_NPROCESSORS_ONLN);
+ #else
+   return gomp_icv (false)->nthreads_var;
+diff --git a/gcc-4.9/libgomp/configure b/gcc-4.9/libgomp/configure
+index 766eb09..6fbafe3 100755
+--- a/gcc-4.9/libgomp/configure
++++ b/gcc-4.9/libgomp/configure
+@@ -15028,7 +15028,54 @@ _ACEOF
+ if ac_fn_c_try_link "$LINENO"; then :
+   XPCFLAGS=" -Wc,-pthread"
+ else
+-  CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++CFLAGS="$save_CFLAGS" LIBS="$LIBS"
++  cat >conftest.$ac_ext <<_ACEOF
++/* confdefs.h.  */
++_ACEOF
++cat confdefs.h >>conftest.$ac_ext
++cat >>conftest.$ac_ext <<_ACEOF
++/* end confdefs.h.  */
++#include <pthread.h>
++     void *g(void *d) { return NULL; }
++int
++main ()
++{
++pthread_t t; pthread_create(&t,NULL,g,NULL);
++  ;
++  return 0;
++}
++_ACEOF
++rm -f conftest.$ac_objext conftest$ac_exeext
++if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
++  (eval $ac_link) 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } &&
++	 { ac_try='test -z "$ac_c_werror_flag"
++			 || test ! -s conftest.err'
++  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
++  (eval $ac_try) 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; } &&
++	 { ac_try='test -s conftest$ac_exeext'
++  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
++  (eval $ac_try) 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; }; then
++  :
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <pthread.h>
+@@ -15051,6 +15098,9 @@ rm -f core conftest.err conftest.$ac_objext \
+ fi
+ rm -f core conftest.err conftest.$ac_objext \
+     conftest$ac_exeext conftest.$ac_ext
++fi
++rm -f core conftest.err conftest.$ac_objext \
++    conftest$ac_exeext conftest.$ac_ext
+ 
+ # Check for functions needed.
+ for ac_func in getloadavg clock_gettime strtoull
+@@ -15105,6 +15155,12 @@ case "$target" in
+ /* end confdefs.h.  */
+ #include <sys/syscall.h>
+ 	   int lk;
++#if !defined(SYS_gettid)
++#define SYS_gettid __NR_gettid
++#endif
++#if !defined(SYS_futex)
++#define SYS_futex __NR_futex
++#endif
+ int
+ main ()
+ {
+@@ -15157,6 +15213,12 @@ rm -f core conftest.err conftest.$ac_objext \
+ /* end confdefs.h.  */
+ #include <sys/syscall.h>
+ 	   int lk;
++#if !defined(SYS_gettid)
++#define SYS_gettid __NR_gettid
++#endif
++#if !defined(SYS_futex)
++#define SYS_futex __NR_futex
++#endif
+ int
+ main ()
+ {
+diff --git a/gcc-4.9/libgomp/configure.ac b/gcc-4.9/libgomp/configure.ac
+index 84d250f..59b9516 100644
+--- a/gcc-4.9/libgomp/configure.ac
++++ b/gcc-4.9/libgomp/configure.ac
+@@ -184,6 +184,13 @@ AC_LINK_IFELSE(
+    void *g(void *d) { return NULL; }],
+   [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+  [XPCFLAGS=" -Wc,-pthread"],
++ [CFLAGS="$save_CFLAGS" LIBS="$LIBS"
++  AC_LINK_IFELSE(
++   [AC_LANG_PROGRAM(
++    [#include <pthread.h>
++     void *g(void *d) { return NULL; }],
++    [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
++   [],
+  [CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
+   AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM(
+@@ -191,7 +198,7 @@ AC_LINK_IFELSE(
+      void *g(void *d) { return NULL; }],
+     [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
+    [],
+-   [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
++   [AC_MSG_ERROR([Pthreads are required to build libgomp])])])])
+ 
+ # Check for functions needed.
+ AC_CHECK_FUNCS(getloadavg clock_gettime strtoull)
