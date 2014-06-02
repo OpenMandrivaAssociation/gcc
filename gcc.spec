@@ -2004,8 +2004,8 @@ Static libasan.
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
-%if %{build_tsan}
 %ifarch x86_64
+%if %{build_tsan}
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
 Group:		Development/C
@@ -2330,8 +2330,8 @@ Static libubsan.
 ########################################################################
 # LSan (Leak Sanitizer)
 ########################################################################
-%if %{build_lsan}
 %ifarch x86_64
+%if %{build_lsan}
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
 Group:		Development/C
