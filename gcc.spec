@@ -407,10 +407,23 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 
+# From Google's tree
+# 539bbad457e7161f89fd4db3017b4abf478466f4
+Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
+# 771c2f9542b4e84b08c107060319603d12ec8867
+Patch101:	gcc-4.9-neon-alignment.patch
+# d7c9c7963a79b60e2247bd5a41decc80938023f4
+Patch102:	gcc-4.9-libstdc++-clang.patch
+# 331e362574142e4c1d9d509533d1c96b6dc54d13
+Patch104:	gcc-4.9-simplify-got.patch
+# 04ad5b9bb3c8c6505f36f90e227b18266d946d8e
+Patch105:	gcc-4.9-vqdmulh_n_s16-neon.patch
+
+# Patches 1001 and 1007 disabled until they're committed
 # slibdir is either /lib or /lib64
-Patch1001:	gcc33-pass-slibdir.patch
+#Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
-Patch1007:	gcc-4.6.2-multi-do-libdir.patch
+#Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
 BuildRequires:	%{cross_prefix}binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -1991,8 +2004,8 @@ Static libasan.
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
-%if %{build_tsan}
 %ifarch x86_64
+%if %{build_tsan}
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
 Group:		Development/C
@@ -2317,8 +2330,8 @@ Static libubsan.
 ########################################################################
 # LSan (Leak Sanitizer)
 ########################################################################
-%if %{build_lsan}
 %ifarch x86_64
+%if %{build_lsan}
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
 Group:		Development/C
@@ -2393,8 +2406,14 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 
-%patch1001 -p1 -b .pass_slibdir~
-%patch1007 -p1 -b .multi-do-libdir~
+%patch100 -p2 -b .google1~
+%patch101 -p2 -b .google2~
+%patch102 -p2 -b .google3~
+%patch104 -p2 -b .google5~
+%patch105 -p2 -b .google6~
+
+#patch1001 -p1 -b .pass_slibdir~
+#patch1007 -p1 -b .multi-do-libdir~
 
 aclocal -I config
 autoconf

@@ -1,0 +1,37 @@
+commit 04ad5b9bb3c8c6505f36f90e227b18266d946d8e
+Author: Andrew Hsieh <andrewhsieh@google.com>
+Date:   Tue May 20 14:29:01 2014 +0800
+
+    [4.8, 4.9] Fix aarch64/arm_neon.h vqdmulh_n_s16
+    
+    To use FP_LO_REGS for the 2nd SIMD register with h[index]
+    
+    See:
+      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61202
+      http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802a/SQDMULH_advsimd_elt_scalar.html
+      Google BUG 14825026
+    
+    Change-Id: Ifd870e8ab851d93bda6734aee04d09db17461bdd
+
+diff --git a/gcc-4.9/gcc/config/aarch64/arm_neon.h b/gcc-4.9/gcc/config/aarch64/arm_neon.h
+index 747a292..b03d114 100644
+--- a/gcc-4.9/gcc/config/aarch64/arm_neon.h
++++ b/gcc-4.9/gcc/config/aarch64/arm_neon.h
+@@ -10111,7 +10111,7 @@ vqdmulh_n_s16 (int16x4_t a, int16_t b)
+   int16x4_t result;
+   __asm__ ("sqdmulh %0.4h,%1.4h,%2.h[0]"
+            : "=w"(result)
+-           : "w"(a), "w"(b)
++           : "w"(a), "x"(b)
+            : /* No clobbers */);
+   return result;
+ }
+@@ -10133,7 +10133,7 @@ vqdmulhq_n_s16 (int16x8_t a, int16_t b)
+   int16x8_t result;
+   __asm__ ("sqdmulh %0.8h,%1.8h,%2.h[0]"
+            : "=w"(result)
+-           : "w"(a), "w"(b)
++           : "w"(a), "x"(b)
+            : /* No clobbers */);
+   return result;
+ }

@@ -17,3 +17,5 @@ addFilter("E: incoherent-version-in-name")
 addFilter("E: devel-file-in-non-devel-package")
 # This too
 addFilter("E: devel-dependency")
+# Caused by crossbuild patch
+addFilter("E: use-of-RPM_SOURCE_DIR")
