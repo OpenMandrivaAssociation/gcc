@@ -414,8 +414,6 @@ Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
 Patch101:	gcc-4.9-neon-alignment.patch
 # d7c9c7963a79b60e2247bd5a41decc80938023f4
 Patch102:	gcc-4.9-libstdc++-clang.patch
-# 18927802fc8b991c35d7703427a53807e3c6d8c7
-Patch103:	gcc-4.9-openmp.patch
 # 331e362574142e4c1d9d509533d1c96b6dc54d13
 Patch104:	gcc-4.9-simplify-got.patch
 # 04ad5b9bb3c8c6505f36f90e227b18266d946d8e
@@ -2411,7 +2409,6 @@ Static liblsan.
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
-%patch103 -p2 -b .google4~
 %patch104 -p2 -b .google5~
 %patch105 -p2 -b .google6~
 
