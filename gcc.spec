@@ -2190,8 +2190,8 @@ Static libcilkrts.
 ########################################################################
 # VTV (VTable Verification)
 ########################################################################
-%if %{build_vtv}
 %ifarch %{ix86} x86_64
+%if %{build_vtv}
 %package -n %{libvtv}
 Summary:	VTable Verification library
 Group:		Development/C
