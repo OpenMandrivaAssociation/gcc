@@ -2119,8 +2119,8 @@ Static libatomic.
 ########################################################################
 # Intel CILK
 ########################################################################
-%if %{build_cilkrts}
 %ifarch %{ix86} x86_64
+%if %{build_cilkrts}
 %package -n %{libcilkrts}
 Summary:	CILK (multithreading programming language) runtime
 Group:		Development/C
