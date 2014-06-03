@@ -355,7 +355,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	6
+Release:	7
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -421,9 +421,9 @@ Patch105:	gcc-4.9-vqdmulh_n_s16-neon.patch
 
 # Patches 1001 and 1007 disabled until they're committed
 # slibdir is either /lib or /lib64
-#Patch1001:	gcc33-pass-slibdir.patch
+Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
-#Patch1007:	gcc-4.6.2-multi-do-libdir.patch
+Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
 BuildRequires:	%{cross_prefix}binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -2412,8 +2412,8 @@ Static liblsan.
 %patch104 -p2 -b .google5~
 %patch105 -p2 -b .google6~
 
-#patch1001 -p1 -b .pass_slibdir~
-#patch1007 -p1 -b .multi-do-libdir~
+%patch1001 -p1 -b .pass_slibdir~
+%patch1007 -p1 -b .multi-do-libdir~
 
 aclocal -I config
 autoconf
