@@ -355,7 +355,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	7
+Release:	8
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -406,6 +406,8 @@ Patch11:	gcc-4.8-istream-ignore.patch
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60965
+Patch14:	gcc-4.9-bug60965.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2405,6 +2407,7 @@ Static liblsan.
 %patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
+%patch14 -p2 -b .60965~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
