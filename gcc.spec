@@ -2622,7 +2622,8 @@ XCFLAGS="$OPT_FLAGS" \
         --disable-werror \
         --enable-__cxa_atexit \
         --enable-gold=default \
-        --with-plugin-ld=%{_bindir}/ld \
+        --with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
+%if %{system_compiler}
         --enable-bootstrap \
 %endif
         --enable-checking=release \
