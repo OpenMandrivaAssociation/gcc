@@ -2621,7 +2621,9 @@ XCFLAGS="$OPT_FLAGS" \
         --disable-libunwind-exceptions \
         --disable-werror \
         --enable-__cxa_atexit \
+%if !%isarch %{mipsx}
         --enable-gold=default \
+%endif
         --with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
 %if %{system_compiler}
         --enable-bootstrap \
