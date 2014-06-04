@@ -334,7 +334,6 @@
 %define		shared_libgnat		0
 %endif
 
-
 # Adapted from fedora procedure:
 #   If there is no usable gcc-java neither libgcj for the arch,
 # on an arch that has it, run:
@@ -2465,6 +2464,7 @@ mkdir obj-%{gcc_target_platform}
 %build
 # FIXME: extra tools needed
 export PATH=$PATH:$PWD/bin
+export sysroot=%{_prefix}/%{gcc_target_platform}
 
 # The -gdwarf-4 removal is a workaround for gcc bug #52420
 OPT_FLAGS=`echo %{optflags} | \
@@ -2486,6 +2486,9 @@ case " $OPT_FLAGS " in
   sed -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables /' -i gcc/Makefile.in
   ;;
 esac
+
+# Force a seperate object dir
+pushd obj-%{gcc_target_platform}
 
 # FIXME debugedit
 [ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
@@ -2525,13 +2528,13 @@ PROGRAM_PREFIX=""
 PROGRAM_PREFIX="--program-prefix=%{program_prefix}"
 %endif
 %if %{build_cross}
-CROSS_FLAGS="--with-build-sysroot=$PWD/../sysroot --with-headers --disable-nls"
+CROSS_FLAGS="--with-build-sysroot=$sysroot --with-headers --disable-nls"
 %endif
 %if %{build_cross_bootstrap}
 CROSS_FLAGS="--disable-threads"
 %if %isarch %{lsb_arches}
 # we have embedded the LSB 3.1 headers, so we can build the unwinding stuff too (ia64)
-CROSS_FLAGS="$CROSS_FLAGS --with-build-sysroot=$PWD/../sysroot --with-headers"
+CROSS_FLAGS="$CROSS_FLAGS --with-build-sysroot=$sysroot --with-headers"
 %endif
 %endif
 [[ -n "$CROSS_FLAGS" ]] && CROSS_FLAGS="$CROSS_FLAGS --target=%{gcc_target_platform}"
@@ -2564,8 +2567,6 @@ BOOTSTRAP=bootstrap
         BOOSTRAP=profiledbootstrap
     %endif
 %endif
-
-pushd obj-%{gcc_target_platform}
 
 # We can't currently compile gcc with clang, even
 # though that would be great for bootstrapping
@@ -2622,7 +2623,6 @@ XCFLAGS="$OPT_FLAGS" \
         --enable-__cxa_atexit \
         --enable-gold=default \
         --with-plugin-ld=%{_bindir}/ld \
-%if %{system_compiler}
         --enable-bootstrap \
 %endif
         --enable-checking=release \
