@@ -2735,6 +2735,13 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
         install-src.zip
 %endif
 
+%if %{build_cross} && !%{build_cross_bootstrap}
+# XXX: don't know why it installs libgcc_s.so.1 from  gcc/ rather than %{gcc_target_platform}/libgcc,
+# nor why it installs it to the wrong location...
+rm %{buildroot}/usr/lib/libgcc_s.so*
+%makeinstall_std -C obj-%{gcc_target_platform}/%{gcc_target_platform}/libgcc
+%endif
+
 # configure python dir option does not cover libstdc++ and needs to remove
 # /usr prefix for libjava
 mkdir -p %{buildroot}%{py_puresitedir}
