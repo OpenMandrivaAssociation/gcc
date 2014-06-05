@@ -2623,7 +2623,7 @@ newlib)		LIBC_FLAGS="--with-newlib --with-headers --disable-threads";;
 *)		echo "ERROR: unsupported %{libc} C library"; exit 1;;
 esac
 %if %{libc_shared}
-LIBC_FLAGS="$LIBC_FLAGS --enable-shared"
+LIBC_FLAGS="$LIBC_FLAGS --enable-shared --enable-static"
 %else
 LIBC_FLAGS="$LIBC_FLAGS --disable-shared --enable-static"
 %endif
@@ -2721,9 +2721,6 @@ XCFLAGS="$OPT_FLAGS" \
 	--enable-libatomic \
 %else
 	--disable-libatomic \
-%endif
-%if !%{system_compiler}
-        --disable-static \
 %endif
 	$LIBC_FLAGS \
         --with-system-zlib \
