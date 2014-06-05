@@ -13,7 +13,7 @@
 
 %define nof_arches		noarch
 %define lsb_arches		i386 x86_64
-%define biarches		x86_64 mips64 mips64el
+%define biarches		x86_64 mips64 mips64el mips mipsel
 
 %define		system_compiler		1
 
@@ -48,7 +48,7 @@
 %define package_suffix		%{nil}
 %define program_prefix		%{nil}
 %define program_suffix		%{nil}
-%define program_long_suffix     -%{version}
+%define	program_long_suffix	-%{version}
 %else
 %if %{build_cross}
 %define	_build_pkgcheck_set /usr/bin/rpmlint -T -f %{_sourcedir}/gcc.rpmlintrc
@@ -125,6 +125,8 @@
 %define		gcclibexecdir		%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}
 %define		gccdir			%{_libdir}/gcc/%{gcc_target_platform}/%{ver}
 %define		multigccdir		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/32
+%define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
+%define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
 %define		multilibdir		%{_prefix}/lib
 %define		multirootlibdir		/lib
 
@@ -236,7 +238,7 @@
 %define		build_quadmath		0
 %define		build_ssp		0
 %define		build_ubsan		%{system_compiler}
-%ifarch	%{ix86} x86_64 %{arm}
+%if %isarch %{ix86} x86_64 %{arm}
 %define		build_itm		1
 %else
 # aarch64 libitm support not implemented yet
@@ -292,11 +294,38 @@
 %define		libc			glibc
 %define		libc_shared		1
 
-%define	build_minimal			0
+%define		build_minimal		0
+
+# (proyvind): TODO
+# This is a cheap knockoff of the former monolithic build, hastily thrown
+# together to get non-bootstrap cross build without unnecessary complexity
+# of package libification etc.
+# Returning it to it's former state will require rearranging the spec layout
+# with all %%files sections collected together at the end, reverting back to
+# what earlier was before pcpa cleaned it out (at a time of cross build being
+# broken, thus build support for removed).
+# Unless any loud objections from pcpa or anyone else, I intend to do so
+# eventually, this would not only improve and make the cross compiler support
+# easier to maintain, but also easier to maintain package in general as it
+# would make it easier to share efforts with Mageia.
+%define		build_monolithic	0
+
 
 %if %{build_cross_bootstrap}
 %define		build_minimal		1
 %define		libc_shared		0
+%endif
+
+%if %{build_cross}
+%define		build_monolithic	1
+%define		build_ada		0
+%define		build_check		0
+%define		build_cxx		1
+%define		build_doc		0
+%define		build_gomp		1
+%define		build_java		0
+%define		build_libgcc		1
+%define		package_ffi		0
 %endif
 
 %if %{build_minimal}
@@ -305,7 +334,6 @@
 %define		build_atomic		0
 %define		build_check		0
 %define		build_cilkrts		0
-%define		build_multilib		0
 %define		build_go		0
 %define		build_lto		0
 %define		build_lsan		0
@@ -327,12 +355,10 @@
 %define		build_libgcc		0
 %define		build_pdf		0
 %define		build_plugin		0
-%define		build_multilib		0
-%define		build_doc		0
-%define		build_pdf		0
 %define		package_ffi		0
 %define		shared_libgnat		0
 %endif
+
 
 # Adapted from fedora procedure:
 #   If there is no usable gcc-java neither libgcj for the arch,
@@ -503,6 +529,10 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
 %endif
+%if %isarch mips mipsel
+%{target_libdir}32/libgcc_s.so
+%{target_libdir}64/libgcc_s.so
+%endif
 %endif
 %if !%{build_cross}
 %{_bindir}/gcc-%{ver}
@@ -532,14 +562,25 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_quadmath}
 %exclude %{gccdir}/include/quadmath*.h
 %endif
-%if %{build_gomp}
+%if %{build_gomp} && !%{build_monolithic}
 %exclude %{gccdir}/include/omp*.h
 %endif
 %if %{build_multilib}
+%if %isarch mips mipsel
+%dir %{multigccdirn32}
+%{multigccdirn32}/*.o
+%{multigccdirn32}/libgcc*.a
+%{multigccdirn32}/libgcov.a
+%dir %{multigccdir64}
+%{multigccdir64}/*.o
+%{multigccdir64}/libgcc*.a
+%{multigccdir64}/libgcov.a
+%else
 %dir %{multigccdir}
 %{multigccdir}/*.o
 %{multigccdir}/libgcc*.a
 %{multigccdir}/libgcov.a
+%endif
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc
@@ -547,9 +588,27 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_check}
 %doc %{_docdir}/gcc/test_summary.log
 %endif
+%if %{build_monolithic}
+%if %{build_atomic}
+%{target_libdir}/libatomic.a
+%{target_libdir}/libatomic.so
+%{target_libdir}/libatomic.so.%{atomic_major}*
+%endif
+%if %{build_gomp}
+%{target_libdir}/libgomp.a
+%{target_libdir}/libgomp.so
+%{target_libdir}/libgomp.so.%{gomp_major}*
+%{target_libdir}/libgomp.spec
+%endif
+%if %{build_libgcc}
+%{target_libdir}/libgcc_s.so
+%{target_libdir}/libgcc_s.so.%{gcc_major}
+%endif
+%endif
+
 
 ########################################################################
-%if %{build_libgcc}
+%if %{build_libgcc} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 
 %package -n %{libgcc}
@@ -695,14 +754,25 @@ including templates and exception handling.
 %files c++
 %if %{system_compiler}
 %{_bindir}/g++
-%{_bindir}/%{gcc_target_platform}-c++
-%{_bindir}/%{gcc_target_platform}-g++
 %{_mandir}/man1/g++.1*
 %endif
+%if %{system_compiler} || %{build_cross}
+%{_bindir}/%{gcc_target_platform}-c++
+%{_bindir}/%{gcc_target_platform}-g++
+%endif
+%if !%{build_cross}
 %{_bindir}/c++-%{ver}
 %{_bindir}/g++-%{ver}
+%endif
 %{_bindir}/%{gcc_target_platform}-g++-%{ver}
 %{gcclibexecdir}/cc1plus
+%if %{build_monolithic}
+%{target_slibdir}/libstdc++.a
+%{target_slibdir}/libstdc++.so
+%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
+%{target_slibdir}/libsupc++.a
+%{?build_cross:%{target_prefix}}/include/c++/%{ver}
+%else
 
 #-----------------------------------------------------------------------
 
@@ -823,6 +893,11 @@ Static libraries for the GNU standard C++ library.
 %{multilibdir}/libstdc++.*a
 %{multilibdir}/libsupc++.*a
 %endif
+
+%endif
+#-----------------------------------------------------------------------
+# build_monolithic
+
 
 #-----------------------------------------------------------------------
 # build_cxx
@@ -1686,7 +1761,7 @@ using REAL*16 and programs using __float128 math.
 %endif
 
 ########################################################################
-%if %{build_gomp}
+%if %{build_gomp} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 
 %package -n %{libgomp}
@@ -2050,7 +2125,7 @@ Static libtsan.
 #-----------------------------------------------------------------------
 # Atomic operations
 #-----------------------------------------------------------------------
-%if %{build_atomic}
+%if %{build_atomic} && !%{build_monolithic}
 %package -n %{libatomic}
 Summary:	GCC Atomic operations library
 Group:		Development/C
@@ -2558,7 +2633,7 @@ x86_64)		TARGET_FLAGS="--with-cpu=generic %{?build_multilib:--with-arch_32=i586 
 i?86|athlon)	TARGET_FLAGS="--with-arch=i586 --with-cpu=generic";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64 --enable-targets=all";;
 mips32|mips32el) TARGET_FLAGS="--enable-long-long --with-abi=n32 --enable-targets=all";;
-mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all";;
+mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-multiarch";;
 esac
 
 BOOTSTRAP=bootstrap
@@ -2785,9 +2860,9 @@ pushd %{buildroot}%{_bindir}
         fi
         rm -f $prog
 	%if %{build_cross}
-        ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
+            ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
 	%else
-        ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
+            ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
 	%endif
         %if %{system_compiler}
             ln -sf %{gcc_target_platform}-$prog-%{ver} $prog
@@ -2796,16 +2871,29 @@ pushd %{buildroot}%{_bindir}
     done
 %if %{build_cxx}
     rm -f c++ %{gcc_target_platform}-c++{,-%{ver}}
-    ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
+    %if !%{build_cross}
+	ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
+    %endif
     %if %{system_compiler}
         ln -sf %{gcc_target_platform}-g++-%{ver} c++
+    %endif
+    %if %{system_compiler} || %{build_cross}
         ln -sf %{gcc_target_platform}-g++-%{ver} %{gcc_target_platform}-c++
     %endif
-    mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-    mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
-        %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-    perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
-        %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
+
+    %if %{build_cross} && !%{build_cross_bootstrap}
+	rm -f %{buildroot}%{target_libdir}/libstdc++.so.%{stdcxx_major}*-gdb.py
+	%if %isarch mips mipsel
+	    rm -f %{buildroot}%{target_libdir}32/libstdc++.so.%{stdcxx_major}*-gdb.py
+	    rm -f %{buildroot}%{target_libdir}64/libstdc++.so.%{stdcxx_major}*-gdb.py
+	%endif
+        rm -rf %{buildroot}%{py_puresitedir}/libstdcxx
+    %else
+	mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+	mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
+	    %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+	perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
+	    %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 
     mkdir -p %{buildroot}/%{_lib}
     mv %{buildroot}%{_libdir}/libstdc++.so.%{stdcxx_major}* \
@@ -2827,6 +2915,7 @@ pushd %{buildroot}%{_bindir}
             %{buildroot}%{multilibdir}/libstdc++.so
     %endif
 %endif
+%endif
 %if %{build_java}
     ln -sf gcjh %{gcc_target_platform}-gcjh
     # For some reason, the .so file is a real file, not a symlink
@@ -2834,7 +2923,7 @@ pushd %{buildroot}%{_bindir}
 %endif
 popd
 
-%if %{build_gomp}
+%if %{build_gomp} && !%{build_cross}
     mkdir -p %{buildroot}/%{_lib}
     mv %{buildroot}%{_libdir}/libgomp.so.%{gomp_major}* \
         %{buildroot}/%{_lib}
@@ -2894,8 +2983,7 @@ popd
 # workaround at glibc level but it would be more painfull.
 ln -srf %{buildroot}%{gccdir}/libgcc.a \
 	%{buildroot}%{gccdir}/libgcc_eh.a
-%if 0
- #%isarch mips mipsel
+%if %isarch mips mipsel
 ln -srf %{buildroot}%{gccdir}/n32/libgcc.a \
 	%{buildroot}%{gccdir}/n32/libgcc_eh.a
 ln -srf %{buildroot}%{gccdir}/64/libgcc.a \
