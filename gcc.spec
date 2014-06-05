@@ -2678,7 +2678,6 @@ XCFLAGS="$OPT_FLAGS" \
         --with-cloog \
         --with-ppl \
         --enable-cloog-backend=isl \
-	--disable-isl-version-check \
         --disable-cloog-version-check \
 %endif
 %if !%{build_ffi}
