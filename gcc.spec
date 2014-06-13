@@ -457,6 +457,8 @@ BuildRequires:	gdb
 BuildRequires:	gettext
 BuildRequires:	sharutils
 BuildRequires:	texinfo
+# For py_puresitedir
+BuildRequires:	python >= 3.4
 %if %{build_doc}
 BuildRequires:	texi2html
 %endif
