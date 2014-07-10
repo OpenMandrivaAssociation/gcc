@@ -267,14 +267,15 @@
   %define	build_multilib		%{system_compiler}
 %endif
 %ifarch %{ix86} x86_64
-  %define	build_ada		%{system_compiler}
   %define	build_cilkrts		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
   %define	build_vtv		%{system_compiler}
-
+%endif
+%ifarch %{ix86} x86_64 aarch64
+  %define	build_ada		%{system_compiler}
 %endif
 %ifarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
@@ -435,6 +436,19 @@ Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
 # Fix build with ISL 0.13
 Patch15:	https://raw.githubusercontent.com/archlinuxcn/repo/master/gcc-multilib-x32/gcc-4.9-isl-0.13-hack.patch
+# FIXME this is ***evil***
+# Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
+# A notable difference:
+# Without the patch:
+# $ file except.o
+# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (SYSV), not stripped
+# With the patch:
+# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (GNU/Linux), not stripped
+# Apparently, the kernel or glibc can't handle Linux specific object files in
+# qemu?
+# This needs further debugging (and preferrably testing on real hardware), but
+# for now, the evil patch allows us to continue building.
+Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2484,6 +2498,8 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
+%patch15 -p1 -b .isl~
+%patch16 -p1 -b .EVILaarch64~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
