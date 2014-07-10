@@ -380,7 +380,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	10
+Release:	11
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -433,6 +433,8 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 # Alias -Oz to -Os for compatibility with clang's -Oz flag
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
+# Fix build with ISL 0.13
+Patch15:	https://raw.githubusercontent.com/archlinuxcn/repo/master/gcc-multilib-x32/gcc-4.9-isl-0.13-hack.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2678,6 +2680,7 @@ XCFLAGS="$OPT_FLAGS" \
         --with-ppl \
         --enable-cloog-backend=isl \
         --disable-cloog-version-check \
+	--disable-isl-version-check \
 %endif
 %if !%{build_ffi}
         --disable-libffi \
