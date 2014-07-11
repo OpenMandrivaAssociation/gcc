@@ -381,7 +381,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	11
+Release:	12
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
