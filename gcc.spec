@@ -119,7 +119,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.1
-%define		linaro			2014.06
+%define		linaro			2014.07
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdir		%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}
@@ -2504,7 +2504,7 @@ Static liblsan.
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
-%patch104 -p2 -b .google5~
+%patch104 -p1 -b .google5~
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
