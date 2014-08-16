@@ -118,8 +118,8 @@
 
 %define		default_compiler	0
 %define		branch			4.9
-%define		ver			%{branch}.1
-%define		linaro			2014.07
+%define		ver			%{branch}.2
+%define		linaro			2014.08
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdir		%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}
@@ -381,7 +381,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	12
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -449,6 +449,8 @@ Patch15:	https://raw.githubusercontent.com/archlinuxcn/repo/master/gcc-multilib-
 # This needs further debugging (and preferrably testing on real hardware), but
 # for now, the evil patch allows us to continue building.
 Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
+# Fix for fileline_fn callback being NULL in libbacktrace sometimes
+Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2500,6 +2502,7 @@ Static liblsan.
 %patch14 -p1 -b .Oz~
 %patch15 -p1 -b .isl~
 %patch16 -p1 -b .EVILaarch64~
+%patch17 -p1 -b .libbacktrace~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
