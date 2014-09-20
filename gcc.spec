@@ -478,7 +478,9 @@ BuildRequires:	gettext
 BuildRequires:	sharutils
 BuildRequires:	texinfo
 # For py_puresitedir
+%if !%{build_cross}
 BuildRequires:	python >= 3.4
+%endif
 %if %{build_doc}
 BuildRequires:	texi2html
 %endif
