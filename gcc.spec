@@ -381,7 +381,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	1
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -502,6 +502,10 @@ BuildRequires:	pkgconfig(isl)
 Requires:	%{name}-cpp >= %{EVRD}
 Requires:	%{libgcc} >= %{EVRD}
 Requires:	%{libgomp} >= %{EVRD}
+# as gcc now has it's own output color support, let's obsolete the old
+# colorgcc with it's perl wrapper script which is slightly buggy with it's
+# it's output redirection anyways...
+Obsoletes:	colorgcc <= 1.3.2-17
 %endif
 Requires:	%{cross_prefix}binutils >= 2.20.51.0.2
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
@@ -3162,4 +3166,35 @@ strip --strip-unneeded \
 	%{buildroot}%{_bindir}/jv-convert \
 	%{buildroot}%{_bindir}/gtnameserv \
 	%{buildroot}%{_bindir}/gcjh
+%endif
+
+%if %{system_compiler}
+install -d %{buildroot}%{_sysconfdir}/sysconfig/gcc
+tee > %{buildroot}%{_sysconfdir}/sysconfig/gcc << EOH
+# change here to override the default 'auto' setting
+# GCC_COLORS=never
+EOH
+
+install -d %{buildroot}%{_sysconfdir}/profile.d
+tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh << EOH
+if [ -f /etc/sysconfig/gcc ]; then
+    . /etc/sysconfig/gcc
+fi
+if [ -z "$GCC_COLORS" ]; then
+	export GCC_COLORS=auto
+    else
+	export GCC_COLORS=$GCC_COLORS
+fi
+EOH
+
+tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh << EOH
+if ( -f /etc/sysconfig/gcc ) then
+    eval `sed -n 's/^\([^#]*\)=\([^#]*\)/set \1=\2;/p' < /etc/sysconfig/gcc`
+endif
+if ( ${?GCC_COLORS} ) then
+	setenv GCC_COLORS $GCC_COLORS
+    else
+	setenv GCC_COLORS auto
+endif
+EOH
 %endif
