@@ -55,9 +55,10 @@
 %define	_build_pkgcheck_srpm /usr/bin/rpmlint -T -f %{_sourcedir}/gcc.rpmlintrc
 %define alternative_priority	10%{branch_tag}
 %define cross_prefix		cross-%{target_cpu}-
-%define cross_program_prefix	%{target_cpu}-%{_target_vendor}-linux%{gnuext}-
+%global	target_platform		%(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/%{target_cpu}-%{_target_os}/macros --target=%{target_cpu} -E %%{_target_platform})
+%define cross_program_prefix	%{target_platform}-
 %define package_suffix		%{nil}
-%define program_prefix		%{cross_program_prefix}
+%define program_prefix		%{target_platform}
 %define program_suffix		%{nil}
 %define program_long_suffix	-%{ver}
 %else
@@ -75,8 +76,9 @@
 %if %{build_cross}
 %define biarches		noarch
 %define arch			%{target_cpu}
-%define gcc_target_platform	%{target_cpu}-%{_target_vendor}-linux%{gnuext}
+%define gcc_target_platform	%{target_platform}
 %define target_prefix		%{_prefix}/%{gcc_target_platform}
+%global	target_lib		%(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/%{target_cpu}-%{_target_os}/macros --target=%{target_cpu} -E %%{_lib})
 %define target_libdir		%{target_prefix}/%{target_lib}
 %define target_slibdir		%{target_prefix}/%{target_lib}
 %define target_slibdir32	%{target_prefix}/lib
@@ -100,11 +102,6 @@
 %else
 %define gnuext			-gnu
 %endif
-%endif
-
-%define target_lib		lib
-%if %isarch x86_64 mips64 mips64el
-%define target_lib		lib64
 %endif
 
 %if %isarch x86_64
@@ -255,7 +252,7 @@
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
 # system_compiler && build_ffi
-%ifarch %{ix86} x86_64 %{arm}
+%if %isarch %{ix86} x86_64 %{arm}
   %define	build_java		%{system_compiler}
 %else
   %define	build_java		0
@@ -264,13 +261,13 @@
 %define		build_libgcc		%{system_compiler}
 %define		build_pdf		%{build_doc}
 %define		build_plugin		%{system_compiler}
-%ifarch x86_64
+%if %isarch x86_64
   %define	build_tsan		%{system_compiler}
   %define	build_lsan		%{system_compiler}
 
   %define	build_multilib		%{system_compiler}
 %endif
-%ifarch %{ix86} x86_64
+%if %isarch %{ix86} x86_64
   %define	build_cilkrts		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
@@ -278,10 +275,10 @@
   %define	build_go		%{system_compiler}
   %define	build_vtv		%{system_compiler}
 %endif
-%ifarch %{ix86} x86_64 aarch64
+%if %isarch %{ix86} x86_64 aarch64
   %define	build_ada		%{system_compiler}
 %endif
-%ifarch %{ix86} x86_64 %{arm} aarch64
+%if %isarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
   %define	build_asan		%{system_compiler}
@@ -2108,7 +2105,7 @@ Static libasan.
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
-%ifarch x86_64
+%if %isarch x86_64
 %if %{build_tsan}
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
@@ -2223,7 +2220,7 @@ Static libatomic.
 ########################################################################
 # Intel CILK
 ########################################################################
-%ifarch %{ix86} x86_64
+%if %isarch %{ix86} x86_64
 %if %{build_cilkrts}
 %package -n %{libcilkrts}
 Summary:	CILK (multithreading programming language) runtime
@@ -2294,7 +2291,7 @@ Static libcilkrts.
 ########################################################################
 # VTV (VTable Verification)
 ########################################################################
-%ifarch %{ix86} x86_64
+%if %isarch %{ix86} x86_64
 %if %{build_vtv}
 %package -n %{libvtv}
 Summary:	VTable Verification library
@@ -2434,7 +2431,7 @@ Static libubsan.
 ########################################################################
 # LSan (Leak Sanitizer)
 ########################################################################
-%ifarch x86_64
+%if %isarch x86_64
 %if %{build_lsan}
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
@@ -2670,7 +2667,7 @@ mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-mult
 esac
 
 BOOTSTRAP=bootstrap
-%ifarch %{ix86} x86_64
+%if %isarch %{ix86} x86_64
     %if %{system_compiler}
         BOOSTRAP=profiledbootstrap
     %endif
@@ -2762,17 +2759,17 @@ XCFLAGS="$OPT_FLAGS" \
   %if !%{build_multilib}
         --disable-multilib \
   %endif
-%ifarch armv5te
+%if %isarch armv5te
         --with-arch=armv5te \
 %endif
-%ifarch armv7l armv7hl
+%if %isarch armv7l armv7hl
         --without-multilib \
         --disable-multilib \
         --with-cpu=cortex-a8 \
         --with-tune=cortex-a8 \
         --with-arch=armv7-a \
         --with-mode=thumb \
-  %ifarch armv7l
+  %if %isarch armv7l
         --with-float=softfp \
   %else
         --with-float=hard \
