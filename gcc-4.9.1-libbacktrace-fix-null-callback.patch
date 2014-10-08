@@ -1,0 +1,11 @@
+--- gcc-linaro-4.9-2014.07/libbacktrace/elf.c.orig	2014-03-07 09:07:56.000000000 +0400
++++ gcc-linaro-4.9-2014.07/libbacktrace/elf.c	2014-08-13 12:56:23.285272323 +0400
+@@ -925,7 +925,7 @@
+   int ret;
+   int found_sym;
+   int found_dwarf;
+-  fileline elf_fileline_fn;
++  fileline elf_fileline_fn = elf_nodebug;
+   struct phdr_data pd;
+ 
+   ret = elf_add (state, descriptor, 0, error_callback, data, &elf_fileline_fn,

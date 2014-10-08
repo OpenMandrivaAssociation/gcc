@@ -1,56 +1,6 @@
-commit 331e362574142e4c1d9d509533d1c96b6dc54d13
-Author: Carrot Wei <carrot@google.com>
-Date:   Thu May 15 10:06:33 2014 +0800
-
-    [4.8, 4.9] Add simplify-got
-    
-    This pass optimize GOT_PREL (already exists in toolchain/gcc/gcc-4.6)
-    Backport from svn://gcc.gnu.org/svn/gcc/branches/google/gcc-4_6-mobile
-    UNSPEC_GOT_PREL_SYM is now in new file arm/unspecs.md
-    4.9 port is slightly different due to changes in gcc passes
-    See Google b/14811006
-    
-    r173209 | carrot | 2011-04-30 16:07:46 +0800 (Sat, 30 Apr 2011) | 21 lines
-    
-    	* hooks.c (hook_rtx_void_null): New function.
-    	* hooks.h (hook_rtx_void_null): New prototype.
-    	* target.def (got_access): New hook vector declaration.
-    	* tree-pass.h (pass_simplify_got): New pass.
-    	* timevar.def (TV_SIMPLIFY_GOT): New TV id.
-    	* simplify-got.c: New source file.
-    	* Makefile.in (simplify-got.o): Add a new file.
-    	* passes.c (init_optimization_passes): Add a new pass.
-    	* config/arm/arm.c (arm_output_addr_const_extra): Output GOT_PREL
-    	relocation.
-    	(arm_get_pic_reg): New function.
-    	(arm_clear_pic_reg): New function.
-    	(arm_can_simplify_got_access): New function.
-    	(arm_loaded_global_var): New function.
-    	(arm_load_global_address): New function.
-    	* config/arm/arm.md (UNSPEC_GOT_PREL_SYM): New UNSPEC symbol.
-    
-    	* testsuite/gcc.target/arm/got1.c: New testcase.
-    	* testsuite/gcc.target/arm/got2.c: New testcase.
-    
-    Change-Id: I91e881df19bb6937a5fbcc8e6b83d158717c7773
-
-diff --git a/gcc-4.9/gcc/Makefile.in b/gcc-4.9/gcc/Makefile.in
-index d1ab22f..7350111 100644
---- a/gcc-4.9/gcc/Makefile.in
-+++ b/gcc-4.9/gcc/Makefile.in
-@@ -1354,6 +1354,7 @@ OBJS = \
- 	sel-sched-dump.o \
- 	sel-sched.o \
- 	sese.o \
-+	simplify-got.o \
- 	simplify-rtx.o \
- 	sparseset.o \
- 	sreal.o \
-diff --git a/gcc-4.9/gcc/config/arm/arm.c b/gcc-4.9/gcc/config/arm/arm.c
-index 17d0304..8376355 100644
---- a/gcc-4.9/gcc/config/arm/arm.c
-+++ b/gcc-4.9/gcc/config/arm/arm.c
-@@ -286,7 +286,15 @@ static unsigned arm_add_stmt_cost (void *data, int count,
+--- gcc-linaro-4.9-2014.07/gcc/config/arm/arm.c.google5~	2014-07-18 10:50:49.177620286 +0200
++++ gcc-linaro-4.9-2014.07/gcc/config/arm/arm.c	2014-07-18 10:57:36.302530524 +0200
+@@ -289,7 +289,15 @@ static unsigned arm_add_stmt_cost (void
  
  static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
  					 bool op0_preserve_value);
@@ -66,7 +16,7 @@ index 17d0304..8376355 100644
  
  /* Table of machine attributes.  */
  static const struct attribute_spec arm_attribute_table[] =
-@@ -662,6 +670,21 @@ static const struct attribute_spec arm_attribute_table[] =
+@@ -668,6 +676,21 @@ static const struct attribute_spec arm_a
  #undef TARGET_VECTORIZE_ADD_STMT_COST
  #define TARGET_VECTORIZE_ADD_STMT_COST arm_add_stmt_cost
  
@@ -88,7 +38,7 @@ index 17d0304..8376355 100644
  #undef TARGET_CANONICALIZE_COMPARISON
  #define TARGET_CANONICALIZE_COMPARISON \
    arm_canonicalize_comparison
-@@ -29208,6 +29231,14 @@ arm_output_addr_const_extra (FILE *fp, rtx x)
+@@ -29463,6 +29486,14 @@ arm_output_addr_const_extra (FILE *fp, r
        fputc (')', fp);
        return TRUE;
      }
@@ -103,8 +53,8 @@ index 17d0304..8376355 100644
    else if (GET_CODE (x) == CONST_VECTOR)
      return arm_emit_vector_const (fp, x);
  
-@@ -31166,4 +31197,195 @@ arm_const_not_ok_for_debug_p (rtx p)
-   return false;
+@@ -31519,4 +31550,195 @@ arm_atomic_assign_expand_fenv (tree *hol
+ 			    reload_fenv, restore_fnenv), update_call);
  }
  
 +rtx
@@ -299,10 +249,8 @@ index 17d0304..8376355 100644
 +}
 +
  #include "gt-arm.h"
-diff --git a/gcc-4.9/gcc/config/arm/unspecs.md b/gcc-4.9/gcc/config/arm/unspecs.md
-index 8caa953..87edf18 100644
---- a/gcc-4.9/gcc/config/arm/unspecs.md
-+++ b/gcc-4.9/gcc/config/arm/unspecs.md
+--- gcc-linaro-4.9-2014.07/gcc/config/arm/unspecs.md.google5~	2014-07-16 17:39:57.000000000 +0200
++++ gcc-linaro-4.9-2014.07/gcc/config/arm/unspecs.md	2014-07-18 10:50:49.184620198 +0200
 @@ -83,6 +83,7 @@
                          ; FPSCR rounding mode and signal inexactness.
    UNSPEC_VRINTA         ; Represent a float to integral float rounding
@@ -311,11 +259,9 @@ index 8caa953..87edf18 100644
  ])
  
  (define_c_enum "unspec" [
-diff --git a/gcc-4.9/gcc/doc/tm.texi b/gcc-4.9/gcc/doc/tm.texi
-index f7024a7..f3c0c14 100644
---- a/gcc-4.9/gcc/doc/tm.texi
-+++ b/gcc-4.9/gcc/doc/tm.texi
-@@ -9951,6 +9951,43 @@ default, inlining is not allowed if the callee function has function
+--- gcc-linaro-4.9-2014.07/gcc/doc/tm.texi.google5~	2014-06-25 15:10:09.000000000 +0200
++++ gcc-linaro-4.9-2014.07/gcc/doc/tm.texi	2014-07-18 10:50:49.185620186 +0200
+@@ -9958,6 +9958,43 @@ default, inlining is not allowed if the
  specific target options and the caller does not use the same options.
  @end deftypefn
  
@@ -359,11 +305,9 @@ index f7024a7..f3c0c14 100644
  @node Emulated TLS
  @section Emulating TLS
  @cindex Emulated TLS
-diff --git a/gcc-4.9/gcc/doc/tm.texi.in b/gcc-4.9/gcc/doc/tm.texi.in
-index 6dcbde4..fb26c1f 100644
---- a/gcc-4.9/gcc/doc/tm.texi.in
-+++ b/gcc-4.9/gcc/doc/tm.texi.in
-@@ -7502,6 +7502,43 @@ on this implementation detail.
+--- gcc-linaro-4.9-2014.07/gcc/doc/tm.texi.in.google5~	2014-06-25 15:10:09.000000000 +0200
++++ gcc-linaro-4.9-2014.07/gcc/doc/tm.texi.in	2014-07-18 10:50:49.186620173 +0200
+@@ -7509,6 +7509,43 @@ on this implementation detail.
  
  @hook TARGET_CAN_INLINE_P
  
@@ -407,11 +351,9 @@ index 6dcbde4..fb26c1f 100644
  @node Emulated TLS
  @section Emulating TLS
  @cindex Emulated TLS
-diff --git a/gcc-4.9/gcc/hooks.c b/gcc-4.9/gcc/hooks.c
-index 1c67bdf..1038454 100644
---- a/gcc-4.9/gcc/hooks.c
-+++ b/gcc-4.9/gcc/hooks.c
-@@ -365,6 +365,13 @@ hook_uint_mode_0 (enum machine_mode m ATTRIBUTE_UNUSED)
+--- gcc-linaro-4.9-2014.07/gcc/hooks.c.google5~	2014-01-02 23:23:26.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/hooks.c	2014-07-18 10:50:49.186620173 +0200
+@@ -365,6 +365,13 @@ hook_uint_mode_0 (enum machine_mode m AT
    return 0;
  }
  
@@ -425,11 +367,9 @@ index 1c67bdf..1038454 100644
  /* Generic hook that takes three trees and returns the last one as is.  */
  tree
  hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
-diff --git a/gcc-4.9/gcc/hooks.h b/gcc-4.9/gcc/hooks.h
-index 896b41d..42825a4 100644
---- a/gcc-4.9/gcc/hooks.h
-+++ b/gcc-4.9/gcc/hooks.h
-@@ -100,6 +100,7 @@ extern bool default_can_output_mi_thunk_no_vcall (const_tree, HOST_WIDE_INT,
+--- gcc-linaro-4.9-2014.07/gcc/hooks.h.google5~	2014-01-02 23:23:26.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/hooks.h	2014-07-18 10:50:49.186620173 +0200
+@@ -100,6 +100,7 @@ extern bool default_can_output_mi_thunk_
  extern rtx hook_rtx_rtx_identity (rtx);
  extern rtx hook_rtx_rtx_null (rtx);
  extern rtx hook_rtx_tree_int_null (tree, int);
@@ -437,11 +377,19 @@ index 896b41d..42825a4 100644
  
  extern const char *hook_constcharptr_void_null (void);
  extern const char *hook_constcharptr_const_tree_null (const_tree);
-diff --git a/gcc-4.9/gcc/passes.def b/gcc-4.9/gcc/passes.def
-index c98b048..dbe0d34 100644
---- a/gcc-4.9/gcc/passes.def
-+++ b/gcc-4.9/gcc/passes.def
-@@ -347,6 +347,7 @@ along with GCC; see the file COPYING3.  If not see
+--- gcc-linaro-4.9-2014.07/gcc/Makefile.in.google5~	2014-07-17 08:21:27.000000000 +0200
++++ gcc-linaro-4.9-2014.07/gcc/Makefile.in	2014-07-18 10:50:49.181620236 +0200
+@@ -1354,6 +1354,7 @@ OBJS = \
+ 	sel-sched-dump.o \
+ 	sel-sched.o \
+ 	sese.o \
++	simplify-got.o \
+ 	simplify-rtx.o \
+ 	sparseset.o \
+ 	sreal.o \
+--- gcc-linaro-4.9-2014.07/gcc/passes.def.google5~	2014-01-17 18:50:10.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/passes.def	2014-07-18 10:50:49.186620173 +0200
+@@ -347,6 +347,7 @@ along with GCC; see the file COPYING3.
  	  NEXT_PASS (pass_rtl_loop_done);
  	  TERMINATE_PASS_LIST ()
        POP_INSERT_PASSES ()
@@ -449,11 +397,8 @@ index c98b048..dbe0d34 100644
        NEXT_PASS (pass_web);
        NEXT_PASS (pass_rtl_cprop);
        NEXT_PASS (pass_cse2);
-diff --git a/gcc-4.9/gcc/simplify-got.c b/gcc-4.9/gcc/simplify-got.c
-new file mode 100644
-index 0000000..61a8fe8
---- /dev/null
-+++ b/gcc-4.9/gcc/simplify-got.c
+--- gcc-linaro-4.9-2014.07/gcc/simplify-got.c.google5~	2014-07-18 10:50:49.186620173 +0200
++++ gcc-linaro-4.9-2014.07/gcc/simplify-got.c	2014-07-18 10:50:49.186620173 +0200
 @@ -0,0 +1,216 @@
 +/* Simplify the code to load global variable's address from GOT.
 +   Copyright (C) 2011
@@ -671,11 +616,9 @@ index 0000000..61a8fe8
 +{
 +  return new pass_simplify_got (ctxt);
 +}
-diff --git a/gcc-4.9/gcc/target.def b/gcc-4.9/gcc/target.def
-index 3a64cd1..a67ffa8 100644
---- a/gcc-4.9/gcc/target.def
-+++ b/gcc-4.9/gcc/target.def
-@@ -5116,6 +5116,51 @@ specific target options and the caller does not use the same options.",
+--- gcc-linaro-4.9-2014.07/gcc/target.def.google5~	2014-01-02 23:23:26.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/target.def	2014-07-18 10:50:49.186620173 +0200
+@@ -5116,6 +5116,51 @@ specific target options and the caller d
  
  HOOK_VECTOR_END (target_option)
  
@@ -727,11 +670,8 @@ index 3a64cd1..a67ffa8 100644
  /* For targets that need to mark extra registers as live on entry to
     the function, they should define this target hook and set their
     bits in the bitmap passed in. */
-diff --git a/gcc-4.9/gcc/testsuite/gcc.target/arm/got1.c b/gcc-4.9/gcc/testsuite/gcc.target/arm/got1.c
-new file mode 100644
-index 0000000..46a67fb
---- /dev/null
-+++ b/gcc-4.9/gcc/testsuite/gcc.target/arm/got1.c
+--- gcc-linaro-4.9-2014.07/gcc/testsuite/gcc.target/arm/got1.c.google5~	2014-07-18 10:50:49.186620173 +0200
++++ gcc-linaro-4.9-2014.07/gcc/testsuite/gcc.target/arm/got1.c	2014-07-18 10:50:49.186620173 +0200
 @@ -0,0 +1,10 @@
 +/* { dg-options "-Os -fpic" }  */
 +/* { dg-final { scan-assembler "GOT_PREL" } } */
@@ -743,11 +683,8 @@ index 0000000..46a67fb
 +  x = j;
 +  return t;
 +}
-diff --git a/gcc-4.9/gcc/testsuite/gcc.target/arm/got2.c b/gcc-4.9/gcc/testsuite/gcc.target/arm/got2.c
-new file mode 100644
-index 0000000..725f49e
---- /dev/null
-+++ b/gcc-4.9/gcc/testsuite/gcc.target/arm/got2.c
+--- gcc-linaro-4.9-2014.07/gcc/testsuite/gcc.target/arm/got2.c.google5~	2014-07-18 10:50:49.187620161 +0200
++++ gcc-linaro-4.9-2014.07/gcc/testsuite/gcc.target/arm/got2.c	2014-07-18 10:50:49.187620161 +0200
 @@ -0,0 +1,11 @@
 +/* We should not use GOT_PREL relocation to load global address with so
 +   many global accesses.  */
@@ -760,11 +697,9 @@ index 0000000..725f49e
 +{
 +  return x1 + x2 + x3 + x4 + x5;
 +}
-diff --git a/gcc-4.9/gcc/timevar.def b/gcc-4.9/gcc/timevar.def
-index 9faf98b..466b414 100644
---- a/gcc-4.9/gcc/timevar.def
-+++ b/gcc-4.9/gcc/timevar.def
-@@ -262,6 +262,7 @@ DEFTIMEVAR (TV_PLUGIN_RUN            , "plugin execution")
+--- gcc-linaro-4.9-2014.07/gcc/timevar.def.google5~	2014-01-02 23:23:26.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/timevar.def	2014-07-18 10:50:49.187620161 +0200
+@@ -262,6 +262,7 @@ DEFTIMEVAR (TV_PLUGIN_RUN            , "
  DEFTIMEVAR (TV_GIMPLE_SLSR           , "straight-line strength reduction")
  DEFTIMEVAR (TV_VTABLE_VERIFICATION   , "vtable verification")
  DEFTIMEVAR (TV_TREE_UBSAN            , "tree ubsan")
@@ -772,11 +707,9 @@ index 9faf98b..466b414 100644
  
  /* Everything else in rest_of_compilation not included above.  */
  DEFTIMEVAR (TV_EARLY_LOCAL	     , "early local passes")
-diff --git a/gcc-4.9/gcc/tree-pass.h b/gcc-4.9/gcc/tree-pass.h
-index 3b86770..7464d95 100644
---- a/gcc-4.9/gcc/tree-pass.h
-+++ b/gcc-4.9/gcc/tree-pass.h
-@@ -505,6 +505,7 @@ extern rtl_opt_pass *make_pass_rtl_hoist (gcc::context *ctxt);
+--- gcc-linaro-4.9-2014.07/gcc/tree-pass.h.google5~	2014-01-02 23:23:26.000000000 +0100
++++ gcc-linaro-4.9-2014.07/gcc/tree-pass.h	2014-07-18 10:50:49.187620161 +0200
+@@ -505,6 +505,7 @@ extern rtl_opt_pass *make_pass_rtl_hoist
  extern rtl_opt_pass *make_pass_rtl_store_motion (gcc::context *ctxt);
  extern rtl_opt_pass *make_pass_cse_after_global_opts (gcc::context *ctxt);
  extern rtl_opt_pass *make_pass_rtl_ifcvt (gcc::context *ctxt);

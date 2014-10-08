@@ -122,8 +122,8 @@
 
 %define		default_compiler	0
 %define		branch			4.9
-%define		ver			%{branch}.1
-%define		linaro			2014.05
+%define		ver			%{branch}.2
+%define		linaro			2014.09
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdir		%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}
@@ -271,14 +271,15 @@
   %define	build_multilib		%{system_compiler}
 %endif
 %ifarch %{ix86} x86_64
-  %define	build_ada		%{system_compiler}
   %define	build_cilkrts		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
   %define	build_vtv		%{system_compiler}
-
+%endif
+%ifarch %{ix86} x86_64 aarch64
+  %define	build_ada		%{system_compiler}
 %endif
 %ifarch %{ix86} x86_64 %{arm} aarch64
   %define	build_objc		%{system_compiler}
@@ -384,7 +385,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	7
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -435,6 +436,25 @@ Patch11:	gcc-4.8-istream-ignore.patch
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
+# Alias -Oz to -Os for compatibility with clang's -Oz flag
+Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
+# Fix build with ISL 0.13
+Patch15:	https://raw.githubusercontent.com/archlinuxcn/repo/master/gcc-multilib-x32/gcc-4.9-isl-0.13-hack.patch
+# FIXME this is ***evil***
+# Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
+# A notable difference:
+# Without the patch:
+# $ file except.o
+# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (SYSV), not stripped
+# With the patch:
+# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (GNU/Linux), not stripped
+# Apparently, the kernel or glibc can't handle Linux specific object files in
+# qemu?
+# This needs further debugging (and preferrably testing on real hardware), but
+# for now, the evil patch allows us to continue building.
+Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
+# Fix for fileline_fn callback being NULL in libbacktrace sometimes
+Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -445,8 +465,6 @@ Patch101:	gcc-4.9-neon-alignment.patch
 Patch102:	gcc-4.9-libstdc++-clang.patch
 # 331e362574142e4c1d9d509533d1c96b6dc54d13
 Patch104:	gcc-4.9-simplify-got.patch
-# 04ad5b9bb3c8c6505f36f90e227b18266d946d8e
-Patch105:	gcc-4.9-vqdmulh_n_s16-neon.patch
 
 # Patches 1001 and 1007 disabled until they're committed
 # slibdir is either /lib or /lib64
@@ -463,6 +481,10 @@ BuildRequires:	gdb
 BuildRequires:	gettext
 BuildRequires:	sharutils
 BuildRequires:	texinfo
+# For py_puresitedir
+%if !%{build_cross}
+BuildRequires:	python >= 3.4
+%endif
 %if %{build_doc}
 BuildRequires:	texi2html
 %endif
@@ -484,6 +506,10 @@ BuildRequires:	pkgconfig(isl)
 Requires:	%{name}-cpp >= %{EVRD}
 Requires:	%{libgcc} >= %{EVRD}
 Requires:	%{libgomp} >= %{EVRD}
+# as gcc now has it's own output color support, let's obsolete the old
+# colorgcc with it's perl wrapper script which is slightly buggy with it's
+# it's output redirection anyways...
+Obsoletes:	colorgcc <= 1.3.2-17
 %endif
 Requires:	%{cross_prefix}binutils >= 2.20.51.0.2
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
@@ -2483,12 +2509,15 @@ Static liblsan.
 %patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
+%patch14 -p1 -b .Oz~
+%patch15 -p1 -b .isl~
+%patch16 -p1 -b .EVILaarch64~
+%patch17 -p1 -b .libbacktrace~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
-%patch104 -p2 -b .google5~
-%patch105 -p2 -b .google6~
+%patch104 -p1 -b .google5~
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
@@ -2679,8 +2708,8 @@ XCFLAGS="$OPT_FLAGS" \
         --with-cloog \
         --with-ppl \
         --enable-cloog-backend=isl \
-	--disable-isl-version-check \
         --disable-cloog-version-check \
+	--disable-isl-version-check \
 %endif
 %if !%{build_ffi}
         --disable-libffi \
@@ -3141,4 +3170,35 @@ strip --strip-unneeded \
 	%{buildroot}%{_bindir}/jv-convert \
 	%{buildroot}%{_bindir}/gtnameserv \
 	%{buildroot}%{_bindir}/gcjh
+%endif
+
+%if %{system_compiler}
+install -d %{buildroot}%{_sysconfdir}/sysconfig/gcc
+tee > %{buildroot}%{_sysconfdir}/sysconfig/gcc << EOH
+# change here to override the default 'auto' setting
+# GCC_COLORS=never
+EOH
+
+install -d %{buildroot}%{_sysconfdir}/profile.d
+tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh << EOH
+if [ -f /etc/sysconfig/gcc ]; then
+    . /etc/sysconfig/gcc
+fi
+if [ -z "$GCC_COLORS" ]; then
+	export GCC_COLORS=auto
+    else
+	export GCC_COLORS=$GCC_COLORS
+fi
+EOH
+
+tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh << EOH
+if ( -f /etc/sysconfig/gcc ) then
+    eval `sed -n 's/^\([^#]*\)=\([^#]*\)/set \1=\2;/p' < /etc/sysconfig/gcc`
+endif
+if ( ${?GCC_COLORS} ) then
+	setenv GCC_COLORS $GCC_COLORS
+    else
+	setenv GCC_COLORS auto
+endif
+EOH
 %endif
