@@ -92,7 +92,11 @@
 
 %if %{build_cross}
 %if %isarch %arm
+%if "%{target_cpu}" == "armv7hl"
+%define	gnuext			-gnueabihf
+%else
 %define gnuext			-gnueabi
+%endif
 %else
 %define gnuext			-gnu
 %endif
