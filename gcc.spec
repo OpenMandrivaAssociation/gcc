@@ -491,6 +491,9 @@ BuildRequires:	ppl_c-devel >= 0.11
 BuildRequires:	pkgconfig(cloog-isl)
 BuildRequires:	pkgconfig(isl)
 %endif
+%if !%{build_cross_bootstrap}
+BuildRequires:	%{cross_prefix}glibc-devel
+%endif
 
 %if %{system_compiler}
 Requires:	%{name}-cpp >= %{EVRD}
