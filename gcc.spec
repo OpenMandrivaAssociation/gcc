@@ -557,6 +557,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %endif
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdir}
+%dir %{gcclibexecdir}
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
 %{gccdir}/*.o
