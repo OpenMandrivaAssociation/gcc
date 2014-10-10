@@ -111,8 +111,10 @@
 %define		linaro			2014.09
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
-%define		gcclibexecdir		%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}
-%define		gccdir			%{_libdir}/gcc/%{gcc_target_platform}/%{ver}
+%define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
+%define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
+%define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
+%define		gccdir			%{gccdirparent}/%{ver}
 %define		multigccdir		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/32
 %define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
 %define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
@@ -559,7 +561,9 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/gcc-%{ver}
 %endif
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
+%dir %{gccdirparent}
 %dir %{gccdir}
+%dir %{gcclibexecdirparent}
 %dir %{gcclibexecdir}
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
