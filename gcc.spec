@@ -520,7 +520,11 @@ AutoProv:	false
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
 
+%if %{system_compiler}
+%files -f gcc.lang
+%else
 %files
+%endif
 %if %{system_compiler} || %{build_cross}
 %{_bindir}/%{gcc_target_platform}-gcc
 %{_bindir}/%{gcc_target_platform}-gcc-ar
@@ -539,7 +543,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
 %{_mandir}/man7/*
-%{_localedir}/*/LC_MESSAGES/gcc.mo
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
@@ -741,7 +744,11 @@ The C preprocessor provides four separate functionalities:
   into an intermediate file which is then compiled, you can use line
   control to inform the compiler about where each source line originated.
 
+%if %{system_compiler}
+%files cpp -f cpplib.lang
+%else
 %files cpp
+%endif
 %{_bindir}/%{cross_program_prefix}cpp
 %if %{system_compiler}
 /lib/cpp
@@ -750,7 +757,6 @@ The C preprocessor provides four separate functionalities:
 %if %{build_doc}
 %doc %{_docdir}/gcc-cpp
 %endif
-%{_localedir}/*/LC_MESSAGES/cpplib.mo
 %endif
 
 #-----------------------------------------------------------------------
@@ -822,11 +828,12 @@ AutoProv:	false
 The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
-%files -n %{libstdcxx}
-%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
 %if %{system_compiler}
-%{_localedir}/*/LC_MESSAGES/libstdc++.mo
+%files -n %{libstdcxx} -f libstdc++.lang
+%else
+%files -n %{libstdcxx}
 %endif
+%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
 
 #-----------------------------------------------------------------------
 
@@ -3499,4 +3506,12 @@ if ( ${?GCC_COLORS} ) then
 	setenv GCC_COLORS auto
 endif
 EOH
+%endif
+
+%if %{system_compiler}
+%find_lang cpplib
+%find_lang gcc
+%if %{build_cxx}
+%find_lang libstdc++
+%endif
 %endif
