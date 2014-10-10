@@ -509,11 +509,6 @@ Requires:	%{cross_prefix}binutils >= 2.20.51.0.2
 # have been addressed if using an older version
 Requires:	glibc-devel >= 2.13
 
-%ifarch armv7l armv7hl
-# find-provides fail to provide devel(libgcc_s) because it is a linker script
-Provides:	devel(libgcc_s) = %{EVRD}
-%endif
-
 Obsoletes:	%{_lib}mudflap0 < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-devel < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
