@@ -311,16 +311,17 @@
 %if %{build_cross}
 %define		build_monolithic	1
 %define		build_ada		0
+%define		build_asan		1
 %define		build_check		0
 %define		build_cxx		1
 %define		build_doc		0
 %define		build_gomp		1
-%define		build_itm		0
+%define		build_itm		1
 %define		build_java		0
 %define		build_libgcc		1
 %define		package_ffi		0
 %define		build_ssp		1
-%define		build_ubsan		0
+%define		build_ubsan		1
 %endif
 
 %if %{build_minimal}
@@ -807,6 +808,24 @@ including templates and exception handling.
 %{target_slibdir}/libstdc++.so.%{stdcxx_major}*
 %{target_slibdir}/libsupc++.a
 %{target_prefix}/include/c++/%{ver}
+%if %{build_itm}
+%{target_libdir}/libitm.so.%{itm_major}*
+%{target_libdir}/libitm.so
+%{target_libdir}/libitm.spec
+%{target_libdir}/libitm.a
+%endif
+%if %{build_asan}
+%{target_libdir}/libasan.so.%{asan_major}*
+%{target_libdir}/libasan.so
+%{target_libdir}/libasan_preinit.o
+%{target_libdir}/libasan.a
+%endif
+%if %{build_ubsan}
+%{target_libdir}/libubsan.so.%{ubsan_major}*
+%{target_libdir}/libubsan.so
+%{target_libdir}/libsanitizer.spec
+%{target_libdir}/libubsan.a
+%endif
 %else
 
 #-----------------------------------------------------------------------
@@ -2115,7 +2134,7 @@ to compile SSP support.
 %endif
 
 ########################################################################
-%if %{build_itm}
+%if %{build_itm} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 
 %package -n %{libitm}
@@ -2207,7 +2226,7 @@ to compile Transactional Memory support.
 # build itm
 %endif
 
-%if %{build_asan}
+%if %{build_asan} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 # Address Sanitizer
 #-----------------------------------------------------------------------
@@ -2608,7 +2627,7 @@ Static libvtv
 ########################################################################
 # UBSan (Undefined Behavior Sanitizer)
 ########################################################################
-%if %{build_ubsan}
+%if %{build_ubsan} && !%{build_monolithic}
 %package -n %{libubsan}
 Summary:	Undefined Behavior Sanitizer library
 Group:		Development/C
