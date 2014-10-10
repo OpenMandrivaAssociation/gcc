@@ -3329,7 +3329,7 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libubsan*
     %endif
-    rm %{buildroot}%{target_libdir}/libsanitizer.spec
+    rm -f %{buildroot}%{target_libdir}/libsanitizer.spec
 %endif
 
 %if !%{build_asan}
