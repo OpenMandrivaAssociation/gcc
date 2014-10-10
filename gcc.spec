@@ -313,10 +313,11 @@
 %define		build_cxx		1
 %define		build_doc		0
 %define		build_gomp		1
+%define		build_itm		0
 %define		build_java		0
 %define		build_libgcc		1
 %define		package_ffi		0
-%define		build_itm		0
+%define		build_ssp		1
 %define		build_ubsan		0
 %endif
 
@@ -621,6 +622,14 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libgcc_s.so
 %{target_libdir}/libgcc_s.so.%{gcc_major}
 %endif
+%if %{build_ssp}
+%dir %{gccdir}/include/ssp
+%{gccdir}/include/ssp/*.h
+%{target_libdir}/libssp.so.%{ssp_major}*
+%{target_libdir}/libssp.so
+%{target_libdir}/libssp.a
+%{target_libdir}/libssp_nonshared.a
+%endif
 %endif
 
 
@@ -813,7 +822,7 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files -n %{libstdcxx}
-/%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
+%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
 %if %{system_compiler}
 %{_localedir}/*/LC_MESSAGES/libstdc++.mo
 %endif
@@ -2000,7 +2009,7 @@ to compile OpenMP v3.0 support.
 %endif
 
 ########################################################################
-%if %{build_ssp}
+%if %{build_ssp} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 
 %package -n %{libssp}
