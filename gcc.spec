@@ -463,6 +463,9 @@ Patch1001:	gcc33-pass-slibdir.patch
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
 BuildRequires:	%{cross_prefix}binutils >= 2.20.51.0.2
+%if !%{build_cross_bootstrap}
+BuildRequires:	%{cross_prefix}glibc-devel
+%endif
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
 BuildRequires:	bison
@@ -490,9 +493,6 @@ BuildRequires:	ppl-devel >= 0.11
 BuildRequires:	ppl_c-devel >= 0.11
 BuildRequires:	pkgconfig(cloog-isl)
 BuildRequires:	pkgconfig(isl)
-%endif
-%if !%{build_cross_bootstrap}
-BuildRequires:	%{cross_prefix}glibc-devel
 %endif
 
 %if %{system_compiler}
