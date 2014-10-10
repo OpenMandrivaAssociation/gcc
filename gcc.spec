@@ -2911,7 +2911,7 @@ PROGRAM_PREFIX=""
 PROGRAM_PREFIX="--program-prefix=%{program_prefix}"
 %endif
 %if %{build_cross}
-CROSS_FLAGS="--with-build-sysroot=$sysroot --with-headers --disable-nls"
+CROSS_FLAGS="--with-build-sysroot=$sysroot --with-native-system-header-dir=/include --with-headers --disable-nls"
 %endif
 %if %{build_cross_bootstrap}
 CROSS_FLAGS="--disable-threads"
