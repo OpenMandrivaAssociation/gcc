@@ -3325,28 +3325,28 @@ rm -f %{buildroot}%{_libdir}/libiberty.a
 rm -f %{buildroot}%{multilibdir}/libiberty.a
 
 %if !%{build_ubsan}
-    rm %{buildroot}%{target_libdir}/libubsan*
+    rm -f %{buildroot}%{target_libdir}/libubsan*
     %if %{build_multilib}
-        rm %{buildroot}%{multilibdir}/libubsan*
+        rm -f %{buildroot}%{multilibdir}/libubsan*
     %endif
     rm %{buildroot}%{target_libdir}/libsanitizer.spec
 %endif
 
 %if !%{build_asan}
-    rm %{buildroot}%{target_libdir}/libasan*
+    rm -f %{buildroot}%{target_libdir}/libasan*
     %if %{build_multilib}
-        rm %{buildroot}%{multilibdir}/libasan*
+        rm -f %{buildroot}%{multilibdir}/libasan*
     %endif
 %endif
 
 %if !%{build_itm}
-    rm %{buildroot}%{target_libdir}/libitm*
+    rm -f %{buildroot}%{target_libdir}/libitm*
     %if %{build_multilib}
-        rm %{buildroot}%{multilibdir}/libitm*
+        rm -f %{buildroot}%{multilibdir}/libitm*
     %endif
 %else
     %if !%{system_compiler}
-        rm %{buildroot}%{_infodir}/libitm.info*
+        rm -f %{buildroot}%{_infodir}/libitm.info*
     %endif
 %endif
 
