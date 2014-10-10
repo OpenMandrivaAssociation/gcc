@@ -3001,6 +3001,7 @@ XCFLAGS="$OPT_FLAGS" \
 %endif
         --enable-checking=release \
         --enable-gnu-unique-object \
+	--enable-gnu-indirect-function \
         --enable-languages="$LANGUAGES" \
 	$PROGRAM_PREFIX \
         --enable-linker-build-id \
