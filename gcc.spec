@@ -108,7 +108,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.2
-%define		linaro			2014.09
+%define		linaro			2014.10
 %define		linaro_spin		%nil
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -376,7 +376,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
