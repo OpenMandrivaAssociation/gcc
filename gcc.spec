@@ -508,7 +508,9 @@ Obsoletes:	colorgcc <= 1.3.2-17
 Requires:	%{cross_prefix}binutils >= 2.20.51.0.2
 # Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
 # have been addressed if using an older version
+%if !%{build_cross_bootstrap}
 Requires:	%{cross_prefix}glibc-devel >= 2.13
+%endif
 
 Obsoletes:	%{_lib}mudflap0 < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-devel < 4.9.1_2014.05
