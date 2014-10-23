@@ -84,6 +84,7 @@
 %define target_slibdir32	%{target_prefix}/lib
 %else
 %define arch			%(echo %{_target_cpu}|sed -e "s/\\(i.86\\|athlon\\)/i386/" -e "s/amd64/x86_64/")
+%define	target_cpu		%{arch}
 %define gcc_target_platform	%{_target_platform}
 %define target_prefix		%{_prefix}
 %define target_libdir		%{_libdir}
