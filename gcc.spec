@@ -408,6 +408,11 @@ Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 %endif
 Source7:	gcc-x32-seed.tar.xz
 
+# environment variables for enabling/disabling colorized gcc output
+Source10:	gcc.sysconfig
+Source11:	gcc.sh
+Source12:	gcc.csh
+
 Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
@@ -539,6 +544,9 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/%{gcc_target_platform}-gcov
 %endif
 %if %{system_compiler}
+%config(noreplace) %{_sysconfdir}/sysconfig/gcc
+%{_sysconfdir}/profile.d/90gcc.sh
+%{_sysconfdir}/profile.d/90gcc.csh
 %{_bindir}/gcc
 %{_bindir}/gcc-ar
 %{_bindir}/gcc-nm
@@ -3080,6 +3088,14 @@ XCFLAGS="$OPT_FLAGS" \
 	--build=%{_target_platform} \
 	$CROSS_FLAGS \
 	$TARGET_FLAGS
+
+%if %{x32_bootstrap}
+mkdir -p %{_target_platform}/x32/libgcc
+pushd %{_target_platform}/x32/libgcc
+tar -Jxf %{SOURCE8}
+popd
+%endif
+
 %if %{build_cross}
 %make
 %else
@@ -3501,34 +3517,9 @@ strip --strip-unneeded \
 %endif
 
 %if %{system_compiler}
-install -d %{buildroot}%{_sysconfdir}/sysconfig
-tee > %{buildroot}%{_sysconfdir}/sysconfig/gcc << EOH
-# change here to override the default 'auto' setting
-# GCC_COLORS=never
-EOH
-
-install -d %{buildroot}%{_sysconfdir}/profile.d
-tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh << EOH
-if [ -f /etc/sysconfig/gcc ]; then
-    . /etc/sysconfig/gcc
-fi
-if [ -z "$GCC_COLORS" ]; then
-	export GCC_COLORS=auto
-    else
-	export GCC_COLORS=$GCC_COLORS
-fi
-EOH
-
-tee > %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh << EOH
-if ( -f /etc/sysconfig/gcc ) then
-    eval `sed -n 's/^\([^#]*\)=\([^#]*\)/set \1=\2;/p' < /etc/sysconfig/gcc`
-endif
-if ( ${?GCC_COLORS} ) then
-	setenv GCC_COLORS $GCC_COLORS
-    else
-	setenv GCC_COLORS auto
-endif
-EOH
+install -m644 %{SOURCE10} -D %{buildroot}%{_sysconfdir}/sysconfig/gcc
+install -m644 %{SOURCE11} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh
+install -m644 %{SOURCE12} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh
 %endif
 
 %if %{system_compiler}

@@ -1,0 +1,2 @@
+# change here to override the default 'auto' setting
+ GCC_COLORS=never
