@@ -3055,7 +3055,6 @@ XCFLAGS="$OPT_FLAGS" \
 	$LIBC_FLAGS \
         --with-system-zlib \
         --with-bugurl=%{bugurl} \
-	$TARGET_FLAGS \
   %if !%{build_multilib}
         --disable-multilib \
   %endif
