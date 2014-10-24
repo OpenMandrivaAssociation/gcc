@@ -3501,7 +3501,7 @@ strip --strip-unneeded \
 %endif
 
 %if %{system_compiler}
-install -d %{buildroot}%{_sysconfdir}/sysconfig/gcc
+install -d %{buildroot}%{_sysconfdir}/sysconfig
 tee > %{buildroot}%{_sysconfdir}/sysconfig/gcc << EOH
 # change here to override the default 'auto' setting
 # GCC_COLORS=never
