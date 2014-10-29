@@ -367,9 +367,7 @@
 %bcond_with	java_build_tar
 %bcond_with	java_bootstrap
 
-%ifarch x86_64
 %define		x32_bootstrap	0
-%endif
 
 #-----------------------------------------------------------------------
 
