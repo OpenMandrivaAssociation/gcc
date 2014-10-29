@@ -367,7 +367,7 @@
 %bcond_with	java_build_tar
 %bcond_with	java_bootstrap
 
-%define		x32_bootstrap	0
+#define		x32_bootstrap	1
 
 #-----------------------------------------------------------------------
 
@@ -2837,7 +2837,7 @@ echo %{vendor} > gcc/DEV-PHASE
     tar xjf %{SOURCE6}
 %endif
 
-%if %{x32_bootstrap}
+%if %{?x32_bootstrap}0
     pushd gcc
         tar -xf %{SOURCE7}
         mkdir gnu
@@ -3090,7 +3090,7 @@ XCFLAGS="$OPT_FLAGS" \
 	$CROSS_FLAGS \
 	$TARGET_FLAGS
 
-%if %{x32_bootstrap}
+%if %{?x32_bootstrap}0
 mkdir -p %{_target_platform}/x32/libgcc
 pushd %{_target_platform}/x32/libgcc
 tar -Jxf %{SOURCE8}
