@@ -3275,7 +3275,7 @@ popd
 
 %if %{build_gomp} && !%{build_cross}
     mkdir -p %{buildroot}%{target_slibdir}
-    mv %{buildroot}%{target_slibdir}/libgomp.so.%{gomp_major}* \
+    mv %{buildroot}%{target_libdir}/libgomp.so.%{gomp_major}* \
         %{buildroot}%{target_slibdir}
     ln -srf %{buildroot}%{target_slibdir}/libgomp.so.%{gomp_major}.*.* \
         %{buildroot}%{target_libdir}/libgomp.so
