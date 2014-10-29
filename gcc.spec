@@ -110,7 +110,7 @@
 %define		branch			4.9
 %define		ver			%{branch}.2
 %define		linaro			2014.10
-%define		linaro_spin		%nil
+%define		linaro_spin		1
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -367,7 +367,9 @@
 %bcond_with	java_build_tar
 %bcond_with	java_bootstrap
 
-#define		x32_bootstrap	1
+%ifarch x86_64
+%define		x32_bootstrap	1
+%endif
 
 #-----------------------------------------------------------------------
 
@@ -2989,6 +2991,10 @@ CXXFLAGS="$OPT_FLAGS" \
 GCJFLAGS="$OPT_FLAGS" \
 TCFLAGS="$OPT_FLAGS" \
 XCFLAGS="$OPT_FLAGS" \
+%if ! %{build_cross} && ! %{build_cross_bootstrap}
+ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+%endif
 ../configure \
         --prefix=%{_prefix} \
         --libexecdir=%{_libexecdir} \
