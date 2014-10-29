@@ -1,3 +1,4 @@
 sources:
   gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47
   gcc-linaro-4.9-2014.10.tar.xz: a90b97d24d24985a58e7fe48cbfaff0d6e774e62
+  libc-x32-seed.tar.xz: 3b11f56265c94b18c93d0df07d926cb9e73d8858
