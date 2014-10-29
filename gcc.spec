@@ -407,6 +407,7 @@ Source5:	c99
 Source6:	libjava-classes-%{version}-%{release}.tar.bz2
 %endif
 Source7:	gcc-x32-seed.tar.xz
+Source8:	libc-x32-seed.tar.xz
 
 # environment variables for enabling/disabling colorized gcc output
 Source10:	gcc.sysconfig
