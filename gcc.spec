@@ -1490,7 +1490,7 @@ programs compiled using the Java compiler from GNU Compiler Collection (gcj).
 
 %files -n %{libgcj}
 %dir %{target_libdir}/gcj-%{ver}-%{gcj_major}
-%{taget_libdir}/gcj-%{ver}-%{gcj_major}/*.so
+%{target_libdir}/gcj-%{ver}-%{gcj_major}/*.so
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{target_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
 %{target_libdir}/libgcj.so.%{gcj_major}*
 %{target_libdir}/libgcj-tools.so.%{gcj_major}*
@@ -2422,7 +2422,7 @@ AutoProv:	false
 GCC Atomic optimizer Library.
 
 %files -n %{multilibatomic}
-%{_multilibdir}/libatomic.so.%{atomic_major}*
+%{multilibdir}/libatomic.so.%{atomic_major}*
 %endif
 
 #-----------------------------------------------------------------------
