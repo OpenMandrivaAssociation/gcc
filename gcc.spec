@@ -120,7 +120,11 @@
 %define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
 %define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
 %define		multilibdir		%{target_prefix}/lib
-%define		multirootlibdir		%{?build_cross:%{target_prefix}}/lib
+%if %build_cross
+%define		multirootlibdir		%{multilibdir}
+%else
+%define		multirootlibdir		/lib
+%endif
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -2503,7 +2507,7 @@ AutoProv:	false
 CILK (multithreading programming language) runtime.
 
 %files -n %{multilibcilkrts}
-%{multiblidir}/libcilkrts.so.%{cilk_major}*
+%{multilibdir}/libcilkrts.so.%{cilk_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2530,7 +2534,7 @@ Development files for the CILK multithreading programming language.
 %{target_libdir}/libcilkrts.spec
 %if %{build_multilib}
 %{multilibdir}/libcilkrts.so
-%{multilibdir}/lib/libcilkrts.spec
+%{multilibdir}/libcilkrts.spec
 %endif
 %{gccdir}/include/cilk
 
@@ -3291,8 +3295,8 @@ popd
 
 %if %{system_compiler}
     mkdir -p %{buildroot}/%{target_slibdir}
-    mv %{buildroot}%{target_slibdir}/libgcc_s.so.%{gcc_major} \
-        %{buildroot}/%{target_libdir}
+    mv %{buildroot}%{target_libdir}/libgcc_s.so.%{gcc_major} \
+        %{buildroot}/%{target_slibdir}
     ln -srf %{buildroot}/%{target_slibdir}/libgcc_s.so.%{gcc_major} \
         %{buildroot}%{target_libdir}/libgcc_s.so
 
