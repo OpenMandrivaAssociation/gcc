@@ -233,7 +233,12 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
+%if %isarch aarch64
+# ubsan doesn't exist for aarch64 yet
+%define		build_ubsan		0
+%else
 %define		build_ubsan		%{system_compiler}
+%endif
 %if %isarch %{ix86} x86_64 %{arm}
 %define		build_itm		1
 %else
@@ -276,7 +281,11 @@
 %if %isarch %{ix86} x86_64 %{armx}
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
+%if %isarch %{ix86} x86_64 %{arm}
   %define	build_asan		%{system_compiler}
+%else
+  %define	build_asan		0
+%endif
 %endif
 
 %define		build_doc		0
@@ -3390,7 +3399,7 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 %endif
 
 %if !%{build_itm}
-    rm -f %{buildroot}%{target_libdir}/libitm*
+    rm -f %{buildroot}%{target_libdir}/libitm* %{buildroot}%{_infodir}/libitm.info*
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libitm*
     %endif
