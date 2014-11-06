@@ -270,10 +270,10 @@
   %define	build_go		%{system_compiler}
   %define	build_vtv		%{system_compiler}
 %endif
-%if %isarch %{ix86} x86_64 aarch64
+%if %isarch %{ix86} x86_64
   %define	build_ada		%{system_compiler}
 %endif
-%if %isarch %{ix86} x86_64 %{arm} aarch64
+%if %isarch %{ix86} x86_64 %{armx}
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
   %define	build_asan		%{system_compiler}
