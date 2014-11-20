@@ -108,9 +108,9 @@
 
 %define		default_compiler	0
 %define		branch			4.9
-%define		ver			%{branch}.2
-%define		linaro			2014.10
-%define		linaro_spin		1
+%define		ver			%{branch}.3
+%define		linaro			2014.11
+%define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -2715,6 +2715,7 @@ to use Undefined Behavior Sanitizer features.
 %{multilibdir}/libubsan.so
 %{multilibdir}/libsanitizer.spec
 %endif
+%optional %{gccdir}/include/sanitizer
 
 #-----------------------------------------------------------------------
 
