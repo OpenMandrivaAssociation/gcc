@@ -109,7 +109,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.3
-%define		linaro			2014.11
+%define		linaro			2014.12
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -2829,7 +2829,7 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
-%patch15 -p1 -b .isl~
+#patch15 -p1 -b .isl~
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
 
