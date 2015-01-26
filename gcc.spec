@@ -109,7 +109,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.3
-%define		linaro			2014.12
+%define		linaro			2015.01
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -399,9 +399,9 @@ Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://cbuild.validation.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}.tar.xz
+Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
