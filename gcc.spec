@@ -109,7 +109,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.3
-%define		linaro			2015.01
+%define		linaro			2015.02
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
