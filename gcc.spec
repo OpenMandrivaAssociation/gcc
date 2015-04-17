@@ -109,7 +109,7 @@
 %define		default_compiler	0
 %define		branch			4.9
 %define		ver			%{branch}.3
-%define		linaro			2015.03
+%define		linaro			2015.04
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -399,9 +399,9 @@ Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%{branch}-%{linaro}.tar.xz
+Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -2801,9 +2801,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
