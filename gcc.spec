@@ -24,6 +24,8 @@
   %define	snapshot		-20120413
 %endif
 
+%define majorver %(echo %{version} |cut -d. -f1)
+
 # Define if building a cross compiler
 # FIXME: assume user does not define both cross and cross_bootstrap variables
 %define build_cross		0
@@ -107,9 +109,10 @@
 %endif
 
 %define		default_compiler	0
-%define		branch			4.9
-%define		ver			%{branch}.3
-%define		linaro			2015.04
+%define		majorver		%(echo %{version} |cut -d. -f1)
+%define		branch			5.1
+%define		ver			%{branch}.0
+%define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -135,7 +138,7 @@
 %define		libstdcxx_devel		%{?cross_prefix}%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%{?cross_prefix}%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		15
+%define		gcj_major		16
 %define		libgcj			%{?cross_prefix}%mklibname gcj %{gcj_major}
 %define		libgcj_devel		%{?cross_prefix}%mklibname gcj -d
 %define		libgcj_static_devel	%{?cross_prefix}%mklibname gcj -d -s
@@ -157,11 +160,15 @@
 %define		libgnat_devel		%{?cross_prefix}%mklibname gnat -d
 %define		libgnat_static_devel	%{?cross_prefix}%mklibname gnat -d -s
 %define		multilibgnat		%{?cross_prefix}libgnat%{gnat_major}
-%define		go_major		5
+%define		go_major		7
 %define		libgo			%{?cross_prefix}%mklibname go %{go_major}
 %define		libgo_devel		%{?cross_prefix}%mklibname go -d
 %define		libgo_static_devel	%{?cross_prefix}%mklibname go -d -s
 %define		multilibgo		%{?cross_prefix}libgo%{go_major}
+%define		cc1_major		0
+%define		libcc1			%{?cross_prefix}%mklibname cc1 %{cc1_major}
+%define		libcc1_devel		%{?cross_prefix}%mklibname cc1 -d
+%define		libcc1_static_devel	%{?cross_prefix}%mklibname cc1 -d -s
 %define		gomp_major		1
 %define		libgomp			%{?cross_prefix}%mklibname gomp %{gomp_major}
 %define		libgomp_devel		%{?cross_prefix}%mklibname gomp -d
@@ -187,7 +194,7 @@
 %define		libitm_devel		%{?cross_prefix}%mklibname itm -d
 %define		libitm_static_devel	%{?cross_prefix}%mklibname itm -d -s
 %define		multilibitm		%{?cross_prefix}libitm%{itm_major}
-%define		asan_major		1
+%define		asan_major		2
 %define		libasan			%{?cross_prefix}%mklibname asan %{asan_major}
 %define		libasan_devel		%{?cross_prefix}%mklibname asan -d
 %define		libasan_static_devel	%{?cross_prefix}%mklibname asan -d -s
@@ -392,7 +399,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	3
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -407,8 +414,8 @@ Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro
 Version:	%{ver}
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
-Source0:	gcc-%{version}.tar.bz2
-Source1:	gcc-%{version}.tar.bz2.sig
+Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.bz2
+Source1:	http://gcc.parentingamerica.com/releases/gcc-%{version}/sha512.sum
 %else
   # http://gcc.gnu.org/mirrors.html
   # <<mirror>>/snapshots/@{branch}@{snapshot}/
@@ -522,6 +529,7 @@ BuildRequires:	pkgconfig(isl)
 Requires:	%{name}-cpp >= %{EVRD}
 Requires:	%{libgcc} >= %{EVRD}
 Requires:	%{libgomp} >= %{EVRD}
+Requires:	%{libcc1} >= %{EVRD}
 # as gcc now has it's own output color support, let's obsolete the old
 # colorgcc with it's perl wrapper script which is slightly buggy with it's
 # it's output redirection anyways...
@@ -568,6 +576,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/gcc-nm
 %{_bindir}/gcc-ranlib
 %{_bindir}/gcov
+%{_bindir}/gcov-tool
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
 %{_mandir}/man7/*
@@ -1035,8 +1044,8 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to run programs compiled with the GNAT.
 
 %files -n %{libgnat}
-%{target_libdir}/libgnat-%{branch}.so.%{gnat_major}
-%{target_libdir}/libgnarl-%{branch}.so.%{gnat_major}
+%{target_libdir}/libgnat-%{majorver}.so.%{gnat_major}
+%{target_libdir}/libgnarl-%{majorver}.so.%{gnat_major}
 
 #-----------------------------------------------------------------------
 
@@ -1055,8 +1064,8 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to run programs compiled with the GNAT.
 
 %files -n %{multilibgnat}
-%{multilibdir}/libgnat-%{branch}.so.%{gnat_major}
-%{multilibdir}/libgnarl-%{branch}.so.%{gnat_major}
+%{multilibdir}/libgnat-%{majorver}.so.%{gnat_major}
+%{multilibdir}/libgnarl-%{majorver}.so.%{gnat_major}
 %endif
 %endif
 
@@ -1162,6 +1171,7 @@ programs with the GNU Compiler Collection.
 %if %{build_multilib}
 %{multigccdir}/libgfortranbegin.a
 %{multigccdir}/libcaf_single.a
+%{multigccdir}/finclude
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
@@ -1289,8 +1299,11 @@ The gcc-go package provides support for compiling Go programs
 with the GNU Compiler Collection.
 
 %files go
+%{_bindir}/go
+%{_bindir}/gofmt
 %{_bindir}/gccgo
 %{_bindir}/%{gcc_target_platform}-gccgo
+%{_libexecdir}/gcc/*/*/cgo
 %dir %{_libdir}/go
 %if %{build_multilib}
 %dir %{multilibdir}/go
@@ -1302,13 +1315,17 @@ with the GNU Compiler Collection.
 %{gcclibexecdir}/go1
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
+%{_libdir}/libnetgo.a
 %if %{build_multilib}
 %{multilibdir}/go/%{ver}
 %{multilibdir}/libgobegin.a
+%{multilibdir}/libnetgo.a
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-go
 %endif
+%{_mandir}/man1/go.1*
+%{_mandir}/man1/gofmt.1*
 
 #-----------------------------------------------------------------------
 
@@ -1610,7 +1627,7 @@ package to compile your Java programs using the GCC Java compiler (gcj).
 %{gccdir}/include/jni*.h
 %{gccdir}/include/jvm*.h
 %{py_puresitedir}/libjava
-%{target_libdir}/pkgconfig/libgcj-%{branch}.pc
+%{target_libdir}/pkgconfig/libgcj-%{majorver}.pc
 %{target_libdir}/libgcj*.spec
 %{target_libdir}/libgcj*.so
 %{target_libdir}/libgij.so
@@ -1967,6 +1984,59 @@ using REAL*16 and programs using __float128 math.
 %endif
 
 ########################################################################
+#-----------------------------------------------------------------------
+
+%package -n %{libcc1}
+Summary:	GCC parsing shared library
+Group:		System/Libraries
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libcc1}
+This package contains the gcc parsing library
+
+%files -n %{libcc1}
+%{_libdir}/libcc1.so.%{cc1_major}*
+
+#-----------------------------------------------------------------------
+
+%package -n %{libcc1_devel}
+Summary:	GCC parser library development support
+Group:		Development/C
+Requires:	%{libcc1} = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libcc1_devel}
+Development files for gcc's parser library
+
+%files -n %{libcc1_devel}
+%{_libdir}/libcc1.so
+
+#-----------------------------------------------------------------------
+
+%package -n %{libcc1_static_devel}
+Summary:	Static library containing the gcc parser
+Group:		Development/C
+Requires:	%{libcc1_devel} = %{EVRD}
+Provides:	libcc1-static-devel = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libcc1_static_devel}
+Static library containing the gcc parser
+
+%files -n %{libcc1_static_devel}
+%{_libdir}/libcc1.a
+
+#-----------------------------------------------------------------------
+########################################################################
 %if %{build_gomp} && !%{build_monolithic}
 #-----------------------------------------------------------------------
 
@@ -1985,6 +2055,7 @@ for OpenMP v3.0 support.
 
 %files -n %{libgomp}
 /%{_lib}/libgomp.so.%{gomp_major}*
+%{_libdir}/libgomp-plugin-host_nonshm.so.%{gomp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2001,6 +2072,7 @@ for OpenMP v3.0 support.
 
 %files -n %{multilibgomp}
 %{multirootlibdir}/libgomp.so.%{gomp_major}*
+%{_prefix}/lib/libgomp-plugin-host_nonshm.so.%{gomp_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2027,9 +2099,11 @@ to compile OpenMP v3.0 support.
 %files -n %{libgomp_devel}
 %{target_libdir}/libgomp.so
 %{target_libdir}/libgomp.spec
+%{_libdir}/libgomp-plugin-host_nonshm.so
 %if %{build_multilib}
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
+%{multilibdir}/libgomp-plugin-host_nonshm.so
 %endif
 %{_infodir}/libgomp.info*
 %{gccdir}/include/omp*.h
@@ -2815,7 +2889,7 @@ Static liblsan.
 
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .java~
-%patch2 -p1 -b .aarch64~
+#patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
 %patch5 -p1 -b .deptrack~
@@ -2836,7 +2910,7 @@ Static liblsan.
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
-%patch104 -p1 -b .google5~
+#patch104 -p1 -b .google5~
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
@@ -3324,17 +3398,17 @@ popd
         for lib in libgnarl libgnat; do
             rm -f %{buildroot}%{target_libdir}/$lib.so
             rm -f %{buildroot}%{gccdir}/adalib/$lib.so
-            mv -f %{buildroot}%{gccdir}/adalib/$lib-%{branch}.so \
-                    %{buildroot}%{target_libdir}/$lib-%{branch}.so.1
-            ln -sf $lib-%{branch}.so.1 %{buildroot}%{target_libdir}/$lib-%{branch}.so
-            ln -sf $lib-%{branch}.so.1 %{buildroot}%{target_libdir}/$lib.so
+            mv -f %{buildroot}%{gccdir}/adalib/$lib-%{majorver}.so \
+                    %{buildroot}%{target_libdir}/$lib-%{majorver}.so.%{gnat_major}
+            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{target_libdir}/$lib-%{majorver}.so
+            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{target_libdir}/$lib.so
             %if %{build_multilib}
                 rm -f %{buildroot}%{multilibdir}/$lib.so
                 rm -f %{buildroot}%{multigccdir}/adalib/$lib.so
-                mv -f %{buildroot}%{multigccdir}/adalib/$lib-%{branch}.so \
-                        %{buildroot}%{multilibdir}/$lib-%{branch}.so.1
-                ln -sf $lib-%{branch}.so.1 %{buildroot}%{multilibdir}/$lib-%{branch}.so
-                ln -sf $lib-%{branch}.so.1 %{buildroot}%{multilibdir}/$lib.so
+                mv -f %{buildroot}%{multigccdir}/adalib/$lib-%{majorver}.so \
+                        %{buildroot}%{multilibdir}/$lib-%{majorver}.so.%{gnat_major}
+                ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{multilibdir}/$lib-%{majorver}.so
+                ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{multilibdir}/$lib.so
             %endif
         done
     %endif
