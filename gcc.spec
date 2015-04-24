@@ -504,6 +504,7 @@ BuildRequires:	gdb
 BuildRequires:	gettext
 BuildRequires:	sharutils
 BuildRequires:	texinfo
+BuildRequires:	pkgconfig(libtirpc)
 # For py_puresitedir
 %if !(%{build_cross} || %{build_minimal})
 BuildRequires:	python >= 3.4
