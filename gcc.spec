@@ -3062,6 +3062,7 @@ i?86|athlon)	TARGET_FLAGS="--with-arch=i586 --with-cpu=generic";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64 --enable-targets=all";;
 mips32|mips32el) TARGET_FLAGS="--enable-long-long --with-abi=n32 --enable-targets=all";;
 mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-multiarch";;
+armv7*) TARGET_FLAGS="--with-cpu=generic-armv7-a";;
 esac
 
 BOOTSTRAP=bootstrap
@@ -3168,9 +3169,6 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %if %isarch armv7l armv7hl
         --without-multilib \
         --disable-multilib \
-        --with-cpu=cortex-a8 \
-        --with-tune=cortex-a8 \
-        --with-arch=armv7-a \
         --with-mode=thumb \
   %if %isarch armv7l
         --with-float=softfp \
