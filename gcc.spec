@@ -3166,7 +3166,7 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %if %isarch armv5te
         --with-arch=armv5te \
 %endif
-%if %isarch armv7l armv7hl
+%if %isarch armv7l armv7hl armv7hln armv7hnl
         --without-multilib \
         --disable-multilib \
         --with-mode=thumb \
@@ -3175,7 +3175,12 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
   %else
         --with-float=hard \
   %endif
+%if 0
         --with-fpu=vfpv3-d16 \
+%endif
+# should be be armv7hln
+%if %isarch armv7hl armv7hln armv7hnl
+        --with-fpu=neon \
         --with-abi=aapcs-linux \
 %endif
         --host=%{_target_platform} \
