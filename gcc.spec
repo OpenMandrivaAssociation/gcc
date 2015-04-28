@@ -3062,7 +3062,7 @@ i?86|athlon)	TARGET_FLAGS="--with-arch=i586 --with-cpu=generic";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64 --enable-targets=all";;
 mips32|mips32el) TARGET_FLAGS="--enable-long-long --with-abi=n32 --enable-targets=all";;
 mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-multiarch";;
-armv7*) TARGET_FLAGS="--with-cpu=generic-armv7-a";;
+armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a9 ";;
 esac
 
 BOOTSTRAP=bootstrap
@@ -3175,13 +3175,15 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
   %else
         --with-float=hard \
   %endif
-%if 0
+  %if 0
+# should be be armv7hl only
         --with-fpu=vfpv3-d16 \
-%endif
-# should be be armv7hln
-%if %isarch armv7hl armv7hln armv7hnl
+# should be be armv7hln armv7hnl
+  %endif
+  %if %isarch armv7hl armv7hln armv7hnl
         --with-fpu=neon \
         --with-abi=aapcs-linux \
+   %endif
 %endif
         --host=%{_target_platform} \
 	--build=%{_target_platform} \
