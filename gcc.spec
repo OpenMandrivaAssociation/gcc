@@ -567,6 +567,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %endif
 %if %{build_cross}
 %{_bindir}/%{gcc_target_platform}-gcov
+%{_bindir}/%{gcc_target_platform}-gcov-tool
 %endif
 %if %{system_compiler}
 %config(noreplace) %{_sysconfdir}/sysconfig/gcc
@@ -1987,6 +1988,7 @@ using REAL*16 and programs using __float128 math.
 ########################################################################
 #-----------------------------------------------------------------------
 
+%if !%{build_cross_bootstrap}
 %package -n %{libcc1}
 Summary:	GCC parsing shared library
 Group:		System/Libraries
@@ -2035,6 +2037,7 @@ Static library containing the gcc parser
 
 %files -n %{libcc1_static_devel}
 %{_libdir}/libcc1.a
+%endif
 
 #-----------------------------------------------------------------------
 ########################################################################
