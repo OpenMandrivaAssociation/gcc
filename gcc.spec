@@ -476,6 +476,9 @@ Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
 # Fix for fileline_fn callback being NULL in libbacktrace sometimes
 Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
+# MUSL Support
+Patch18:	gcc-5.1.0-libstdc++-musl.patch
+
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
 Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
@@ -2910,6 +2913,7 @@ Static liblsan.
 #patch15 -p1 -b .isl~
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
+%patch18 -p1 -b .musl1~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~

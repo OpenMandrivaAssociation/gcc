@@ -1,0 +1,23 @@
+--- gcc-5.1.0/gcc/ada/terminals.c.omv~	2015-05-09 15:27:54.178937298 +0200
++++ gcc-5.1.0/gcc/ada/terminals.c	2015-05-09 15:28:24.381345437 +0200
+@@ -1071,7 +1071,8 @@ __gnat_setup_winsize (void *desc, int ro
+ /* On some system termio is either absent or including it will disable termios
+    (HP-UX) */
+ #if ! defined (__hpux__) && ! defined (FREEBSD) && \
+-    ! defined (__APPLE__) && ! defined(__rtems__)
++    ! defined (__APPLE__) && ! defined(__rtems__) && \
++    ! defined (__linux__)
+ #   include <termio.h>
+ #endif
+ 
+--- gcc-5.1.0/libstdc++-v3/config/os/gnu-linux/os_defines.h.omv~	2015-05-09 17:30:37.813701638 +0200
++++ gcc-5.1.0/libstdc++-v3/config/os/gnu-linux/os_defines.h	2015-05-09 17:32:23.765692428 +0200
+@@ -41,7 +41,7 @@
+ // Provide a declaration for the possibly deprecated gets function, as
+ // glibc 2.15 and later does not declare gets for ISO C11 when
+ // __GNU_SOURCE is defined.
+-#if __GLIBC_PREREQ(2,15) && defined(_GNU_SOURCE)
++#if 1 // && defined(_GNU_SOURCE)
+ # undef _GLIBCXX_HAVE_GETS
+ #endif
+ 
