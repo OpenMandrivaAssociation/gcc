@@ -399,7 +399,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	1
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -3145,6 +3145,7 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %endif
         --enable-checking=release \
         --enable-gnu-unique-object \
+        --with-default-libstdcxx-abi=c++98 \
 	--enable-gnu-indirect-function \
 	--with-linker-hash-style=gnu \
         --enable-languages="$LANGUAGES" \
