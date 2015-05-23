@@ -399,7 +399,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	3
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -488,6 +488,18 @@ Patch101:	gcc-4.9-neon-alignment.patch
 Patch102:	gcc-4.9-libstdc++-clang.patch
 # 331e362574142e4c1d9d509533d1c96b6dc54d13
 Patch104:	gcc-4.9-simplify-got.patch
+
+# MUSL support
+Patch200:	0000-musl-libitm.patch
+Patch201:	0001-musl-config.patch
+Patch202:	0002-musl-fixincludes.patch
+Patch203:	0003-musl-unwind.patch
+Patch204:	0004-musl-libstdc++.patch
+Patch205:	0005-musl-config-revert.patch
+Patch206:	0006-musl-config.patch
+Patch207:	0007-musl-gcc.patch
+Patch208:	0008-musl-mips.patch
+Patch209:	0009-musl-x86.patch
 
 # Patches 1001 and 1007 disabled until they're committed
 # slibdir is either /lib or /lib64
@@ -2920,6 +2932,16 @@ Static liblsan.
 %patch102 -p2 -b .google3~
 #patch104 -p1 -b .google5~
 
+%patch200 -p1 -b .musl1~
+%patch201 -p1 -b .musl2~
+%patch202 -p1 -b .musl3~
+%patch203 -p1 -b .musl4~
+%patch204 -p1 -b .musl5~
+%patch205 -p1 -b .musl6~
+%patch206 -p1 -b .musl7~
+%patch207 -p1 -b .musl8~
+%patch208 -p1 -b .musl9~
+
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
@@ -3133,7 +3155,9 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %if !%{build_ssp}
         --disable-libssp \
 %endif
+%if 0
         --disable-libunwind-exceptions \
+%endif
         --disable-werror \
         --enable-__cxa_atexit \
 %if !%isarch %{mipsx}
