@@ -399,7 +399,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	3
+Release:	4
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -3155,9 +3155,7 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %if !%{build_ssp}
         --disable-libssp \
 %endif
-%if 0
         --disable-libunwind-exceptions \
-%endif
         --disable-werror \
         --enable-__cxa_atexit \
 %if !%isarch %{mipsx}
