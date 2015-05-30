@@ -3155,7 +3155,6 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %if !%{build_ssp}
         --disable-libssp \
 %endif
-        --disable-libunwind-exceptions \
         --disable-werror \
         --enable-__cxa_atexit \
 %if !%isarch %{mipsx}
