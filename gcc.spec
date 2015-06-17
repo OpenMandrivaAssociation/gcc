@@ -399,7 +399,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	4
+Release:	5
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -625,6 +625,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{gcclibexecdir}/lto*
 %if %{build_lto}
 %{gcclibexecdir}/liblto*
+%{_libdir}/bfd-plugins/liblto_plugin.so
 %endif
 %dir %{gccdir}/include
 %{gccdir}/include/*.h
@@ -3273,6 +3274,12 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 
 %install
 %makeinstall_std -C obj-%{gcc_target_platform}
+
+%if %{build_lto}
+# Put the LTO plugin where ld can see it...
+mkdir -p %{buildroot}%{_libdir}/bfd-plugins
+ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
+%endif
 
 %if %{build_java}
     %make -C obj-%{gcc_target_platform} \
