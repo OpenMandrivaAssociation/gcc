@@ -111,8 +111,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			5.1
-%define		ver			%{branch}.0
-%define		linaro			%{nil}
+%define		ver			%{branch}.1
+%define		linaro			2015.06
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -408,7 +408,7 @@ Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
 Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
+Source0:	http://people.linaro.org/~christophe.lyon/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|05|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -1333,10 +1333,12 @@ with the GNU Compiler Collection.
 %{gcclibexecdir}/go1
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
+%{_libdir}/libgolibbegin.a
 %{_libdir}/libnetgo.a
 %if %{build_multilib}
 %{multilibdir}/go/%{ver}
 %{multilibdir}/libgobegin.a
+%{multilibdir}/libgolibbegin.a
 %{multilibdir}/libnetgo.a
 %endif
 %if %{build_doc}
@@ -2897,7 +2899,7 @@ Static liblsan.
 %if "%{linaro_spin}" != ""
   %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|05|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
