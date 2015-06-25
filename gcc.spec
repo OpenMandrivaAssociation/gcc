@@ -240,12 +240,7 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
-%if %isarch aarch64
-# ubsan doesn't exist for aarch64 yet
-%define		build_ubsan		0
-%else
 %define		build_ubsan		%{system_compiler}
-%endif
 %if %isarch %{ix86} x86_64 %{arm}
 %define		build_itm		1
 %else
