@@ -394,7 +394,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	5
+Release:	6
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -453,8 +453,6 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 # Alias -Oz to -Os for compatibility with clang's -Oz flag
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
-# Fix build with ISL 0.13
-Patch15:	https://raw.githubusercontent.com/archlinuxcn/repo/master/gcc-multilib-x32/gcc-4.9-isl-0.13-hack.patch
 # FIXME this is ***evil***
 # Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
 # A notable difference:
@@ -473,6 +471,9 @@ Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
+
+# ISL 0.15
+Patch19:	gcc-5.1-isl-0.15.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2920,10 +2921,10 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
-#patch15 -p1 -b .isl~
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
 %patch18 -p1 -b .musl1~
+%patch19 -p1 -b .isl15~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
