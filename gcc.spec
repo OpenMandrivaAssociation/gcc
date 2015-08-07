@@ -8,6 +8,7 @@
 
 # avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
+%define _disable_lto 1
 
 #-----------------------------------------------------------------------
 
@@ -110,9 +111,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			5.1
-%define		ver			%{branch}.1
-%define		linaro			2015.06
+%define		branch			5.2
+%define		ver			%{branch}.0
+%define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -394,7 +395,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	7
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -3165,7 +3166,7 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %endif
         --enable-checking=release \
         --enable-gnu-unique-object \
-        --with-default-libstdcxx-abi=c++98 \
+        --with-default-libstdcxx-abi=gcc4-compatible \
 	--enable-gnu-indirect-function \
 	--with-linker-hash-style=gnu \
         --enable-languages="$LANGUAGES" \
@@ -3334,6 +3335,7 @@ pushd %{buildroot}%{_bindir}
     %endif
     for prog in $PROGRAMS; do
         if [ -f %{gcc_target_platform}-$prog ]; then
+            rm -f %{gcc_target_platform}-$prog-%{ver}
             mv -f %{gcc_target_platform}-$prog{,-%{ver}}
         fi
         rm -f $prog
