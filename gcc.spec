@@ -270,7 +270,7 @@
 
   %define	build_multilib		%{system_compiler}
 %endif
-%if %isarch %{ix86} x86_64
+%if %isarch %{ix86} x86_64 %{armx}
   %define	build_cilkrts		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
