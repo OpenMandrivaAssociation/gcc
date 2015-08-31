@@ -1303,7 +1303,7 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgo_devel} = %{EVRD}
-BuildRequires:	gcc-go
+#BuildRequires:	gcc-go
 %if %{build_cross}
 AutoReq:	false
 AutoProv:	false
