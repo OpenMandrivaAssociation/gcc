@@ -515,6 +515,7 @@ BuildRequires:	flex
 BuildRequires:	gdb
 BuildRequires:	gettext
 BuildRequires:	sharutils
+BuildRequires:	diffutils
 BuildRequires:	texinfo
 BuildRequires:	pkgconfig(libtirpc)
 # For py_puresitedir
