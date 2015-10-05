@@ -1321,6 +1321,7 @@ with the GNU Compiler Collection.
 %{_bindir}/gccgo
 %{_bindir}/%{gcc_target_platform}-gccgo
 %{_libexecdir}/gcc/*/*/cgo
+%{_libdir}/%{name}/bin/%{name}
 %dir %{_libdir}/go
 %if %{build_multilib}
 %dir %{multilibdir}/go
