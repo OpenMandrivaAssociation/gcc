@@ -396,7 +396,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	3
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -3659,6 +3659,10 @@ strip --strip-unneeded \
 install -m644 %{SOURCE10} -D %{buildroot}%{_sysconfdir}/sysconfig/gcc
 install -m644 %{SOURCE11} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh
 install -m644 %{SOURCE12} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh
+%endif
+%if %{build_go}
+mkdir -p %{buildroot}/%{_libdir}/%{name}/bin/
+ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
 %endif
 
 %if %{system_compiler}
