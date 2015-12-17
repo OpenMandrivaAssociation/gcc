@@ -1317,6 +1317,7 @@ with the GNU Compiler Collection.
 %{_bindir}/gccgo
 %{_bindir}/%{gcc_target_platform}-gccgo
 %{_libexecdir}/gcc/*/*/cgo
+%{_libdir}/%{name}/bin/%{name}
 %dir %{_libdir}/go
 %if %{build_multilib}
 %dir %{multilibdir}/go
@@ -3650,6 +3651,10 @@ strip --strip-unneeded \
 install -m644 %{SOURCE10} -D %{buildroot}%{_sysconfdir}/sysconfig/gcc
 install -m644 %{SOURCE11} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh
 install -m644 %{SOURCE12} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh
+%endif
+%if %{build_go}
+mkdir -p %{buildroot}/%{_libdir}/%{name}/bin/
+ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
 %endif
 
 %if %{system_compiler}
