@@ -111,9 +111,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			5.2
-%define		ver			%{branch}.0
-%define		linaro			%{nil}
+%define		branch			5.3
+%define		ver			%{branch}.1
+%define		linaro			2015.12
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -396,16 +396,16 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://abe.tcwglab.linaro.org/snapshots/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://people.linaro.org/~christophe.lyon/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|05|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -474,9 +474,6 @@ Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
 
-# ISL 0.15
-Patch19:	gcc-5.1-isl-0.15.patch
-
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
 Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
@@ -488,11 +485,7 @@ Patch102:	gcc-4.9-libstdc++-clang.patch
 Patch104:	gcc-4.9-simplify-got.patch
 
 # MUSL support
-Patch200:	0000-musl-libitm.patch
-Patch201:	0001-musl-config.patch
-Patch202:	0002-musl-fixincludes.patch
 Patch203:	0003-musl-unwind.patch
-Patch204:	0004-musl-libstdc++.patch
 Patch205:	0005-musl-config-revert.patch
 Patch206:	0006-musl-config.patch
 Patch207:	0007-musl-gcc.patch
@@ -857,6 +850,7 @@ including templates and exception handling.
 %{gcclibexecdir}/cc1plus
 %if %{build_monolithic}
 %{target_slibdir}/libstdc++.a
+%{target_slibdir}/libstdc++fs.a
 %{target_slibdir}/libstdc++.so
 %{target_slibdir}/libstdc++.so.%{stdcxx_major}*
 %{target_slibdir}/libsupc++.a
@@ -996,9 +990,11 @@ Static libraries for the GNU standard C++ library.
 
 %files -n %{libstdcxx_static_devel}
 %{target_libdir}/libstdc++.*a
+%{target_libdir}/libstdc++fs.*a
 %{target_libdir}/libsupc++.*a
 %if %{build_multilib}
 %{multilibdir}/libstdc++.*a
+%{multilibdir}/libstdc++fs.*a
 %{multilibdir}/libsupc++.*a
 %endif
 
@@ -2896,9 +2892,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|06|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(03|05|09|12)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
@@ -2927,22 +2923,17 @@ Static liblsan.
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
 %patch18 -p1 -b .musl1~
-%patch19 -p1 -b .isl15~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
 #patch104 -p1 -b .google5~
 
-%patch200 -p1 -b .musl1~
-%patch201 -p1 -b .musl2~
-%patch202 -p1 -b .musl3~
 %patch203 -p1 -b .musl4~
-%patch204 -p1 -b .musl5~
-%patch205 -p1 -b .musl6~
-%patch206 -p1 -b .musl7~
-%patch207 -p1 -b .musl8~
-%patch208 -p1 -b .musl9~
+#patch205 -p1 -b .musl6~
+#patch206 -p1 -b .musl7~
+#patch207 -p1 -b .musl8~
+#patch208 -p1 -b .musl9~
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
