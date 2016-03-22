@@ -1,13 +1,14 @@
---- gcc-linaro-4.9-2014.06/gcc/cp/except.c.omv~	2014-07-10 23:34:44.388790416 +0200
-+++ gcc-linaro-4.9-2014.06/gcc/cp/except.c	2014-07-10 23:40:30.558462700 +0200
-@@ -1030,7 +1030,11 @@ nothrow_libfn_p (const_tree fn)
+--- gcc-linaro-snapshot-5.3-2016.03/gcc/cp/except.c.EVILaarch64~	2016-03-22 09:47:21.301481356 +0100
++++ gcc-linaro-snapshot-5.3-2016.03/gcc/cp/except.c	2016-03-22 09:48:05.271185252 +0100
+@@ -1040,8 +1040,12 @@ nothrow_libfn_p (const_tree fn)
       unless the system headers are playing rename tricks, and if
       they are, we don't want to be confused by them.  */
    id = DECL_NAME (fn);
 +#ifdef __aarch64__
 +  return 0;
 +#else
-   return !!libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
+   return !!libc_name::libc_name_p (IDENTIFIER_POINTER (id),
+ 				   IDENTIFIER_LENGTH (id));
 +#endif
  }
  
