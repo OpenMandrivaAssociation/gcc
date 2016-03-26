@@ -1,0 +1,42 @@
+diff --git gcc/cp/tree.c gcc/cp/tree.c
+index aaf9a4f..f784952 100644
+--- gcc/cp/tree.c
++++ gcc/cp/tree.c
+@@ -1460,9 +1460,12 @@  strip_typedefs (tree t, bool *remove_attributes)
+   if (!result)
+     {
+       if (typedef_variant_p (t))
+-	/* Explicitly get the underlying type, as TYPE_MAIN_VARIANT doesn't
+-	   strip typedefs with attributes.  */
+-	result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (t)));
++	{
++	  /* Explicitly get the underlying type, as TYPE_MAIN_VARIANT doesn't
++	     strip typedefs with attributes.  */
++	  result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (t)));
++	  result = strip_typedefs (result);
++	}
+       else
+ 	result = TYPE_MAIN_VARIANT (t);
+     }
+diff --git gcc/testsuite/g++.dg/ext/attribute-may-alias-4.C gcc/testsuite/g++.dg/ext/attribute-may-alias-4.C
+index e69de29..a459d49 100644
+--- gcc/testsuite/g++.dg/ext/attribute-may-alias-4.C
++++ gcc/testsuite/g++.dg/ext/attribute-may-alias-4.C
+@@ -0,0 +1,17 @@ 
++// PR c++/70209
++
++struct V {
++  typedef float F;
++  template <typename S> void m_fn1(S);
++};
++
++template <typename> struct A {
++  typedef V::F Ta __attribute__((__may_alias__));
++  Ta *m_data;
++  void m_fn2(V &);
++};
++
++template <>
++void A<int>::m_fn2(V &p) {
++  p.m_fn1(m_data);
++}

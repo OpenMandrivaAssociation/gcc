@@ -396,7 +396,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	1
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -473,6 +473,9 @@ Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
+
+# https://bugs.launchpad.net/ubuntu/+source/gcc-5/+bug/1556217
+Patch19:	gcc-vc-ice-70209.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2924,6 +2927,7 @@ Static liblsan.
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
 %patch18 -p1 -b .musl1~
+%patch19 -p0 -b .70209~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
