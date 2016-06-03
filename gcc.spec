@@ -264,7 +264,7 @@
 %define		build_libgcc		%{system_compiler}
 %define		build_pdf		%{build_doc}
 %define		build_plugin		%{system_compiler}
-%if %isarch x86_64
+%if %isarch x86_64 %{armx}
   %define	build_tsan		%{system_compiler}
   %define	build_lsan		%{system_compiler}
 
@@ -337,6 +337,7 @@
 %define		build_itm		1
 %define		build_java		0
 %define		build_libgcc		1
+%define		build_lsan		1
 %define		package_ffi		0
 %define		build_ssp		1
 %define		build_ubsan		1
@@ -673,6 +674,8 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libgomp.so
 %{target_libdir}/libgomp.so.%{gomp_major}*
 %{target_libdir}/libgomp.spec
+%{target_libdir}//libgomp-plugin-host_nonshm.so
+%{target_libdir}//libgomp-plugin-host_nonshm.so.%{gomp_major}*
 %endif
 %if %{build_libgcc}
 %{target_libdir}/libgcc_s.so
@@ -686,7 +689,18 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libssp.a
 %{target_libdir}/libssp_nonshared.a
 %endif
+%if %{build_asan} || %{build_lsan}
+%dir %{gccdir}/include/sanitizer/
+%{gccdir}/include/sanitizer/common_interface_defs.h
+%if %{build_asan}
+%{gccdir}/include/sanitizer/asan_interface.h
 %endif
+%if %{build_lsan}
+%{gccdir}/include/sanitizer/lsan_interface.h
+%endif
+%endif
+%endif
+
 
 
 ########################################################################
@@ -2005,7 +2019,7 @@ using REAL*16 and programs using __float128 math.
 ########################################################################
 #-----------------------------------------------------------------------
 
-%if !%{build_cross_bootstrap}
+%if !%{build_cross}
 %package -n %{libcc1}
 Summary:	GCC parsing shared library
 Group:		System/Libraries
