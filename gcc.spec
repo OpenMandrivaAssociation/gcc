@@ -111,9 +111,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			5.3
+%define		branch			5.4
 %define		ver			%{branch}.1
-%define		linaro			2016.03
+%define		linaro			2016.06
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -474,9 +474,6 @@ Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
-
-# https://bugs.launchpad.net/ubuntu/+source/gcc-5/+bug/1556217
-Patch19:	gcc-vc-ice-70209.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2941,7 +2938,6 @@ Static liblsan.
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .libbacktrace~
 %patch18 -p1 -b .musl1~
-%patch19 -p0 -b .70209~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
