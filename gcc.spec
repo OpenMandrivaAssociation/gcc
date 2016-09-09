@@ -111,9 +111,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			5.4
+%define		branch			6.2
 %define		ver			%{branch}.1
-%define		linaro			2016.06
+%define		linaro			2016.09
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -139,7 +139,7 @@
 %define		libstdcxx_devel		%{?cross_prefix}%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%{?cross_prefix}%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		16
+%define		gcj_major		17
 %define		libgcj			%{?cross_prefix}%mklibname gcj %{gcj_major}
 %define		libgcj_devel		%{?cross_prefix}%mklibname gcj -d
 %define		libgcj_static_devel	%{?cross_prefix}%mklibname gcj -d -s
@@ -156,12 +156,22 @@
 %define		libffi_devel		%{?cross_prefix}%mklibname ffi -d
 %define		libffi_static_devel	%{?cross_prefix}%mklibname ffi -d -s
 %define		multilibffi		%{?cross_prefix}libffi%{ffi_major}
+%define		mpx_major		2
+%define		libmpx			%{?cross_prefix}%mklibname mpx %{mpx_major}
+%define		libmpx_devel		%{?cross_prefix}%mklibname mpx -d
+%define		libmpx_static_devel	%{?cross_prefix}%mklibname mpx -d -s
+%define		multilibmpx		%{?cross_prefix}libmpx%{mpx_major}
+%define		mpxwrappers_major	2
+%define		libmpxwrappers		%{?cross_prefix}%mklibname mpxwrappers %{mpxwrappers_major}
+%define		libmpxwrappers_devel	%{?cross_prefix}%mklibname mpxwrappers -d
+%define		libmpxwrappers_static_devel	%{?cross_prefix}%mklibname mpxwrappers -d -s
+%define		multilibmpxwrappers	%{?cross_prefix}libmpxwrappers%{mpxwrappers_major}
 %define		gnat_major		1
 %define		libgnat			%{?cross_prefix}%mklibname gnat %{gnat_major}
 %define		libgnat_devel		%{?cross_prefix}%mklibname gnat -d
 %define		libgnat_static_devel	%{?cross_prefix}%mklibname gnat -d -s
 %define		multilibgnat		%{?cross_prefix}libgnat%{gnat_major}
-%define		go_major		7
+%define		go_major		9
 %define		libgo			%{?cross_prefix}%mklibname go %{go_major}
 %define		libgo_devel		%{?cross_prefix}%mklibname go -d
 %define		libgo_static_devel	%{?cross_prefix}%mklibname go -d -s
@@ -195,7 +205,7 @@
 %define		libitm_devel		%{?cross_prefix}%mklibname itm -d
 %define		libitm_static_devel	%{?cross_prefix}%mklibname itm -d -s
 %define		multilibitm		%{?cross_prefix}libitm%{itm_major}
-%define		asan_major		2
+%define		asan_major		3
 %define		libasan			%{?cross_prefix}%mklibname asan %{asan_major}
 %define		libasan_devel		%{?cross_prefix}%mklibname asan -d
 %define		libasan_static_devel	%{?cross_prefix}%mklibname asan -d -s
@@ -397,7 +407,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -456,6 +466,7 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 # Alias -Oz to -Os for compatibility with clang's -Oz flag
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
+Patch15:	gcc-link-libgcj-to-stdc++.patch
 # FIXME this is ***evil***
 # Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
 # A notable difference:
@@ -469,8 +480,6 @@ Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
 # This needs further debugging (and preferrably testing on real hardware), but
 # for now, the evil patch allows us to continue building.
 Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
-# Fix for fileline_fn callback being NULL in libbacktrace sometimes
-Patch17:	gcc-4.9.1-libbacktrace-fix-null-callback.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
@@ -671,8 +680,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libgomp.so
 %{target_libdir}/libgomp.so.%{gomp_major}*
 %{target_libdir}/libgomp.spec
-%{target_libdir}//libgomp-plugin-host_nonshm.so
-%{target_libdir}//libgomp-plugin-host_nonshm.so.%{gomp_major}*
 %endif
 %if %{build_libgcc}
 %{target_libdir}/libgcc_s.so
@@ -1193,10 +1200,8 @@ programs with the GNU Compiler Collection.
 %{_mandir}/man1/gfortran.1*
 %{gcclibexecdir}/f951
 %{gccdir}/finclude
-%{gccdir}/libgfortranbegin.*a
 %{gccdir}/libcaf_single.a
 %if %{build_multilib}
-%{multigccdir}/libgfortranbegin.a
 %{multigccdir}/libcaf_single.a
 %{multigccdir}/finclude
 %endif
@@ -1885,7 +1890,6 @@ to compile FFI support.
 %if %{build_multilib}
 %{multilibdir}/libffi.so
 %endif
-%{_mandir}/man3/*.3*
 
 #-----------------------------------------------------------------------
 
@@ -1912,6 +1916,190 @@ to compile FFI support.
 
 #-----------------------------------------------------------------------
 # package ffi
+%endif
+
+########################################################################
+#-----------------------------------------------------------------------
+%ifarch %{ix86} x86_64
+%package -n %{libmpx}
+Summary:	GCC support library for MPX
+Group:		System/Libraries
+Provides:	libmpx = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpx}
+This package contains GCC shared support library which is needed
+for MPX support.
+
+%files -n %{libmpx}
+%{target_libdir}/libmpx.so.%{mpx_major}*
+
+#-----------------------------------------------------------------------
+
+%if %{build_multilib}
+%package -n %{multilibmpx}
+Summary:	GCC support library for MPX
+Group:		System/Libraries
+Conflicts:	%{libmpx} < 4.6.2-11
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{multilibmpx}
+This package contains GCC shared support library which is needed
+for MPX support.
+
+%files -n %{multilibmpx}
+%{multilibdir}/libmpx.so.%{mpx_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libmpx_devel}
+Summary:	GCC development for MPX
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libmpx} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibmpx} = %{EVRD}
+%endif
+Provides:	libmpx-devel = %{EVRD}
+Provides:	mpx-devel = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpx_devel}
+This package contains GCC development which is needed
+to compile MPX support.
+
+%files -n %{libmpx_devel}
+%{target_libdir}/libmpx.so
+%{target_libdir}/libmpx.spec
+%if %{build_multilib}
+%{multilibdir}/libmpx.so
+%{multilibdir}/libmpx.spec
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libmpx_static_devel}
+Summary:	GCC MPX static library
+Group:		Development/C
+Requires:	%{libmpx_devel} = %{EVRD}
+Provides:	libmpx-static-devel = %{EVRD}
+Provides:	mpx-static-devel = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpx_static_devel}
+This package contains GCC static libraries which are needed
+to compile MPX support.
+
+%files -n %{libmpx_static_devel}
+%{target_libdir}/libmpx.*a
+%if %{build_multilib}
+%{multilibdir}/libmpx.*a
+%endif
+
+#-----------------------------------------------------------------------
+# package mpxwrappers
+
+%package -n %{libmpxwrappers}
+Summary:	GCC support library for MPX
+Group:		System/Libraries
+Provides:	libmpxwrappers = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpxwrappers}
+This package contains GCC shared support library which is needed
+for MPX support.
+
+%files -n %{libmpxwrappers}
+%{target_libdir}/libmpxwrappers.so.%{mpxwrappers_major}*
+
+#-----------------------------------------------------------------------
+
+%if %{build_multilib}
+%package -n %{multilibmpxwrappers}
+Summary:	GCC support library for MPX
+Group:		System/Libraries
+Conflicts:	%{libmpxwrappers} < 4.6.2-11
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{multilibmpxwrappers}
+This package contains GCC shared support library which is needed
+for MPX support.
+
+%files -n %{multilibmpxwrappers}
+%{multilibdir}/libmpxwrappers.so.%{mpxwrappers_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libmpxwrappers_devel}
+Summary:	GCC development for MPX
+Group:		Development/C
+Requires:	%{name} = %{EVRD}
+Requires:	%{libmpxwrappers} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibmpxwrappers} = %{EVRD}
+%endif
+Provides:	libmpxwrappers-devel = %{EVRD}
+Provides:	mpxwrappers-devel = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpxwrappers_devel}
+This package contains GCC development which is needed
+to compile MPX support.
+
+%files -n %{libmpxwrappers_devel}
+%{target_libdir}/libmpxwrappers.so
+%if %{build_multilib}
+%{multilibdir}/libmpxwrappers.so
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libmpxwrappers_static_devel}
+Summary:	GCC MPX static library
+Group:		Development/C
+Requires:	%{libmpxwrappers_devel} = %{EVRD}
+Provides:	libmpxwrappers-static-devel = %{EVRD}
+Provides:	mpxwrappers-static-devel = %{EVRD}
+%if %{build_cross}
+AutoReq:	false
+AutoProv:	false
+%endif
+
+%description -n %{libmpxwrappers_static_devel}
+This package contains GCC static libraries which are needed
+to compile MPX support.
+
+%files -n %{libmpxwrappers_static_devel}
+%{target_libdir}/libmpxwrappers.*a
+%if %{build_multilib}
+%{multilibdir}/libmpxwrappers.*a
+%endif
+
+#-----------------------------------------------------------------------
+# package mpxwrappers
 %endif
 
 ########################################################################
@@ -2087,7 +2275,6 @@ for OpenMP v3.0 support.
 
 %files -n %{libgomp}
 /%{_lib}/libgomp.so.%{gomp_major}*
-%{_libdir}/libgomp-plugin-host_nonshm.so.%{gomp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2104,7 +2291,6 @@ for OpenMP v3.0 support.
 
 %files -n %{multilibgomp}
 %{multirootlibdir}/libgomp.so.%{gomp_major}*
-%{_prefix}/lib/libgomp-plugin-host_nonshm.so.%{gomp_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2131,11 +2317,9 @@ to compile OpenMP v3.0 support.
 %files -n %{libgomp_devel}
 %{target_libdir}/libgomp.so
 %{target_libdir}/libgomp.spec
-%{_libdir}/libgomp-plugin-host_nonshm.so
 %if %{build_multilib}
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
-%{multilibdir}/libgomp-plugin-host_nonshm.so
 %endif
 %{_infodir}/libgomp.info*
 %{gccdir}/include/omp*.h
@@ -2674,7 +2858,7 @@ Static libcilkrts.
 ########################################################################
 # VTV (VTable Verification)
 ########################################################################
-%if %isarch %{ix86} x86_64
+%if 0
 %if %{build_vtv}
 %package -n %{libvtv}
 Summary:	VTable Verification library
@@ -2932,11 +3116,11 @@ Static liblsan.
 #patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
 %patch11 -p1 -b .buildfix~
-%patch12 -p1 -b .compare~
+#patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
+%patch15 -p1 -b .gcj++~
 %patch16 -p1 -b .EVILaarch64~
-%patch17 -p1 -b .libbacktrace~
 %patch18 -p1 -b .musl1~
 
 %patch100 -p2 -b .google1~
@@ -3007,7 +3191,7 @@ export sysroot=%{target_prefix}
 #_prefix}/%{gcc_target_platform}
 
 # The -gdwarf-4 removal is a workaround for gcc bug #52420
-OPT_FLAGS=`echo %{optflags} | \
+OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
     sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
     -e 's/-m\(31\|32\|64\)//g' \
     -e 's/-fstack-protector//g' \
@@ -3017,7 +3201,7 @@ OPT_FLAGS=`echo %{optflags} | \
 OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
 
 %if %{build_cross}
-OPT_FLAGS="-O2 -g -pipe"
+OPT_FLAGS="-O2 -fno-strict-aliasing -g -pipe"
 %endif
 
 # don't build crt files with -fasynchronous-unwind-tables

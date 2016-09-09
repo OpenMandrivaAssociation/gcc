@@ -1,8 +1,8 @@
---- gcc-linaro-4.9-2014.06/gcc/common.opt.omv~	2014-07-01 20:08:54.297525569 +0200
-+++ gcc-linaro-4.9-2014.06/gcc/common.opt	2014-07-01 20:10:16.147502303 +0200
-@@ -460,6 +460,9 @@ Og
+--- gcc-6.2.0/gcc/common.opt.Oz~	2016-08-23 11:48:37.682718120 +0200
++++ gcc-6.2.0/gcc/common.opt	2016-08-23 13:27:39.585695029 +0200
+@@ -488,6 +488,9 @@ Og
  Common Optimization
- Optimize for debugging experience rather than speed or size
+ Optimize for debugging experience rather than speed or size.
  
 +Oz
 +Common Optimization Alias(Os)
