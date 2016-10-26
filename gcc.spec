@@ -113,8 +113,8 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.2
 %define		ver			%{branch}.1
-%define		linaro			2016.09
-%define		linaro_spin		%{nil}
+%define		linaro			2016.11
+%define		linaro_spin		rc1
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -414,9 +414,9 @@ Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -3091,9 +3091,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%(if ! echo %{linaro} |cut -d. -f2 |grep -qE '(01|04|07|10)'; then echo -n snapshot-; fi)%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
