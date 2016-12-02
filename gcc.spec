@@ -114,7 +114,7 @@
 %define		branch			6.2
 %define		ver			%{branch}.1
 %define		linaro			2016.11
-%define		linaro_spin		rc1
+%define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -407,7 +407,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	1
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -416,7 +416,7 @@ Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
 Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
+Source0:	http://releases.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
