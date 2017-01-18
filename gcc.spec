@@ -112,8 +112,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
-%define		ver			%{branch}.0
-%define		linaro			%{nil}
+%define		ver			%{branch}.1
+%define		linaro			2017.01
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -407,16 +407,16 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	2
+Release:	3
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://releases.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -480,6 +480,9 @@ Patch15:	gcc-link-libgcj-to-stdc++.patch
 # This needs further debugging (and preferrably testing on real hardware), but
 # for now, the evil patch allows us to continue building.
 Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
+
+# Provide functions from compiler-rt in libgcc
+Patch17:	gcc-6.3-libgcc-__muloti4.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
@@ -3091,9 +3094,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
@@ -3121,6 +3124,7 @@ Static liblsan.
 %patch14 -p1 -b .Oz~
 %patch15 -p1 -b .gcj++~
 %patch16 -p1 -b .EVILaarch64~
+%patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
 
 %patch100 -p2 -b .google1~

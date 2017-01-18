@@ -1,0 +1,8 @@
+--- gcc-6.3.0/libgcc/libgcc-std.ver.in.omv~	2017-01-04 23:46:00.303362534 +0100
++++ gcc-6.3.0/libgcc/libgcc-std.ver.in	2017-01-04 23:46:40.107609229 +0100
+@@ -1937,4 +1937,5 @@ GCC_4.7.0 {
+ 
+ %inherit GCC_4.8.0 GCC_4.7.0
+ GCC_4.8.0 {
++  __muloti4
+ }
