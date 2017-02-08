@@ -113,8 +113,8 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.01
-%define		linaro_spin		%{nil}
+%define		linaro			2017.02
+%define		linaro_spin		rc1
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -407,16 +407,16 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	3
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -3094,9 +3094,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
@@ -3362,7 +3362,11 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %endif
         --enable-checking=release \
         --enable-gnu-unique-object \
+%if %mdvver <= 3000000
+THIS IS AN ERROR
+ERROR
         --with-default-libstdcxx-abi=gcc4-compatible \
+%endif
 	--enable-gnu-indirect-function \
 	--with-linker-hash-style=gnu \
         --enable-languages="$LANGUAGES" \
