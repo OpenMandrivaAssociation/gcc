@@ -1,0 +1,107 @@
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/collect2.c.omv~	2017-03-15 13:39:47.193941639 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/collect2.c	2017-03-15 13:41:15.761839942 +0100
+@@ -831,6 +831,7 @@ main (int argc, char **argv)
+       USE_PLUGIN_LD,
+       USE_GOLD_LD,
+       USE_BFD_LD,
++      USE_LLD_LD,
+       USE_LD_MAX
+     } selected_linker = USE_DEFAULT_LD;
+   static const char *const ld_suffixes[USE_LD_MAX] =
+@@ -838,7 +839,8 @@ main (int argc, char **argv)
+       "ld",
+       PLUGIN_LD_SUFFIX,
+       "ld.gold",
+-      "ld.bfd"
++      "ld.bfd",
++      "ld.lld"
+     };
+   static const char *const real_ld_suffix = "real-ld";
+   static const char *const collect_ld_suffix = "collect-ld";
+@@ -1004,6 +1006,8 @@ main (int argc, char **argv)
+ 	  selected_linker = USE_BFD_LD;
+ 	else if (strcmp (argv[i], "-fuse-ld=gold") == 0)
+ 	  selected_linker = USE_GOLD_LD;
++	else if (strcmp (argv[i], "-fuse-ld=lld") == 0)
++	  selected_linker = USE_LLD_LD;
+ 
+ #ifdef COLLECT_EXPORT_LIST
+ 	/* These flags are position independent, although their order
+@@ -1093,7 +1097,7 @@ main (int argc, char **argv)
+   /* Maybe we know the right file to use (if not cross).  */
+   ld_file_name = 0;
+ #ifdef DEFAULT_LINKER
+-  if (selected_linker == USE_BFD_LD || selected_linker == USE_GOLD_LD)
++  if (selected_linker == USE_BFD_LD || selected_linker == USE_GOLD_LD || selected_linker == USE_LLD_LD)
+     {
+       char *linker_name;
+ # ifdef HOST_EXECUTABLE_SUFFIX
+@@ -1307,7 +1311,7 @@ main (int argc, char **argv)
+ 	      else if (!use_collect_ld
+ 		       && strncmp (arg, "-fuse-ld=", 9) == 0)
+ 		{
+-		  /* Do not pass -fuse-ld={bfd|gold} to the linker. */
++		  /* Do not pass -fuse-ld={bfd|gold|lld} to the linker. */
+ 		  ld1--;
+ 		  ld2--;
+ 		}
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/common.opt.omv~	2017-03-15 13:38:33.994674984 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/common.opt	2017-03-15 13:38:50.845278686 +0100
+@@ -2518,6 +2518,10 @@ fuse-ld=gold
+ Common Driver Negative(fuse-ld=bfd)
+ Use the gold linker instead of the default linker.
+ 
++fuse-ld=lld
++Common Driver Negative(fuse-ld=lld)
++Use the lld linker instead of the default linker.
++
+ fuse-linker-plugin
+ Common Undocumented Var(flag_use_linker_plugin)
+ 
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/g++.1.omv~	2017-03-15 13:41:27.239567754 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/g++.1	2017-03-15 13:41:46.408113265 +0100
+@@ -10378,6 +10378,9 @@ Use the \fBbfd\fR linker instead of the
+ .IP "\fB\-fuse\-ld=gold\fR" 4
+ .IX Item "-fuse-ld=gold"
+ Use the \fBgold\fR linker instead of the default linker.
++.IP "\fB\-fuse\-ld=lld\fR" 4
++.IX Item "-fuse-ld=lld"
++Use the \fBlld\fR linker instead of the default linker.
+ .IP "\fB\-l\fR\fIlibrary\fR" 4
+ .IX Item "-llibrary"
+ .PD 0
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/gcc.1.omv~	2017-03-15 13:41:52.200975935 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/gcc.1	2017-03-15 13:42:03.988696515 +0100
+@@ -10378,6 +10378,9 @@ Use the \fBbfd\fR linker instead of the
+ .IP "\fB\-fuse\-ld=gold\fR" 4
+ .IX Item "-fuse-ld=gold"
+ Use the \fBgold\fR linker instead of the default linker.
++.IP "\fB\-fuse\-ld=lld\fR" 4
++.IX Item "-fuse-ld=lld"
++Use the \fBlld\fR linker instead of the default linker.
+ .IP "\fB\-l\fR\fIlibrary\fR" 4
+ .IX Item "-llibrary"
+ .PD 0
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/invoke.texi.omv~	2017-03-15 13:42:10.327546272 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/invoke.texi	2017-03-15 13:42:21.278286742 +0100
+@@ -10509,6 +10509,10 @@ Use the @command{bfd} linker instead of
+ @opindex fuse-ld=gold
+ Use the @command{gold} linker instead of the default linker.
+ 
++@item -fuse-ld=lld
++@opindex fuse-ld=lld
++Use the @command{lld} linker instead of the default linker.
++
+ @cindex Libraries
+ @item -l@var{library}
+ @itemx -l @var{library}
+--- gcc-linaro-snapshot-6.3-2017.02/gcc/opts.c.omv~	2017-03-15 13:49:29.883147629 +0100
++++ gcc-linaro-snapshot-6.3-2017.02/gcc/opts.c	2017-03-15 13:49:55.542541484 +0100
+@@ -2168,6 +2168,7 @@ common_handle_option (struct gcc_options
+ 
+     case OPT_fuse_ld_bfd:
+     case OPT_fuse_ld_gold:
++    case OPT_fuse_ld_lld:
+     case OPT_fuse_linker_plugin:
+       /* No-op. Used by the driver and passed to us because it starts with f.*/
+       break;

@@ -487,6 +487,9 @@ Patch17:	gcc-6.3-libgcc-__muloti4.patch
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
 
+# Add -fuse-ld=lld support
+Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
+
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
 Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
@@ -3126,6 +3129,7 @@ Static liblsan.
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
+%patch19 -p1 -b .lld~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
