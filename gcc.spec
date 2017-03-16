@@ -113,7 +113,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.01
+%define		linaro			2017.02
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -407,7 +407,7 @@ Name:		gcc
 %else
 Name:		%{cross_prefix}gcc%{package_suffix}
 %endif
-Release:	3
+Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -486,6 +486,9 @@ Patch17:	gcc-6.3-libgcc-__muloti4.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
+
+# Add -fuse-ld=lld support
+Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -3126,6 +3129,7 @@ Static liblsan.
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
+%patch19 -p1 -b .lld~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
@@ -3362,7 +3366,11 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %endif
         --enable-checking=release \
         --enable-gnu-unique-object \
+%if %mdvver <= 3000000
+THIS IS AN ERROR
+ERROR
         --with-default-libstdcxx-abi=gcc4-compatible \
+%endif
 	--enable-gnu-indirect-function \
 	--with-linker-hash-style=gnu \
         --enable-languages="$LANGUAGES" \
