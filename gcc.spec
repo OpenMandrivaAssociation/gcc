@@ -3367,8 +3367,6 @@ NM_FOR_TARGET="%{_bindir}/binutils-nm" \
         --enable-checking=release \
         --enable-gnu-unique-object \
 %if %mdvver <= 3000000
-THIS IS AN ERROR
-ERROR
         --with-default-libstdcxx-abi=gcc4-compatible \
 %endif
 	--enable-gnu-indirect-function \
