@@ -113,7 +113,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.03
+%define		linaro			2017.04
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -601,9 +601,12 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/gcc-nm
 %{_bindir}/gcc-ranlib
 %{_bindir}/gcov
+%{_bindir}/gcov-dump
 %{_bindir}/gcov-tool
 %{_mandir}/man1/gcc.1*
 %{_mandir}/man1/gcov.1*
+%{_mandir}/man1/gcov-dump.1*
+%{_mandir}/man1/gcov-tool.1*
 %{_mandir}/man7/*
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
