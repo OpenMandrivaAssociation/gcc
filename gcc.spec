@@ -1,3 +1,5 @@
+#define cross_bootstrap aarch64-linux-gnu
+
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
 %define		Werror_cflags			%{nil}
@@ -113,8 +115,8 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.04
-%define		linaro_spin		%{nil}
+%define		linaro			2017.05
+%define		linaro_spin		rc1
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -414,9 +416,9 @@ Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-%{branch}-%{linaro}.tar.xz
 %endif
 %else
 Version:	%{ver}
@@ -591,6 +593,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_cross}
 %{_bindir}/%{gcc_target_platform}-gcov
 %{_bindir}/%{gcc_target_platform}-gcov-tool
+%{_bindir}/%{gcc_target_platform}-gcov-dump
 %endif
 %if %{system_compiler}
 %config(noreplace) %{_sysconfdir}/sysconfig/gcc
@@ -1930,6 +1933,7 @@ to compile FFI support.
 ########################################################################
 #-----------------------------------------------------------------------
 %ifarch %{ix86} x86_64
+%if ! %{build_cross_bootstrap}
 %package -n %{libmpx}
 Summary:	GCC support library for MPX
 Group:		System/Libraries
@@ -2109,6 +2113,7 @@ to compile MPX support.
 
 #-----------------------------------------------------------------------
 # package mpxwrappers
+%endif
 %endif
 
 ########################################################################
@@ -3100,9 +3105,9 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
