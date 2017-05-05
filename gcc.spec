@@ -585,15 +585,15 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %files
 %endif
 %if %{system_compiler} || %{build_cross}
-%{_bindir}/%{gcc_target_platform}-gcc
-%{_bindir}/%{gcc_target_platform}-gcc-ar
-%{_bindir}/%{gcc_target_platform}-gcc-nm
-%{_bindir}/%{gcc_target_platform}-gcc-ranlib
+%{_bindir}/*-gcc
+%{_bindir}/*-gcc-ar
+%{_bindir}/*-gcc-nm
+%{_bindir}/*-gcc-ranlib
 %endif
 %if %{build_cross}
-%{_bindir}/%{gcc_target_platform}-gcov
-%{_bindir}/%{gcc_target_platform}-gcov-tool
-%{_bindir}/%{gcc_target_platform}-gcov-dump
+%{_bindir}/*-gcov
+%{_bindir}/*-gcov-tool
+%{_bindir}/*-gcov-dump
 %endif
 %if %{system_compiler}
 %config(noreplace) %{_sysconfdir}/sysconfig/gcc
@@ -626,7 +626,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if !%{build_cross}
 %{_bindir}/gcc-%{ver}
 %endif
-%{_bindir}/%{gcc_target_platform}-gcc-%{ver}
+%{_bindir}/*-gcc-%{ver}
 %dir %{gccdirparent}
 %dir %{gccdir}
 %dir %{gcclibexecdirparent}
@@ -831,7 +831,7 @@ The C preprocessor provides four separate functionalities:
 %else
 %files cpp
 %endif
-%{_bindir}/%{cross_program_prefix}cpp
+%{_bindir}/*cpp
 %if %{system_compiler}
 /lib/cpp
 %{_mandir}/man1/cpp.1*
@@ -872,14 +872,14 @@ including templates and exception handling.
 %{_mandir}/man1/g++.1*
 %endif
 %if %{system_compiler} || %{build_cross}
-%{_bindir}/%{gcc_target_platform}-c++
-%{_bindir}/%{gcc_target_platform}-g++
+%{_bindir}/*-c++
+%{_bindir}/*-g++
 %endif
 %if !%{build_cross}
 %{_bindir}/c++-%{ver}
 %{_bindir}/g++-%{ver}
 %endif
-%{_bindir}/%{gcc_target_platform}-g++-%{ver}
+%{_bindir}/*-g++-%{ver}
 %{gcclibexecdir}/cc1plus
 %if %{build_monolithic}
 %{target_slibdir}/libstdc++.a
@@ -1204,10 +1204,8 @@ The gcc-gfortran package provides support for compiling Fortran
 programs with the GNU Compiler Collection.
 
 %files gfortran
-%{_bindir}/gfortran
-%{_bindir}/gfortran-%{ver}
-%{_bindir}/%{gcc_target_platform}-gfortran
-%{_bindir}/%{gcc_target_platform}-gfortran-%{ver}
+%{_bindir}/*gfortran
+%{_bindir}/*gfortran-%{ver}
 %{_infodir}/gfortran.info*
 %{_mandir}/man1/gfortran.1*
 %{gcclibexecdir}/f951
@@ -1345,8 +1343,7 @@ with the GNU Compiler Collection.
 %files go
 %{_bindir}/go
 %{_bindir}/gofmt
-%{_bindir}/gccgo
-%{_bindir}/%{gcc_target_platform}-gccgo
+%{_bindir}/*gccgo
 %{_libexecdir}/gcc/*/*/cgo
 %{_libdir}/%{name}/bin/%{name}
 %dir %{_libdir}/go
@@ -1355,8 +1352,7 @@ with the GNU Compiler Collection.
 %endif
 %{_infodir}/gccgo.info*
 %{_mandir}/man1/gccgo.1*
-%{_bindir}/gccgo-%{ver}
-%{_bindir}/%{gcc_target_platform}-gccgo-%{ver}
+%{_bindir}/*gccgo-%{ver}
 %{gcclibexecdir}/go1
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
@@ -1486,9 +1482,7 @@ bytecode into native code.
 %files java
 %{_bindir}/aot-compile
 %{_bindir}/gc-analyze
-%{_bindir}/gcj
 %{_bindir}/gcj-dbtool
-%{_bindir}/gcjh
 %{_bindir}/gjavah
 %{_bindir}/gjar
 %{_bindir}/gjarsigner
@@ -1518,10 +1512,9 @@ bytecode into native code.
 %{_mandir}/man1/rebuild-gcj-db.1*
 %{_infodir}/gcj.info*
 %{_infodir}/cp-tools.info*
-%{_bindir}/gcj-%{ver}
-%{_bindir}/%{gcc_target_platform}-gcj
-%{_bindir}/%{gcc_target_platform}-gcj-%{ver}
-%{_bindir}/%{gcc_target_platform}-gcjh
+%{_bindir}/*gcj
+%{_bindir}/*gcj-%{ver}
+%{_bindir}/*gcjh
 %{gcclibexecdir}/jc1
 %{gcclibexecdir}/ecj1
 %{gcclibexecdir}/jvgenmain
@@ -3871,6 +3864,23 @@ install -m644 %{SOURCE12} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh
 %if %{build_go}
 mkdir -p %{buildroot}/%{_libdir}/%{name}/bin/
 ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
+%endif
+
+%if %{build_cross}
+# aarch64-mandriva-linux-gnu and aarch64-linux-gnu are similar enough...
+longplatform=$(grep ^target_alias= obj*/Makefile |cut -d= -f2-)
+%if %{build_cross_bootstrap}
+shortplatform="%{cross_bootstrap}"
+%else
+shortplatform="%{cross}"
+%endif
+#shortplatform=$(echo $longplatform |cut -d- -f1)-$(echo $longplatform |cut -d- -f3)-$(echo $longplatform |cut -d- -f4)
+if [ "$longplatform" != "$shortplatform" ]; then
+	cd %{buildroot}%{_bindir}
+	for i in $longplatform-*; do
+		ln -s $i $(echo $i |sed -e "s,$longplatform,$shortplatform,")
+	done
+fi
 %endif
 
 %if %{system_compiler}
