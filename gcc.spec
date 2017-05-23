@@ -280,7 +280,9 @@
   %define	build_tsan		%{system_compiler}
   %define	build_lsan		%{system_compiler}
 
+%if %isarch x86_64
   %define	build_multilib		%{system_compiler}
+%endif
 %endif
 %if %isarch %{ix86} x86_64
   %define	build_cilkrts		%{system_compiler}
