@@ -3435,8 +3435,12 @@ popd
 %make
 %else
 GCJFLAGS="$OPT_FLAGS" \
-%make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
-# GNATMAKE=gnatmake GNATBIND=gnatbind
+if ! %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
+	# Let's try to get a better error message
+	# (Workaround for builds working locally and failing in abf,
+	# let's see where exactly it's failing)
+	make -j1 BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
+fi
 %endif
 
 %if %{build_pdf}
