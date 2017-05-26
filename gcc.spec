@@ -2641,7 +2641,7 @@ Static libasan.
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
-%if %isarch x86_64
+%if %isarch x86_64 aarch64
 %if %{build_tsan}
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
@@ -3040,7 +3040,7 @@ Static libubsan.
 ########################################################################
 # LSan (Leak Sanitizer)
 ########################################################################
-%if %isarch x86_64
+%if %isarch x86_64 aarch64
 %if %{build_lsan}
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
@@ -3434,12 +3434,11 @@ popd
 %if %{build_cross}
 %make
 %else
-GCJFLAGS="$OPT_FLAGS" \
-if ! %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
+if ! %make BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
 	# Let's try to get a better error message
 	# (Workaround for builds working locally and failing in abf,
 	# let's see where exactly it's failing)
-	make -j1 BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
+	make -j1 BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP
 fi
 %endif
 
