@@ -1,4 +1,15 @@
-#define cross_bootstrap aarch64-linux-gnu
+# Listed targets are short form and will be expanded by rpm
+# gnueabihf variants etc. are inserted by rpm into long_targets
+%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux x32-linux aarch64-linuxmusl armv7hl-linuxmusl i586-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl
+%global long_targets %(
+        for i in %{targets}; do
+                CPU=$(echo $i |cut -d- -f1)
+                OS=$(echo $i |cut -d- -f2)
+                echo -n "$(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/${CPU}-${OS}/macros --target=${CPU} -E %%{_target_platform}) "
+        done
+)
+%bcond_without crosscompilers
+%bcond_without cross_bootstrap
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -10,7 +21,7 @@
 
 # avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
-%define _disable_lto 1
+%define		_disable_lto			1
 
 #-----------------------------------------------------------------------
 
@@ -29,23 +40,6 @@
 
 %define majorver %(echo %{version} |cut -d. -f1)
 
-# Define if building a cross compiler
-# FIXME: assume user does not define both cross and cross_bootstrap variables
-%define build_cross		0
-%define build_cross_bootstrap	0
-%{expand: %{?cross:		%%global build_cross 1}}
-%{expand: %{?cross_bootstrap:	%%global build_cross_bootstrap 1}}
-
-
-%if %{build_cross}
-%define system_compiler		0
-%define target_cpu		%{cross}
-%endif
-%if %{build_cross_bootstrap}
-%define build_cross		1
-%define system_compiler		0
-%define target_cpu		%{cross_bootstrap}
-%endif
 %if %{system_compiler}
 %define alternative_priority	30%{branch_tag}
 %define cross_prefix		%{nil}
@@ -55,18 +49,6 @@
 %define program_suffix		%{nil}
 %define	program_long_suffix	-%{version}
 %else
-%if %{build_cross}
-%define	_build_pkgcheck_set /usr/bin/rpmlint -T -f %{_sourcedir}/gcc.rpmlintrc
-%define	_build_pkgcheck_srpm /usr/bin/rpmlint -T -f %{_sourcedir}/gcc.rpmlintrc
-%define alternative_priority	10%{branch_tag}
-%define cross_prefix		cross-%{target_cpu}-
-%global	target_platform		%(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/%{target_cpu}-%{_target_os}/macros --target=%{target_cpu} -E %%{_target_platform})
-%define cross_program_prefix	%{target_platform}-
-%define package_suffix		%{nil}
-%define program_prefix		%{target_platform}-
-%define program_suffix		%{nil}
-%define program_long_suffix	-%{ver}
-%else
 %define alternative_priority	20%{branch_tag}
 %define cross_prefix		%{nil}
 %define cross_program_prefix	%{nil}
@@ -75,19 +57,8 @@
 %define program_suffix		%{branch}
 %define program_long_suffix	%{branch}
 %endif
-%endif
 
 # Define GCC target platform, and arch we built for
-%if %{build_cross}
-%define biarches		noarch
-%define arch			%{target_cpu}
-%define gcc_target_platform	%{target_platform}
-%define target_prefix		%{_prefix}/%{gcc_target_platform}
-%global	target_lib		%(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/%{target_cpu}-%{_target_os}/macros --target=%{target_cpu} -E %%{_lib})
-%define target_libdir		%{target_prefix}/%{target_lib}
-%define target_slibdir		%{target_prefix}/%{target_lib}
-%define target_slibdir32	%{target_prefix}/lib
-%else
 %define arch			%(echo %{_target_cpu}|sed -e "s/\\(i.86\\|athlon\\)/i386/" -e "s/amd64/x86_64/")
 %define	target_cpu		%{arch}
 %define gcc_target_platform	%{_target_platform}
@@ -95,7 +66,6 @@
 %define target_libdir		%{_libdir}
 %define target_slibdir		/%{_lib}
 %define target_slibdir32	/lib
-%endif
 %define isarch()		%(case " %* " in (*" %{arch} "*) echo 1;; (*) echo 0;; esac)
 
 %if %isarch x86_64
@@ -126,120 +96,116 @@
 %define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
 %define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
 %define		multilibdir		%{target_prefix}/lib
-%if %build_cross
-%define		multirootlibdir		%{multilibdir}
-%else
 %define		multirootlibdir		/lib
-%endif
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
-%define		libgcc			%{?cross_prefix}%mklibname gcc %{gcc_major}
-%define		multilibgcc		%{?cross_prefix}libgcc%{gcc_major}
+%define		libgcc			%mklibname gcc %{gcc_major}
+%define		multilibgcc		libgcc%{gcc_major}
 %define		stdcxx_major		6
-%define		libstdcxx		%{?cross_prefix}%mklibname stdc++ %{stdcxx_major}
-%define		libstdcxx_devel		%{?cross_prefix}%mklibname stdc++ -d
-%define		libstdcxx_static_devel	%{?cross_prefix}%mklibname stdc++ -d -s
+%define		libstdcxx		%mklibname stdc++ %{stdcxx_major}
+%define		libstdcxx_devel		%mklibname stdc++ -d
+%define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
 %define		gcj_major		17
-%define		libgcj			%{?cross_prefix}%mklibname gcj %{gcj_major}
-%define		libgcj_devel		%{?cross_prefix}%mklibname gcj -d
-%define		libgcj_static_devel	%{?cross_prefix}%mklibname gcj -d -s
+%define		libgcj			%mklibname gcj %{gcj_major}
+%define		libgcj_devel		%mklibname gcj -d
+%define		libgcj_static_devel	%mklibname gcj -d -s
 %define		gcj_bc_major		1
-%define		libgcj_bc		%{?cross_prefix}%mklibname gcj_bc %{gcj_bc_major}
+%define		libgcj_bc		%mklibname gcj_bc %{gcj_bc_major}
 # gcj multilib explicitly disabled
 %define		gfortran_major		3
-%define		libgfortran		%{?cross_prefix}%mklibname gfortran %{gfortran_major}
-%define		libgfortran_devel	%{?cross_prefix}%mklibname gfortran -d
-%define		libgfortran_static_devel %{?cross_prefix}%mklibname gfortran -d -s
-%define		multilibgfortran	%{?cross_prefix}libgfortran%{gfortran_major}
+%define		libgfortran		%mklibname gfortran %{gfortran_major}
+%define		libgfortran_devel	%mklibname gfortran -d
+%define		libgfortran_static_devel %mklibname gfortran -d -s
+%define		multilibgfortran	libgfortran%{gfortran_major}
 %define		ffi_major		4
-%define		libffi			%{?cross_prefix}%mklibname ffi %{ffi_major}
-%define		libffi_devel		%{?cross_prefix}%mklibname ffi -d
-%define		libffi_static_devel	%{?cross_prefix}%mklibname ffi -d -s
-%define		multilibffi		%{?cross_prefix}libffi%{ffi_major}
+%define		libffi			%mklibname ffi %{ffi_major}
+%define		libffi_devel		%mklibname ffi -d
+%define		libffi_static_devel	%mklibname ffi -d -s
+%define		multilibffi		libffi%{ffi_major}
 %define		mpx_major		2
-%define		libmpx			%{?cross_prefix}%mklibname mpx %{mpx_major}
-%define		libmpx_devel		%{?cross_prefix}%mklibname mpx -d
-%define		libmpx_static_devel	%{?cross_prefix}%mklibname mpx -d -s
-%define		multilibmpx		%{?cross_prefix}libmpx%{mpx_major}
+%define		libmpx			%mklibname mpx %{mpx_major}
+%define		libmpx_devel		%mklibname mpx -d
+%define		libmpx_static_devel	%mklibname mpx -d -s
+%define		multilibmpx		libmpx%{mpx_major}
 %define		mpxwrappers_major	2
-%define		libmpxwrappers		%{?cross_prefix}%mklibname mpxwrappers %{mpxwrappers_major}
-%define		libmpxwrappers_devel	%{?cross_prefix}%mklibname mpxwrappers -d
-%define		libmpxwrappers_static_devel	%{?cross_prefix}%mklibname mpxwrappers -d -s
-%define		multilibmpxwrappers	%{?cross_prefix}libmpxwrappers%{mpxwrappers_major}
+%define		libmpxwrappers		%mklibname mpxwrappers %{mpxwrappers_major}
+%define		libmpxwrappers_devel	%mklibname mpxwrappers -d
+%define		libmpxwrappers_static_devel	%mklibname mpxwrappers -d -s
+%define		multilibmpxwrappers	libmpxwrappers%{mpxwrappers_major}
 %define		gnat_major		1
-%define		libgnat			%{?cross_prefix}%mklibname gnat %{gnat_major}
-%define		libgnat_devel		%{?cross_prefix}%mklibname gnat -d
-%define		libgnat_static_devel	%{?cross_prefix}%mklibname gnat -d -s
-%define		multilibgnat		%{?cross_prefix}libgnat%{gnat_major}
+%define		libgnat			%mklibname gnat %{gnat_major}
+%define		libgnat_devel		%mklibname gnat -d
+%define		libgnat_static_devel	%mklibname gnat -d -s
+%define		multilibgnat		libgnat%{gnat_major}
 %define		go_major		9
-%define		libgo			%{?cross_prefix}%mklibname go %{go_major}
-%define		libgo_devel		%{?cross_prefix}%mklibname go -d
-%define		libgo_static_devel	%{?cross_prefix}%mklibname go -d -s
-%define		multilibgo		%{?cross_prefix}libgo%{go_major}
+%define		libgo			%mklibname go %{go_major}
+%define		libgo_devel		%mklibname go -d
+%define		libgo_static_devel	%mklibname go -d -s
+%define		multilibgo		libgo%{go_major}
 %define		cc1_major		0
-%define		libcc1			%{?cross_prefix}%mklibname cc1 %{cc1_major}
-%define		libcc1_devel		%{?cross_prefix}%mklibname cc1 -d
-%define		libcc1_static_devel	%{?cross_prefix}%mklibname cc1 -d -s
+%define		libcc1			%mklibname cc1 %{cc1_major}
+%define		libcc1_devel		%mklibname cc1 -d
+%define		libcc1_static_devel	%mklibname cc1 -d -s
 %define		gomp_major		1
-%define		libgomp			%{?cross_prefix}%mklibname gomp %{gomp_major}
-%define		libgomp_devel		%{?cross_prefix}%mklibname gomp -d
-%define		libgomp_static_devel	%{?cross_prefix}%mklibname gomp -d -s
-%define		multilibgomp		%{?cross_prefix}libgomp%{gomp_major}
+%define		libgomp			%mklibname gomp %{gomp_major}
+%define		libgomp_devel		%mklibname gomp -d
+%define		libgomp_static_devel	%mklibname gomp -d -s
+%define		multilibgomp		libgomp%{gomp_major}
 %define		objc_major		4
-%define		libobjc			%{?cross_prefix}%mklibname objc %{objc_major}
-%define		libobjc_devel		%{?cross_prefix}%mklibname objc -d
-%define		libobjc_static_devel	%{?cross_prefix}%mklibname objc -d -s
-%define		multilibobjc		%{?cross_prefix}libobjc%{objc_major}
+%define		libobjc			%mklibname objc %{objc_major}
+%define		libobjc_devel		%mklibname objc -d
+%define		libobjc_static_devel	%mklibname objc -d -s
+%define		multilibobjc		libobjc%{objc_major}
 %define		quadmath_major		0
-%define		libquadmath		%{?cross_prefix}%mklibname quadmath %{quadmath_major}
-%define		libquadmath_devel	%{?cross_prefix}%mklibname quadmath -d
-%define		libquadmath_static_devel %{?cross_prefix}%mklibname quadmath -d -s
-%define		multilibquadmath	%{?cross_prefix}libquadmath%{quadmath_major}
+%define		libquadmath		%mklibname quadmath %{quadmath_major}
+%define		libquadmath_devel	%mklibname quadmath -d
+%define		libquadmath_static_devel %mklibname quadmath -d -s
+%define		multilibquadmath	libquadmath%{quadmath_major}
 %define		ssp_major		0
-%define		libssp			%{?cross_prefix}%mklibname ssp %{ssp_major}
-%define		libssp_devel		%{?cross_prefix}%mklibname ssp -d
-%define		libssp_static_devel	%{?cross_prefix}%mklibname ssp -d -s
-%define		multilibssp		%{?cross_prefix}libssp%{ssp_major}
+%define		libssp			%mklibname ssp %{ssp_major}
+%define		libssp_devel		%mklibname ssp -d
+%define		libssp_static_devel	%mklibname ssp -d -s
+%define		multilibssp		libssp%{ssp_major}
 %define		itm_major		1
-%define		libitm			%{?cross_prefix}%mklibname itm %{itm_major}
-%define		libitm_devel		%{?cross_prefix}%mklibname itm -d
-%define		libitm_static_devel	%{?cross_prefix}%mklibname itm -d -s
-%define		multilibitm		%{?cross_prefix}libitm%{itm_major}
+%define		libitm			%mklibname itm %{itm_major}
+%define		libitm_devel		%mklibname itm -d
+%define		libitm_static_devel	%mklibname itm -d -s
+%define		multilibitm		libitm%{itm_major}
 %define		asan_major		3
-%define		libasan			%{?cross_prefix}%mklibname asan %{asan_major}
-%define		libasan_devel		%{?cross_prefix}%mklibname asan -d
-%define		libasan_static_devel	%{?cross_prefix}%mklibname asan -d -s
-%define		multilibasan		%{?cross_prefix}libasan%{asan_major}
+%define		libasan			%mklibname asan %{asan_major}
+%define		libasan_devel		%mklibname asan -d
+%define		libasan_static_devel	%mklibname asan -d -s
+%define		multilibasan		libasan%{asan_major}
 %define		tsan_major		0
-%define		libtsan			%{?cross_prefix}%mklibname tsan %{tsan_major}
-%define		libtsan_devel		%{?cross_prefix}%mklibname tsan -d
-%define		libtsan_static_devel	%{?cross_prefix}%mklibname tsan -d -s
+%define		libtsan			%mklibname tsan %{tsan_major}
+%define		libtsan_devel		%mklibname tsan -d
+%define		libtsan_static_devel	%mklibname tsan -d -s
 %define		atomic_major		1
-%define		libatomic		%{?cross_prefix}%mklibname atomic %{atomic_major}
-%define		libatomic_devel		%{?cross_prefix}%mklibname atomic -d
-%define		libatomic_static_devel	%{?cross_prefix}%mklibname atomic -d -s
-%define		multilibatomic		%{?cross_prefix}libatomic%{atomic_major}
+%define		libatomic		%mklibname atomic %{atomic_major}
+%define		libatomic_devel		%mklibname atomic -d
+%define		libatomic_static_devel	%mklibname atomic -d -s
+%define		multilibatomic		libatomic%{atomic_major}
 %define		cilk_major		5
-%define		libcilkrts		%{?cross_prefix}%mklibname cilkrts %{cilk_major}
-%define		libcilkrts_devel	%{?cross_prefix}%mklibname cilkrts -d
-%define		libcilkrts_static_devel	%{?cross_prefix}%mklibname cilkrts -d -s
-%define		multilibcilkrts		%{?cross_prefix}libcilkrts%{cilk_major}
+%define		libcilkrts		%mklibname cilkrts %{cilk_major}
+%define		libcilkrts_devel	%mklibname cilkrts -d
+%define		libcilkrts_static_devel	%mklibname cilkrts -d -s
+%define		multilibcilkrts		libcilkrts%{cilk_major}
 %define		ubsan_major		0
-%define		libubsan		%{?cross_prefix}%mklibname ubsan %{ubsan_major}
-%define		libubsan_devel		%{?cross_prefix}%mklibname ubsan -d
-%define		libubsan_static_devel	%{?cross_prefix}%mklibname ubsan -d -s
-%define		multilibubsan		%{?cross_prefix}libubsan%{ubsan_major}
+%define		libubsan		%mklibname ubsan %{ubsan_major}
+%define		libubsan_devel		%mklibname ubsan -d
+%define		libubsan_static_devel	%mklibname ubsan -d -s
+%define		multilibubsan		libubsan%{ubsan_major}
 %define		vtv_major		0
-%define		libvtv			%{?cross_prefix}%mklibname vtv %{vtv_major}
-%define		libvtv_devel		%{?cross_prefix}%mklibname vtv -d
-%define		libvtv_static_devel	%{?cross_prefix}%mklibname vtv -d -s
-%define		multilibvtv		%{?cross_prefix}libvtv%{vtv_major}
+%define		libvtv			%mklibname vtv %{vtv_major}
+%define		libvtv_devel		%mklibname vtv -d
+%define		libvtv_static_devel	%mklibname vtv -d -s
+%define		multilibvtv		libvtv%{vtv_major}
 %define		lsan_major		0
-%define		liblsan			%{?cross_prefix}%mklibname lsan %{lsan_major}
-%define		liblsan_devel		%{?cross_prefix}%mklibname lsan -d
-%define		liblsan_static_devel	%{?cross_prefix}%mklibname lsan -d -s
+%define		liblsan			%mklibname lsan %{lsan_major}
+%define		liblsan_devel		%mklibname lsan -d
+%define		liblsan_static_devel	%mklibname lsan -d -s
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
@@ -334,29 +300,6 @@
 # would make it easier to share efforts with Mageia.
 %define		build_monolithic	0
 
-
-%if %{build_cross_bootstrap}
-%define		build_minimal		1
-%define		libc_shared		0
-%endif
-
-%if %{build_cross}
-%define		build_monolithic	1
-%define		build_ada		0
-%define		build_asan		1
-%define		build_check		0
-%define		build_cxx		1
-%define		build_doc		0
-%define		build_gomp		1
-%define		build_itm		1
-%define		build_java		0
-%define		build_libgcc		1
-%define		build_lsan		1
-%define		package_ffi		0
-%define		build_ssp		1
-%define		build_ubsan		1
-%endif
-
 %if %{build_minimal}
 %define		build_ada		0
 %define		build_asan		0
@@ -409,7 +352,7 @@ Summary:	GNU Compiler Collection
 %if %{system_compiler}
 Name:		gcc
 %else
-Name:		%{cross_prefix}gcc%{package_suffix}
+Name:		gcc%{package_suffix}
 %endif
 Release:	1
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
@@ -518,10 +461,7 @@ Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
-BuildRequires:	%{cross_prefix}binutils >= 2.20.51.0.2
-%if !%{build_cross_bootstrap}
-BuildRequires:	%{cross_prefix}glibc-devel
-%endif
+BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
 BuildRequires:	bison
@@ -533,7 +473,7 @@ BuildRequires:	diffutils
 BuildRequires:	texinfo
 BuildRequires:	pkgconfig(libtirpc)
 # For py_puresitedir
-%if !(%{build_cross} || %{build_minimal})
+%if ! %{build_minimal}
 BuildRequires:	python >= 3.4
 %endif
 %if %{build_doc}
@@ -563,20 +503,11 @@ Requires:	%{libcc1} >= %{EVRD}
 # it's output redirection anyways...
 Obsoletes:	colorgcc <= 1.3.2-17
 %endif
-Requires:	%{cross_prefix}binutils >= 2.20.51.0.2
-# Ensure https://qa.mandriva.com/show_bug.cgi?id=62943
-# have been addressed if using an older version
-%if !%{build_cross_bootstrap}
-Requires:	%{cross_prefix}glibc-devel >= 2.13
-%endif
+Requires:	binutils >= 2.20.51.0.2
 
 Obsoletes:	%{_lib}mudflap0 < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-devel < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -586,18 +517,20 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %else
 %files
 %endif
-%if %{system_compiler} || %{build_cross}
-%{_bindir}/*-gcc
-%{_bindir}/*-gcc-ar
-%{_bindir}/*-gcc-nm
-%{_bindir}/*-gcc-ranlib
-%endif
-%if %{build_cross}
-%{_bindir}/*-gcov
-%{_bindir}/*-gcov-tool
-%{_bindir}/*-gcov-dump
-%endif
-%if %{system_compiler}
+%{_bindir}/%{gcc_target_platform}-gcc
+%{_bindir}/%{gcc_target_platform}-gcc-ar
+%{_bindir}/%{gcc_target_platform}-gcc-nm
+%{_bindir}/%{gcc_target_platform}-gcc-ranlib
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc-ar"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc-nm"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc-ranlib"
+	fi
+)
 %config(noreplace) %{_sysconfdir}/sysconfig/gcc
 %{_sysconfdir}/profile.d/90gcc.sh
 %{_sysconfdir}/profile.d/90gcc.csh
@@ -624,11 +557,8 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}32/libgcc_s.so
 %{target_libdir}64/libgcc_s.so
 %endif
-%endif
-%if !%{build_cross}
 %{_bindir}/gcc-%{ver}
-%endif
-%{_bindir}/*-gcc-%{ver}
+%{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdirparent}
 %dir %{gccdir}
 %dir %{gcclibexecdirparent}
@@ -729,11 +659,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 Summary:	GNU C library
 Group:		System/Libraries
 %if "%{libgcc}" != "libgcc"
-Provides:	%{cross_prefix}libgcc = %{EVRD}
-%endif
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
+Provides:	libgcc = %{EVRD}
 %endif
 
 %description -n %{libgcc}
@@ -749,10 +675,7 @@ The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 Summary:	GNU C library
 Group:		System/Libraries
 Conflicts:	%{libgcc} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
+
 %description -n %{multilibgcc}
 The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
@@ -794,17 +717,13 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 %endif
 
 ########################################################################
-%if %{system_compiler} || %{build_cross}
+%if %{system_compiler}
 #-----------------------------------------------------------------------
 
 %package cpp
 Summary:	The C Preprocessor
 Group:		Development/C
 Requires:	%{name} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description cpp
 Cpp is the GNU C-Compatible Compiler Preprocessor.
@@ -833,7 +752,7 @@ The C preprocessor provides four separate functionalities:
 %else
 %files cpp
 %endif
-%{_bindir}/*cpp
+%{_bindir}/cpp
 %if %{system_compiler}
 /lib/cpp
 %{_mandir}/man1/cpp.1*
@@ -858,10 +777,6 @@ Requires:	%{name} = %{EVRD}
 %if %{system_compiler}
 Requires:	%{libstdcxx_devel} = %{version}
 %endif
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description c++
 This package adds C++ support to the GNU Compiler Collection.
@@ -873,15 +788,21 @@ including templates and exception handling.
 %{_bindir}/g++
 %{_mandir}/man1/g++.1*
 %endif
-%if %{system_compiler} || %{build_cross}
-%{_bindir}/*-c++
-%{_bindir}/*-g++
+%if %{system_compiler}
+%{_bindir}/%{gcc_target_platform}-c++
+%{_bindir}/%{gcc_target_platform}-g++
 %endif
-%if !%{build_cross}
 %{_bindir}/c++-%{ver}
 %{_bindir}/g++-%{ver}
-%endif
-%{_bindir}/*-g++-%{ver}
+%{_bindir}/%{gcc_target_platform}-g++-%{ver}
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-c++"
+		echo "%%optional %{_bindir}/${shortplatform}-g++"
+		echo "%%optional %{_bindir}/${shortplatform}-g++-%{ver}"
+	fi
+)
 %{gcclibexecdir}/cc1plus
 %if %{build_monolithic}
 %{target_slibdir}/libstdc++.a
@@ -916,15 +837,11 @@ including templates and exception handling.
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
 %if "%{libstdcxx}" != "libstdc++"
-Provides:	%{cross_prefix}libstdc++ = %{EVRD}
+Provides:	libstdc++ = %{EVRD}
 %endif
 %if %{build_doc}
 BuildRequires:	doxygen
 BuildRequires:	graphviz
-%endif
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
 %endif
 
 %description -n %{libstdcxx}
@@ -945,10 +862,6 @@ GCC Standard C++ Library.
 Summary:	GNU Standard C++ library
 Group:		System/Libraries
 Conflicts:	%{libstdcxx} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibstdcxx}
 The libstdc++ package contains a rewritten standard compliant
@@ -976,12 +889,8 @@ Provides:	stdc++-devel = %{EVRD}
 %if "%{libstdcxx_devel}" != "libstdc++-devel"
 Provides:	%{libstdcxx_devel} = %{ver}-%{release}
 %endif
-Provides:	%{cross_prefix}libstdc++-devel = %{ver}-%{release}
-Provides:	%{cross_prefix}stdc++-devel = %{ver}-%{release}
-%endif
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
+Provides:	libstdc++-devel = %{ver}-%{release}
+Provides:	stdc++-devel = %{ver}-%{release}
 %endif
 # We don't want to pull in an entire Python environment just because of
 # libstdc++'s python based gdb plugin...
@@ -1012,13 +921,9 @@ Summary:	Static libraries for the GNU standard C++ library
 Group:		Development/C++
 Requires:	%{libstdcxx_devel} = %{EVRD}
 %if "%{libstdcxx_static_devel}" != "libstdc++-static-devel"
-Provides:	%{cross_prefix}libstdc++-static-devel = %{EVRD}
+Provides:	libstdc++-static-devel = %{EVRD}
 %endif
-Provides:	%{cross_prefix}stdc++-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
+Provides:	stdc++-static-devel = %{EVRD}
 
 %description -n %{libstdcxx_static_devel}
 Static libraries for the GNU standard C++ library.
@@ -1053,10 +958,6 @@ Requires:	%{name} = %{EVRD}
 Requires:	%{libgnat_devel} = %{EVRD}
 # no bootstrap support
 BuildRequires:	gcc-gnat >= 3.1, libgnat >= 3.1
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description gnat
 GNAT is a GNU Ada 95 front-end to GCC. This package includes development
@@ -1082,10 +983,6 @@ Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
 Provides:	libgnat = %{EVRD}
 Obsoletes:	gnat-runtime < %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgnat}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -1102,10 +999,6 @@ libraries, which are required to run programs compiled with the GNAT.
 Summary:	GNU Ada 95 runtime libraries
 Group:		System/Libraries
 Conflicts:	%{libgnat} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibgnat}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -1134,10 +1027,6 @@ Requires:	%{libgnat_static_devel} = %{EVRD}
 %endif
 Provides:	libgnat-devel = %{EVRD}
 Provides:	gnat-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgnat_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
@@ -1169,10 +1058,6 @@ Group:		Development/Other
 Requires:	%{libgnat_devel} = %{EVRD}
 Provides:	libgnat-static-devel = %{EVRD}
 Provides:	gnat-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgnat_static_devel}
 GNAT is a GNU Ada 95 front-end to GCC. This package includes static
@@ -1196,10 +1081,6 @@ Summary:	Fortran 95 support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgfortran_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description gfortran
 The gcc-gfortran package provides support for compiling Fortran
@@ -1229,13 +1110,11 @@ Group:		System/Libraries
 %if %{build_quadmath}
 Requires:	%{libquadmath} = %{EVRD}
 %endif
-Provides:	%{cross_prefix}libgfortran = %{EVRD}
+%if "%{libgfortran}" != "libgfortran"
+Provides:	libgfortran = %{EVRD}
+%endif
 %if %{build_multilib}
 Provides:	%{multilibgfortran} = %{EVRD}
-%endif
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
 %endif
 
 %description -n %{libgfortran}
@@ -1255,10 +1134,6 @@ Group:		System/Libraries
 Requires:	%{multilibquadmath} = %{EVRD}
 %endif
 Conflicts:	%{libgfortran} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibgfortran}
 This package contains Fortran 95 shared library which is needed to run
@@ -1280,11 +1155,7 @@ Requires:	%{multilibgfortran} = %{EVRD}
 %if %{build_quadmath}
 Requires:	%{libquadmath_devel} = %{EVRD}
 %endif
-Provides:	%{cross_prefix}gfortran-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
+Provides:	gfortran-devel = %{EVRD}
 
 %description -n %{libgfortran_devel}
 This package contains Fortran 95 shared library which is needed to
@@ -1304,11 +1175,7 @@ compile Fortran 95 programs.
 Summary:	Fortran 95 static libraries
 Group:		System/Libraries
 Requires:	%{libgfortran_devel} = %{EVRD}
-Provides:	%{cross_prefix}gfortran-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
+Provides:	gfortran-static-devel = %{EVRD}
 
 %description -n %{libgfortran_static_devel}
 This package contains Fortran 95 static library which is needed to
@@ -1332,11 +1199,6 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgo_devel} = %{EVRD}
-#BuildRequires:	gcc-go
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description go
 The gcc-go package provides support for compiling Go programs
@@ -1345,7 +1207,15 @@ with the GNU Compiler Collection.
 %files go
 %{_bindir}/go
 %{_bindir}/gofmt
-%{_bindir}/*gccgo
+%{_bindir}/gccgo
+%{_bindir}/%{gcc_target_platform}-gccgo
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-gccgo"
+		echo "%%optional %{_bindir}/${shortplatform}-gccgo-%{ver}"
+	fi
+)
 %{_libexecdir}/gcc/*/*/cgo
 %{_libdir}/%{name}/bin/%{name}
 %dir %{_libdir}/go
@@ -1354,7 +1224,8 @@ with the GNU Compiler Collection.
 %endif
 %{_infodir}/gccgo.info*
 %{_mandir}/man1/gccgo.1*
-%{_bindir}/*gccgo-%{ver}
+%{_bindir}/gccgo-%{ver}
+%{_bindir}/%{gcc_target_platform}-gccgo-%{ver}
 %{gcclibexecdir}/go1
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
@@ -1378,10 +1249,6 @@ with the GNU Compiler Collection.
 Summary:	Go runtime libraries
 Group:		System/Libraries
 Provides:	libgo = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgo}
 This package contains Go shared library which is needed to run
@@ -1397,10 +1264,6 @@ Go dynamically linked programs.
 Summary:	Go runtime libraries
 Group:		System/Libraries
 Conflicts:	%{libgo} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibgo}
 This package contains Go shared library which is needed to run
@@ -1421,10 +1284,6 @@ Requires:	%{multilibgo} = %{EVRD}
 %endif
 Provides:	libgo-devel = %{EVRD}
 Provides:	go-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgo_devel}
 This package includes libraries and support files for compiling
@@ -1444,10 +1303,6 @@ Group:		Development/Other
 Requires:	%{libgo_devel} = %{EVRD}
 Provides:	libgo-static-devel = %{EVRD}
 Provides:	go-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgo_static_devel}
 This package contains static Go libraries.
@@ -1547,10 +1402,6 @@ BuildRequires:	pkgconfig(alsa)
 BuildRequires:	pkgconfig(xt)
 BuildRequires:	pkgconfig(xtst)
 BuildRequires:	spec-helper >= 0.31.10
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgcj}
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1574,10 +1425,6 @@ Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
 %endif
 Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
 Conflicts:	%{_lib}gcj15 < 4.9.1_2014.05-2
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgcj_bc}
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1593,10 +1440,6 @@ Summary:	Java runtime library for gcc (Java parts)
 Group:		System/Libraries
 Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
 Requires:	%{libgcj} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n libgcj-java
 The Java(tm) runtime library. You will need this package to run your Java
@@ -1612,10 +1455,6 @@ Summary:	Tools needed to use applications in the GCJ Java runtime
 Group:		System/Libraries
 Requires:	%{libgcj} = %{EVRD}
 Requires:	zip >= 2.1
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n gcj-tools
 Tools needed to run applications in the GCJ Java(tm) runtime. You will
@@ -1654,10 +1493,6 @@ Requires:	awk
 Requires:	pkgconfig(zlib)
 Provides:	libgcj-devel = %{EVRD}
 Provides:	gcj-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgcj_devel}
 The Java(tm) static libraries and C header files. You will need this
@@ -1681,10 +1516,6 @@ Summary:	Java library sources
 Group:		Development/Java
 Requires:	%{libgcj} = %{EVRD}
 Provides:	libgcj-src = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n libgcj%{gcj_major}-src
 The Java(tm) runtime library sources.
@@ -1705,10 +1536,6 @@ Summary:	Objective-C support for GCC
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libobjc_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description objc
 gcc-objc provides Objective-C support for the GCC.
@@ -1724,10 +1551,6 @@ object-oriented derivative of the C language.
 Summary:	Objective-C runtime
 Group:		System/Libraries
 Provides:	libobjc = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libobjc}
 This package contains Objective-C shared library which is needed to run
@@ -1744,10 +1567,6 @@ Summary:	Objective-C runtime
 Group:		System/Libraries
 Provides:	libobjc = %{EVRD}
 Conflicts:	%{libobjc} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibobjc}
 This package contains Objective-C shared library which is needed to run
@@ -1768,10 +1587,6 @@ Requires:	%{multilibobjc} = %{EVRD}
 %endif
 Provides:	libobjc-devel = %{EVRD}
 Provides:	objc-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libobjc_devel}
 This package includes libraries and support files for compiling
@@ -1792,10 +1607,6 @@ Group:		Development/Other
 Requires:	%{libobjc_devel} = %{EVRD}
 Provides:	libobjc-static-devel = %{EVRD}
 Provides:	objc-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libobjc_static_devel}
 This package contains static Objective-C libraries.
@@ -1817,10 +1628,6 @@ This package contains static Objective-C libraries.
 Summary:	Objective-C++ support for GCC
 Group:		Development/Other
 Requires:	gcc-objc = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description objc++
 gcc++-objc provides Objective-C++ support for the GCC.
@@ -1839,10 +1646,6 @@ gcc++-objc provides Objective-C++ support for the GCC.
 Summary:	GCC support library for FFI
 Group:		System/Libraries
 Provides:	libffi = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libffi}
 This package contains GCC shared support library which is needed
@@ -1858,10 +1661,6 @@ for FFI support.
 Summary:	GCC support library for FFI
 Group:		System/Libraries
 Conflicts:	%{libffi} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibffi}
 This package contains GCC shared support library which is needed
@@ -1883,10 +1682,6 @@ Requires:	%{multilibffi} = %{EVRD}
 %endif
 Provides:	libffi-devel = %{EVRD}
 Provides:	ffi-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libffi_devel}
 This package contains GCC development which is needed
@@ -1906,10 +1701,6 @@ Group:		Development/C
 Requires:	%{libffi_devel} = %{EVRD}
 Provides:	libffi-static-devel = %{EVRD}
 Provides:	ffi-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libffi_static_devel}
 This package contains GCC static libraries which are needed
@@ -1928,15 +1719,10 @@ to compile FFI support.
 ########################################################################
 #-----------------------------------------------------------------------
 %ifarch %{ix86} x86_64
-%if ! %{build_cross_bootstrap}
 %package -n %{libmpx}
 Summary:	GCC support library for MPX
 Group:		System/Libraries
 Provides:	libmpx = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpx}
 This package contains GCC shared support library which is needed
@@ -1952,10 +1738,6 @@ for MPX support.
 Summary:	GCC support library for MPX
 Group:		System/Libraries
 Conflicts:	%{libmpx} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibmpx}
 This package contains GCC shared support library which is needed
@@ -1977,10 +1759,6 @@ Requires:	%{multilibmpx} = %{EVRD}
 %endif
 Provides:	libmpx-devel = %{EVRD}
 Provides:	mpx-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpx_devel}
 This package contains GCC development which is needed
@@ -2002,10 +1780,6 @@ Group:		Development/C
 Requires:	%{libmpx_devel} = %{EVRD}
 Provides:	libmpx-static-devel = %{EVRD}
 Provides:	mpx-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpx_static_devel}
 This package contains GCC static libraries which are needed
@@ -2024,10 +1798,6 @@ to compile MPX support.
 Summary:	GCC support library for MPX
 Group:		System/Libraries
 Provides:	libmpxwrappers = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpxwrappers}
 This package contains GCC shared support library which is needed
@@ -2043,10 +1813,6 @@ for MPX support.
 Summary:	GCC support library for MPX
 Group:		System/Libraries
 Conflicts:	%{libmpxwrappers} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibmpxwrappers}
 This package contains GCC shared support library which is needed
@@ -2068,10 +1834,6 @@ Requires:	%{multilibmpxwrappers} = %{EVRD}
 %endif
 Provides:	libmpxwrappers-devel = %{EVRD}
 Provides:	mpxwrappers-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpxwrappers_devel}
 This package contains GCC development which is needed
@@ -2091,10 +1853,6 @@ Group:		Development/C
 Requires:	%{libmpxwrappers_devel} = %{EVRD}
 Provides:	libmpxwrappers-static-devel = %{EVRD}
 Provides:	mpxwrappers-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libmpxwrappers_static_devel}
 This package contains GCC static libraries which are needed
@@ -2109,7 +1867,6 @@ to compile MPX support.
 #-----------------------------------------------------------------------
 # package mpxwrappers
 %endif
-%endif
 
 ########################################################################
 %if %{build_quadmath}
@@ -2119,10 +1876,6 @@ to compile MPX support.
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
 Provides:	libquadmath = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libquadmath}
 This package contains GCC shared support library which is needed
@@ -2138,10 +1891,6 @@ for __float128 math support and for Fortran REAL*16 support.
 Summary:	GCC __float128 shared support library
 Group:		System/Libraries
 Conflicts:	%{libquadmath} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibquadmath}
 This package contains GCC shared support library which is needed
@@ -2163,10 +1912,6 @@ Requires:	%{multilibquadmath} = %{EVRD}
 %endif
 Provides:	libquadmath-devel = %{EVRD}
 Provides:	quadmath-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libquadmath_devel}
 This package contains support for building Fortran programs using
@@ -2191,10 +1936,6 @@ Group:		Development/C
 Requires:	%{libquadmath_devel} = %{EVRD}
 Provides:	libquadmath-static-devel = %{EVRD}
 Provides:	quadmath-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libquadmath_static_devel}
 This package contains static libraries for building Fortran programs
@@ -2213,14 +1954,9 @@ using REAL*16 and programs using __float128 math.
 ########################################################################
 #-----------------------------------------------------------------------
 
-%if !%{build_cross}
 %package -n %{libcc1}
 Summary:	GCC parsing shared library
 Group:		System/Libraries
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libcc1}
 This package contains the gcc parsing library
@@ -2234,10 +1970,6 @@ This package contains the gcc parsing library
 Summary:	GCC parser library development support
 Group:		Development/C
 Requires:	%{libcc1} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libcc1_devel}
 Development files for gcc's parser library
@@ -2252,17 +1984,12 @@ Summary:	Static library containing the gcc parser
 Group:		Development/C
 Requires:	%{libcc1_devel} = %{EVRD}
 Provides:	libcc1-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libcc1_static_devel}
 Static library containing the gcc parser
 
 %files -n %{libcc1_static_devel}
 %{_libdir}/libcc1.a
-%endif
 
 #-----------------------------------------------------------------------
 ########################################################################
@@ -2273,10 +2000,6 @@ Static library containing the gcc parser
 Summary:	GCC OpenMP v3.0 shared support library
 Group:		System/Libraries
 Provides:	libgomp = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgomp}
 This package contains GCC shared library which is needed
@@ -2314,10 +2037,6 @@ Requires:	%{multilibgomp} = %{EVRD}
 %endif
 Provides:	libgomp-devel = %{EVRD}
 Provides:	gomp-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgomp_devel}
 This package contains GCC development which is needed
@@ -2344,10 +2063,6 @@ Group:		Development/C
 Requires:	%{libgomp_devel} = %{EVRD}
 Provides:	libgomp-static-devel = %{EVRD}
 Provides:	gomp-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libgomp_static_devel}
 This package contains GCC static libraries which are needed
@@ -2371,10 +2086,6 @@ to compile OpenMP v3.0 support.
 Summary:	GCC SSP shared support library
 Group:		System/Libraries
 Provides:	libssp = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libssp}
 This package contains GCC shared support library which is needed
@@ -2391,10 +2102,6 @@ Summary:	GCC SSP shared support library
 Group:		System/Libraries
 Provides:	libssp = %{EVRD}
 Conflicts:	%{libssp} < 4.6.2-11
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibssp}
 This package contains GCC shared support library which is needed
@@ -2416,10 +2123,6 @@ Requires:	%{multilibssp} = %{EVRD}
 %endif
 Provides:	libssp-devel = %{EVRD}
 Provides:	ssp-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libssp_devel}
 This package contains GCC libraries which are needed
@@ -2440,10 +2143,6 @@ Group:		Development/C
 Requires:	%{libssp_devel} = %{EVRD}
 Provides:	libssp-static-devel = %{EVRD}
 Provides:	ssp-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libssp_static_devel}
 This package contains GCC static libraries which are needed
@@ -2481,10 +2180,6 @@ This package contains GCC's Transactional Memory support library.
 Summary:	GCC Transactional Memory support library
 Group:		System/Libraries
 Provides:	libitm = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibitm}
 This package contains GCC's Transactional Memory support library.
@@ -2505,10 +2200,6 @@ Requires:	%{multilibitm} = %{EVRD}
 %endif
 Provides:	libitm-devel = %{EVRD}
 Provides:	itm-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libitm_devel}
 This package contains GCC libraries which are needed
@@ -2533,10 +2224,6 @@ Group:		Development/C
 Requires:	%{libitm_devel} = %{EVRD}
 Provides:	libitm-static-devel = %{EVRD}
 Provides:	itm-static-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libitm_static_devel}
 This package contains GCC static libraries which are needed
@@ -2559,10 +2246,6 @@ to compile Transactional Memory support.
 %package -n %{libasan}
 Summary:	GCC Address Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libasan}
 GCC Address Sanitizer Library.
@@ -2576,10 +2259,6 @@ GCC Address Sanitizer Library.
 %package -n %{multilibasan}
 Summary:	GCC Address Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibasan}
 GCC Address Sanitizer Library.
@@ -2600,10 +2279,6 @@ Requires:	%{multilibasan} = %{EVRD}
 %endif
 Provides:	libasan-devel = %{EVRD}
 Provides:	asan-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libasan_devel}
 This package contains GCC libraries which are needed
@@ -2623,10 +2298,6 @@ to use Address Sanitizer features.
 Summary:	Static libasan
 Group:		Development/C
 Requires:	%{libasan_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libasan_static_devel}
 Static libasan.
@@ -2646,10 +2317,6 @@ Static libasan.
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libtsan}
 GCC Address Sanitizer Library.
@@ -2666,10 +2333,6 @@ Requires:	%{name} = %{EVRD}
 Requires:	%{libtsan} = %{EVRD}
 Provides:	libtsan-devel = %{EVRD}
 Provides:	tsan-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libtsan_devel}
 This package contains GCC libraries which are needed
@@ -2684,10 +2347,6 @@ to use Thread Sanitizer features.
 Summary:	Static libtsan
 Group:		Development/C
 Requires:	%{libtsan_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libtsan_static_devel}
 Static libtsan.
@@ -2704,10 +2363,6 @@ Static libtsan.
 %package -n %{libatomic}
 Summary:	GCC Atomic operations library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libatomic}
 GCC Atomic operations Library.
@@ -2721,10 +2376,6 @@ GCC Atomic operations Library.
 %package -n %{multilibatomic}
 Summary:	GCC Atomic optimizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibatomic}
 GCC Atomic optimizer Library.
@@ -2745,10 +2396,6 @@ Requires:	%{multilibatomic} = %{EVRD}
 %endif
 Provides:	libatomic-devel = %{EVRD}
 Provides:	atomic-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libatomic_devel}
 This package contains GCC libraries which are needed
@@ -2766,10 +2413,6 @@ to use Atomic optimizer features.
 Summary:	Static libatomic
 Group:		Development/C
 Requires:	%{libatomic_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libatomic_static_devel}
 Static libatomic.
@@ -2789,10 +2432,6 @@ Static libatomic.
 %package -n %{libcilkrts}
 Summary:	CILK (multithreading programming language) runtime
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libcilkrts}
 CILK (multithreading programming language) runtime.
@@ -2806,10 +2445,6 @@ CILK (multithreading programming language) runtime.
 %package -n %{multilibcilkrts}
 Summary:	CILK (multithreading programming language) runtime
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibcilkrts}
 CILK (multithreading programming language) runtime.
@@ -2829,10 +2464,6 @@ Requires:	%{multilibcilkrts} = %{EVRD}
 %endif
 Provides:	libcilkrts-devel = %{EVRD}
 Provides:	cilkrts-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libcilkrts_devel}
 Development files for the CILK multithreading programming language.
@@ -2872,10 +2503,6 @@ Static libcilkrts.
 %package -n %{libvtv}
 Summary:	VTable Verification library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libvtv}
 VTable Verification library.
@@ -2889,10 +2516,6 @@ VTable Verification library.
 %package -n %{multilibvtv}
 Summary:	VTable Verification library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibvtv}
 VTable Verification library.
@@ -2913,10 +2536,6 @@ Requires:	%{multilibvtv} = %{EVRD}
 %endif
 Provides:	libvtv-devel = %{EVRD}
 Provides:	vtv-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libvtv_devel}
 This package contains GCC libraries which are needed
@@ -2934,10 +2553,6 @@ to use VTable Verification features.
 Summary:	Static libvtv
 Group:		Development/C
 Requires:	%{libvtv_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libvtv_static_devel}
 Static libvtv
@@ -2957,10 +2572,6 @@ Static libvtv
 %package -n %{libubsan}
 Summary:	Undefined Behavior Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libubsan}
 Undefined Behavior Sanitizer library.
@@ -2974,10 +2585,6 @@ Undefined Behavior Sanitizer library.
 %package -n %{multilibubsan}
 Summary:	Undefined Behavior Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{multilibubsan}
 Undefined Behavior Sanitizer library.
@@ -2998,10 +2605,6 @@ Requires:	%{multilibubsan} = %{EVRD}
 %endif
 Provides:	libubsan-devel = %{EVRD}
 Provides:	ubsan-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libubsan_devel}
 This package contains GCC libraries which are needed
@@ -3022,10 +2625,6 @@ to use Undefined Behavior Sanitizer features.
 Summary:	Static libubsan
 Group:		Development/C
 Requires:	%{libubsan_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{libubsan_static_devel}
 Static libubsan.
@@ -3045,10 +2644,6 @@ Static libubsan.
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
 Group:		Development/C
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{liblsan}
 Leak Sanitizer library.
@@ -3065,10 +2660,6 @@ Requires:	%{name} = %{EVRD}
 Requires:	%{liblsan} = %{EVRD}
 Provides:	liblsan-devel = %{EVRD}
 Provides:	lsan-devel = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{liblsan_devel}
 This package contains GCC libraries which are needed
@@ -3083,10 +2674,6 @@ to use Leak Sanitizer features.
 Summary:	Static liblsan
 Group:		Development/C
 Requires:	%{liblsan_devel} = %{EVRD}
-%if %{build_cross}
-AutoReq:	false
-AutoProv:	false
-%endif
 
 %description -n %{liblsan_static_devel}
 Static liblsan.
@@ -3168,31 +2755,19 @@ echo %{vendor} > gcc/DEV-PHASE
     popd
 %endif
 
-# Setup files for cross-compilation
-# XXX embed uClibc / dietlibc sources? [ia64 checks for __GLIBC__]
-%if %{build_cross}
-sysroot=%{_prefix}/%{gcc_target_platform}
-%endif
-if [[ -n "$sysroot" ]]; then
-mkdir sysroot
-cd sysroot
-[[ -d $sysroot/bin ]] &&
-ln -s $sysroot/bin bin
-[[ -f $sysroot/lib/crti.o ]] &&
-ln -s $sysroot/lib lib
-[[ -f $sysroot/lib64/crti.o ]] &&
-ln -s $sysroot/lib64 lib64
-[[ -f $sysroot/lib32/crti.o ]] &&
-ln -s $sysroot/lib32 lib32
-cd ../
-fi
-
-%if %{build_cross}
-perl -pi -e '/^DRIVER_DEFINES/ .. /^gcc/ and s/(\@TARGET_SYSTEM_ROOT_DEFINE\@)/-DSYSROOT_SPEC="\\"\\"" \1/' gcc/Makefile.in
-%endif
-
 # Force a seperate object dir
 mkdir obj-%{gcc_target_platform}
+
+%if %{with crosscompilers}
+# Configure for building some key crosscompilers
+for i in %{long_targets}; do
+	[ "%{gcc_target_platform}" = "$i" ] && continue
+	mkdir obj-${i}
+	cd obj-${i}
+	../configure --prefix=%{_prefix} --libexecdir=%{_libexecdir} --libdir=%{_libdir} --with-slibdir=%{_prefix}/${i}/lib --mandir=%{_mandir} --infodir=%{_infodir} --disable-libgcj --without-cloog --without-ppl --disable-libffi --disable-libgomp --disable-libquadmath --disable-libssp --disable-werror --enable-__cxa_atexit --enable-gold=default --with-plugin-ld=%{_bindir}/${i}-ld --enable-checking=release --enable-gnu-unique-object --enable-gnu-indirect-function --with-linker-hash-style=gnu --enable-languages=c --program-prefix=${i}- --enable-linker-build-id --disable-plugin --disable-lto --disable-libatomic --disable-shared --enable-static --with-system-zlib --with-bugurl=https://issues.openmandriva.org --disable-multilib --disable-threads --disable-libmpx --target=${i}
+	cd ..
+done
+%endif
 
 #-----------------------------------------------------------------------
 %build
@@ -3210,10 +2785,6 @@ OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
     -e 's/-gdwarf-4/-g/' \
     -e 's/-pipe//g'`
 OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
-
-%if %{build_cross}
-OPT_FLAGS="-O2 -fno-strict-aliasing -g -pipe"
-%endif
 
 # don't build crt files with -fasynchronous-unwind-tables
 case " $OPT_FLAGS " in
@@ -3262,23 +2833,8 @@ PROGRAM_PREFIX=""
 %if "%{program_prefix}" != ""
 PROGRAM_PREFIX="--program-prefix=%{program_prefix}"
 %endif
-%if %{build_cross}
-CROSS_FLAGS="--with-build-sysroot=$sysroot --with-native-system-header-dir=/include --with-headers --disable-nls"
-%endif
-%if %{build_cross_bootstrap}
-CROSS_FLAGS="--disable-threads"
-%if %isarch %{lsb_arches}
-# we have embedded the LSB 3.1 headers, so we can build the unwinding stuff too (ia64)
-CROSS_FLAGS="$CROSS_FLAGS --with-build-sysroot=$sysroot --with-headers"
-%endif
-%endif
-[[ -n "$CROSS_FLAGS" ]] && CROSS_FLAGS="$CROSS_FLAGS --target=%{gcc_target_platform}"
 case %{libc} in
-%if %{build_cross_bootstrap}
-glibc)		LIBC_FLAGS="";;
-%else
-glibc)		LIBC_FLAGS="--enable-threads=posix";;
-%endif
+glibc|musl)	LIBC_FLAGS="--enable-threads=posix";;
 newlib)		LIBC_FLAGS="--with-newlib --with-headers --disable-threads";;
 *)		echo "ERROR: unsupported %{libc} C library"; exit 1;;
 esac
@@ -3313,10 +2869,8 @@ CXXFLAGS="$OPT_FLAGS" \
 GCJFLAGS="$OPT_FLAGS" \
 TCFLAGS="$OPT_FLAGS" \
 XCFLAGS="$OPT_FLAGS" \
-%if ! %{build_cross} && ! %{build_cross_bootstrap}
 ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 NM_FOR_TARGET="%{_bindir}/binutils-nm" \
-%endif
 ../configure \
         --prefix=%{_prefix} \
         --libexecdir=%{_libexecdir} \
@@ -3431,16 +2985,12 @@ tar -Jxf %{SOURCE8}
 popd
 %endif
 
-%if %{build_cross}
-%make
-%else
 if ! %make BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
 	# Let's try to get a better error message
 	# (Workaround for builds working locally and failing in abf,
 	# let's see where exactly it's failing)
 	make -j1 BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP
 fi
-%endif
 
 %if %{build_pdf}
     %make pdf || :
@@ -3465,6 +3015,17 @@ tar cf - -T libjava-classes.list | bzip2 -9 \
     > %{make_rpmlint_happy_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
 %endif
 
+# Build crosscompilers
+cd ..
+%if %{with crosscompilers}
+for i in %{long_targets}; do
+	[ "%{gcc_target_platform}" = "$i" ] && continue
+	cd obj-${i}
+	%make
+	cd ..
+done
+%endif
+
 #-----------------------------------------------------------------------
 
 %if %{build_check}
@@ -3480,6 +3041,14 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 #-----------------------------------------------------------------------
 
 %install
+%if %{with crosscompilers}
+# Install crosscompilers first so the native compiler can overwrite stuff
+for i in %{long_targets}; do
+	[ "%{gcc_target_platform}" = "$i" ] && continue
+	%makeinstall_std -C obj-${i}
+done
+%endif
+# Native compiler
 %makeinstall_std -C obj-%{gcc_target_platform}
 
 %if %{build_lto}
@@ -3496,13 +3065,8 @@ ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildro
         install-src.zip
 %endif
 
-%if %{build_cross} && !%{build_cross_bootstrap}
-%makeinstall_std -C obj-%{gcc_target_platform}/%{gcc_target_platform}/libgcc
-%endif
-
 # configure python dir option does not cover libstdc++ and needs to remove
 # /usr prefix for libjava
-%if !%{build_cross}
 mkdir -p %{buildroot}%{py_puresitedir}
     if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
         mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/* \
@@ -3513,9 +3077,6 @@ mkdir -p %{buildroot}%{py_puresitedir}
             %{buildroot}%{_bindir}/aot-compile
         %endif
     fi
-%else
-    rm -rf %{buildroot}%{_datadir}/gcc-%{ver}/python
-%endif
 
 pushd %{buildroot}%{_bindir}
 %if %{system_compiler}
@@ -3524,9 +3085,7 @@ pushd %{buildroot}%{_bindir}
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
     ln -sf %{gcc_target_platform}-gcc-%{ver} cc
 %else
-    %if !%{build_cross}
-	rm %{buildroot}%{_bindir}/cpp
-    %endif
+    rm %{buildroot}%{_bindir}/cpp
 %endif
     PROGRAMS="gcc"
     %if %{build_cxx}
@@ -3547,11 +3106,7 @@ pushd %{buildroot}%{_bindir}
             mv -f %{gcc_target_platform}-$prog{,-%{ver}}
         fi
         rm -f $prog
-	%if %{build_cross}
-            ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
-	%else
-            ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
-	%endif
+        ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
         %if %{system_compiler}
             ln -sf %{gcc_target_platform}-$prog-%{ver} $prog
             ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
@@ -3559,29 +3114,19 @@ pushd %{buildroot}%{_bindir}
     done
 %if %{build_cxx}
     rm -f c++ %{gcc_target_platform}-c++{,-%{ver}}
-    %if !%{build_cross}
-	ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
-    %endif
+    ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
     %if %{system_compiler}
         ln -sf %{gcc_target_platform}-g++-%{ver} c++
     %endif
-    %if %{system_compiler} || %{build_cross}
+    %if %{system_compiler}
         ln -sf %{gcc_target_platform}-g++-%{ver} %{gcc_target_platform}-c++
     %endif
 
-    %if %{build_cross} && !%{build_cross_bootstrap}
-	rm -f %{buildroot}%{target_libdir}/libstdc++.so.%{stdcxx_major}*-gdb.py
-	%if %isarch mips mipsel
-	    rm -f %{buildroot}%{target_libdir}32/libstdc++.so.%{stdcxx_major}*-gdb.py
-	    rm -f %{buildroot}%{target_libdir}64/libstdc++.so.%{stdcxx_major}*-gdb.py
-	%endif
-        rm -rf %{buildroot}%{py_puresitedir}/libstdcxx
-    %else
-	mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-	mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
-	    %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-	perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
-	    %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
+    mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+    mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
+        %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
+    perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
+        %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 
     mkdir -p %{buildroot}/%{target_slibdir}
     mv %{buildroot}%{target_libdir}/libstdc++.so.%{stdcxx_major}* \
@@ -3603,7 +3148,6 @@ pushd %{buildroot}%{_bindir}
             %{buildroot}%{multilibdir}/libstdc++.so
     %endif
 %endif
-%endif
 %if %{build_java}
     ln -sf gcjh %{gcc_target_platform}-gcjh
     # For some reason, the .so file is a real file, not a symlink
@@ -3611,7 +3155,7 @@ pushd %{buildroot}%{_bindir}
 %endif
 popd
 
-%if %{build_gomp} && !%{build_cross}
+%if %{build_gomp}
     mkdir -p %{buildroot}%{target_slibdir}
     mv %{buildroot}%{target_libdir}/libgomp.so.%{gomp_major}* \
         %{buildroot}%{target_slibdir}
@@ -3664,21 +3208,6 @@ popd
     %endif
 %endif
 
-%if %{build_cross_bootstrap}
-# libgcc_eh.a is needed for glibc _but_ it is not built at this stage
-# (disabled-shared)
-# workaround by symlinking to libgcc. The other possibility would be to
-# workaround at glibc level but it would be more painfull.
-ln -srf %{buildroot}%{gccdir}/libgcc.a \
-	%{buildroot}%{gccdir}/libgcc_eh.a
-%if %isarch mips mipsel
-ln -srf %{buildroot}%{gccdir}/n32/libgcc.a \
-	%{buildroot}%{gccdir}/n32/libgcc_eh.a
-ln -srf %{buildroot}%{gccdir}/64/libgcc.a \
-	%{buildroot}%{gccdir}/64/libgcc_eh.a
-%endif
-%endif
-
 mv -f %{buildroot}%{gccdir}/include{-fixed,}/syslimits.h
 mv -f %{buildroot}%{gccdir}/include{-fixed,}/limits.h
 rm -fr %{buildroot}%{gccdir}/include-fixed
@@ -3689,20 +3218,15 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     rm -fr %{buildroot}%{_mandir}
     rm -fr %{buildroot}%{_localedir}
     rm -f %{buildroot}%{_bindir}/gcov
-    %if %{build_libgcc} && %{build_cross}
-        mv %{buildroot}%{_libdir}/libgcc_s.so %{buildroot}%{target_libdir}/
-        mv %{buildroot}%{_libdir}/libgcc_s.so.* %{buildroot}%{target_libdir}/
-    %else
-        rm -f %{buildroot}%{_libdir}/libgcc_s.so
-        %if %{build_multilib}
-            rm -f %{buildroot}%{multilibdir}/libgcc_s.so
-        %endif
-        %if !%{build_libgcc}
-             rm -f %{buildroot}%{target_libdir}/libgcc_s.so.*
-             %if %{build_multilib}
-                 rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
-             %endif
-        %endif
+    rm -f %{buildroot}%{_libdir}/libgcc_s.so
+    %if %{build_multilib}
+        rm -f %{buildroot}%{multilibdir}/libgcc_s.so
+    %endif
+    %if !%{build_libgcc}
+         rm -f %{buildroot}%{target_libdir}/libgcc_s.so.*
+         %if %{build_multilib}
+             rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
+         %endif
     %endif
 %endif
 rm -f %{buildroot}%{_libdir}/libiberty.a
@@ -3871,21 +3395,26 @@ mkdir -p %{buildroot}/%{_libdir}/%{name}/bin/
 ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
 %endif
 
-%if %{build_cross}
-# aarch64-mandriva-linux-gnu and aarch64-linux-gnu are similar enough...
-longplatform=$(grep ^target_alias= obj*/Makefile |cut -d= -f2-)
-%if %{build_cross_bootstrap}
-shortplatform="%{cross_bootstrap}"
-%else
-shortplatform="%{cross}"
-%endif
-#shortplatform=$(echo $longplatform |cut -d- -f1)-$(echo $longplatform |cut -d- -f3)-$(echo $longplatform |cut -d- -f4)
-if [ "$longplatform" != "$shortplatform" ]; then
-	cd %{buildroot}%{_bindir}
-	for i in $longplatform-*; do
-		ln -s $i $(echo $i |sed -e "s,$longplatform,$shortplatform,")
-	done
-fi
+%if %{with crosscompilers}
+for i in %{long_targets}; do
+	# aarch64-mandriva-linux-gnu and aarch64-linux-gnu are similar enough...
+	longplatform=$(grep ^target_alias= obj-$i/Makefile |cut -d= -f2-)
+	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
+		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
+		cd %{buildroot}%{_bindir}
+		for j in $longplatform-*; do
+			ln -s $j $(echo $j |sed -e "s,$longplatform,$shortplatform,")
+		done
+		cd -
+	fi
+	if [ "$longplatform" != "$i" ]; then
+		cd %{buildroot}%{_bindir}
+		for j in $longplatform-*; do
+			ln -s $j $(echo $j |sed -e "s,$longplatform,$i,")
+		done
+		cd -
+	fi
+done
 %endif
 
 %if %{system_compiler}
@@ -3894,4 +3423,46 @@ fi
 %if %{build_cxx}
 %find_lang libstdc++
 %endif
+%endif
+
+%if %{with crosscompilers}
+%(
+for i in %{long_targets}; do
+	[ "$i" = "%{_target_platform}" ] && continue
+	cat <<EOF
+%if %{with cross_bootstrap}
+%package -n cross-${i}-gcc-bootstrap
+%else
+%package -n cross-${i}-gcc
+# Full compiler can also be used for bootstrapping...
+Provides: cross-${i}-gcc-bootstrap = %{EVRD}
+%endif
+Summary: Gcc for crosscompiling to ${i}
+Group: Development/Other
+
+%if %{with cross_bootstrap}
+%description -n cross-${i}-gcc-bootstrap
+%else
+%description -n cross-${i}-gcc
+%endif
+Gcc for crosscompiling to ${i}
+
+%if %{with cross_bootstrap}
+%files -n cross-${i}-gcc-bootstrap
+%else
+%files -n cross-${i}-gcc
+%endif
+%{_bindir}/${i}-*
+%{_mandir}/man?/${i}-*
+%{_libdir}/gcc/${i}
+%{_libexecdir}/gcc/${i}
+EOF
+
+	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
+		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
+		echo "%{_bindir}/${shortplatform}-*"
+	fi
+	echo
+done
+)
 %endif
