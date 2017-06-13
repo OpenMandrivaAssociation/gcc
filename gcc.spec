@@ -102,6 +102,7 @@
 %define		gcc_major		1
 %define		libgcc			%mklibname gcc %{gcc_major}
 %define		multilibgcc		libgcc%{gcc_major}
+%define		libx32gcc		libx32gcc%{gcc_major}
 %define		stdcxx_major		6
 %define		libstdcxx		%mklibname stdc++ %{stdcxx_major}
 %define		libstdcxx_devel		%mklibname stdc++ -d
@@ -437,6 +438,8 @@ Patch18:	gcc-5.1.0-libstdc++-musl.patch
 # Add -fuse-ld=lld support
 Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
 
+Patch20:	gcc-6.3-libgcc-musl-workaround.patch
+
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
 Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
@@ -552,6 +555,12 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
+%ifarch x86_64
+%if ! %{with cross_bootstrap}
+# 3-fold multilib...
+%{_prefix}/libx32/libgcc_s.so
+%endif
+%endif
 %endif
 %if %isarch mips mipsel
 %{target_libdir}32/libgcc_s.so
@@ -681,6 +690,21 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{multilibgcc}
 %{multirootlibdir}/libgcc_s.so.%{gcc_major}
+
+%ifarch x86_64
+%package -n %{libx32gcc}
+Summary:	GNU C library
+Group:		System/Libraries
+Conflicts:	%{libgcc} < 4.6.2-11
+
+%description -n %{libx32gcc}
+The %{libx32gcc} package contains GCC shared libraries for gcc %{branch}
+
+%if ! %{with cross_bootstrap}
+%files -n %{libx32gcc}
+/libx32/libgcc_s.so.%{gcc_major}
+%endif
+%endif
 %endif
 
 #-----------------------------------------------------------------------
@@ -1087,8 +1111,17 @@ The gcc-gfortran package provides support for compiling Fortran
 programs with the GNU Compiler Collection.
 
 %files gfortran
-%{_bindir}/*gfortran
-%{_bindir}/*gfortran-%{ver}
+%{_bindir}/gfortran
+%{_bindir}/gfortran-%{ver}
+%{_bindir}/%{_target_platform}-gfortran
+%{_bindir}/%{_target_platform}-gfortran-%{ver}
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-gfortran"
+		echo "%%optional %{_bindir}/${shortplatform}-gfortran-%{ver}"
+	fi
+)
 %{_infodir}/gfortran.info*
 %{_mandir}/man1/gfortran.1*
 %{gcclibexecdir}/f951
@@ -2720,6 +2753,7 @@ Static liblsan.
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
 %patch19 -p1 -b .lld~
+%patch20 -p1 -b .musllibgcc~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
@@ -2755,51 +2789,7 @@ echo %{vendor} > gcc/DEV-PHASE
     popd
 %endif
 
-# Force a seperate object dir
-mkdir obj-%{gcc_target_platform}
-
-%if %{with crosscompilers}
-# Configure for building some key crosscompilers
-for i in %{long_targets}; do
-	[ "%{gcc_target_platform}" = "$i" ] && continue
-	mkdir obj-${i}
-	cd obj-${i}
-	../configure --prefix=%{_prefix} --libexecdir=%{_libexecdir} --libdir=%{_libdir} --with-slibdir=%{_prefix}/${i}/lib --mandir=%{_mandir} --infodir=%{_infodir} --disable-libgcj --without-cloog --without-ppl --disable-libffi --disable-libgomp --disable-libquadmath --disable-libssp --disable-werror --enable-__cxa_atexit --enable-gold=default --with-plugin-ld=%{_bindir}/${i}-ld --enable-checking=release --enable-gnu-unique-object --enable-gnu-indirect-function --with-linker-hash-style=gnu --enable-languages=c --program-prefix=${i}- --enable-linker-build-id --disable-plugin --disable-lto --disable-libatomic --disable-shared --enable-static --with-system-zlib --with-bugurl=https://issues.openmandriva.org --disable-multilib --disable-threads --disable-libmpx --target=${i}
-	cd ..
-done
-%endif
-
-#-----------------------------------------------------------------------
-%build
-# FIXME: extra tools needed
-export PATH=$PATH:$PWD/bin
-export sysroot=%{target_prefix}
-#_prefix}/%{gcc_target_platform}
-
-# The -gdwarf-4 removal is a workaround for gcc bug #52420
-OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
-    sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
-    -e 's/-m\(31\|32\|64\)//g' \
-    -e 's/-fstack-protector//g' \
-    -e 's/--param=ssp-buffer-size=4//' \
-    -e 's/-gdwarf-4/-g/' \
-    -e 's/-pipe//g'`
-OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
-
-# don't build crt files with -fasynchronous-unwind-tables
-case " $OPT_FLAGS " in
-*" -fasynchronous-unwind-tables "*)
-  sed -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables /' -i gcc/Makefile.in
-  ;;
-esac
-
-# Force a seperate object dir
-pushd obj-%{gcc_target_platform}
-
-# FIXME debugedit
-[ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
-[ ! -z "x$TMPDIR" ] && export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
-
+# Let's get our flags right...
 LANGUAGES=c
 %if %{build_ada}
     LANGUAGES="$LANGUAGES,ada"
@@ -2853,6 +2843,242 @@ mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-mult
 armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a9 ";;
 esac
 
+# Configure for building some key crosscompilers
+for i in %{long_targets}; do
+	EXTRA_FLAGS=""
+	CFLAGS_FOR_TARGET=""
+	CXXFLAGS_FOR_TARGET=""
+	mkdir obj-${i}
+	cd obj-${i}
+	if echo ${i} |grep -q x32; then
+		EXTRA_FLAGS="--with-abi=mx32 --with-multilib-list=mx32"
+		export CFLAGS_FOR_TARGET="-mx32"
+		export CXXFLAGS_FOR_TARGET="-mx32"
+	elif echo ${i} |grep -q x86_64; then
+		# FIXME add mx32 once X32 is bootstrapped far enough
+		EXTRA_FLAGS="--with-multilib-list=m64,m32"
+	fi
+	if echo ${i} |grep -q musl; then
+		# gcc sanitizers currently aren't compatible with musl
+		# (too many hardcoded assumptions that match glibc/bionic behavior)
+		EXTRA_FLAGS="$EXTRA_FLAGS --disable-libsanitizer"
+		if echo ${i} |grep -qE '(i.86|x86_64)'; then
+			# Incomplete struct _libc_fpstate on x86 musl
+			# ../../../../libmpx/mpxrt/mpxrt.h:52:42: error: invalid application of ‘sizeof’ to incomplete type ‘struct _libc_fpstate’
+			EXTRA_FLAGS="$EXTRA_FLAGS --disable-libmpx"
+			if echo ${i} |grep x86_64; then
+				# No multilib support in crosscompilers
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-multilib-list=m64 --without-multilib --disable-multilib"
+			fi
+		fi
+	fi
+	if [ "%{gcc_target_platform}" = "$i" ]; then
+		# This is the native compiler...
+
+		# We can't currently compile gcc with clang, even
+		# though that would be great for bootstrapping
+		CC=gcc \
+		CXX=g++ \
+		CFLAGS="$OPT_FLAGS" \
+		CXXFLAGS="$OPT_FLAGS" \
+		GCJFLAGS="$OPT_FLAGS" \
+		TCFLAGS="$OPT_FLAGS" \
+		XCFLAGS="$OPT_FLAGS" \
+		ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+		NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+		../configure \
+			--prefix=%{_prefix} \
+			--libexecdir=%{_libexecdir} \
+			--libdir=%{_libdir} \
+			--with-slibdir=%{target_slibdir} \
+			--mandir=%{_mandir} \
+			--infodir=%{_infodir} \
+%if !%{build_java}
+			--disable-libgcj \
+%else
+			--disable-libjava-multilib \
+			--with-java-home=%{_jvmdir}/java-1.5.0-gcj-1.5.0.0/jre \
+			--with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar \
+			--enable-java-awt=gtk \
+			--enable-gtk-cairo \
+%endif
+%if !%{build_cloog}
+			--without-cloog \
+			--without-ppl \
+%else
+			--with-cloog \
+			--with-ppl \
+			--enable-cloog-backend=isl \
+			--disable-cloog-version-check \
+			--disable-isl-version-check \
+%endif
+%if !%{build_ffi}
+			--disable-libffi \
+%endif
+%if !%{build_gomp}
+			--disable-libgomp \
+%endif
+%if !%{build_quadmath}
+			--disable-libquadmath \
+%if %{build_fortran}
+			--disable-libquadmath-support \
+%endif
+%endif
+%if !%{build_ssp}
+			--disable-libssp \
+%endif
+			--disable-werror \
+			--enable-__cxa_atexit \
+%if !%isarch %{mipsx}
+			--enable-gold=default \
+%endif
+			--with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
+%if %{system_compiler}
+			--enable-bootstrap \
+%endif
+			--enable-checking=release \
+			--enable-gnu-unique-object \
+%if %mdvver <= 3000000
+			--with-default-libstdcxx-abi=gcc4-compatible \
+%endif
+			--enable-gnu-indirect-function \
+			--with-linker-hash-style=gnu \
+			--enable-languages="$LANGUAGES" \
+			$PROGRAM_PREFIX \
+			--enable-linker-build-id \
+%if !%{build_plugin}
+			--disable-plugin \
+%else
+			--enable-plugin \
+			--enable-lto \
+%endif
+%if !%{build_lto}
+			--disable-lto \
+%endif
+%if %{build_atomic}
+			--enable-libatomic \
+%else
+			--disable-libatomic \
+%endif
+			$LIBC_FLAGS \
+			--with-system-zlib \
+			--with-bugurl=%{bugurl} \
+%if !%{build_multilib}
+			--disable-multilib \
+%endif
+%if %isarch armv5te
+			--with-arch=armv5te \
+%endif
+%if %isarch armv7l armv7hl armv7hln armv7hnl
+			--without-multilib \
+			--disable-multilib \
+			--with-mode=thumb \
+%if %isarch armv7l
+			--with-float=softfp \
+%else
+			--with-float=hard \
+%endif
+%if 0
+		# should be be armv7hl only
+			--with-fpu=vfpv3-d16 \
+		# should be be armv7hln armv7hnl
+%endif
+%if %isarch armv7hl armv7hln armv7hnl
+			--with-fpu=neon \
+			--with-abi=aapcs-linux \
+%endif
+%endif
+			--host=%{_target_platform} \
+			--build=%{_target_platform} \
+			$TARGET_FLAGS \
+			$EXTRA_FLAGS
+%if %{with crosscompilers}
+	else
+%if %{with cross_bootstrap}
+		../configure \
+			--prefix=%{_prefix} \
+			--libexecdir=%{_libexecdir} \
+			--libdir=%{_libdir} \
+			--with-slibdir=%{_prefix}/${i}/lib \
+			--mandir=%{_mandir} \
+			--infodir=%{_infodir} \
+			--disable-libgcj \
+			--without-cloog \
+			--without-ppl \
+			--disable-libffi \
+			--disable-libgomp \
+			--disable-libquadmath \
+			--disable-libssp \
+			--disable-werror \
+			--enable-__cxa_atexit \
+			--enable-gold=default \
+			--with-plugin-ld=%{_bindir}/${i}-ld \
+			--enable-checking=release \
+			--enable-gnu-unique-object \
+			--enable-gnu-indirect-function \
+			--with-linker-hash-style=gnu \
+			--enable-languages=c \
+			--program-prefix=${i}- \
+			--enable-linker-build-id \
+			--disable-plugin \
+			--disable-lto \
+			--disable-libatomic \
+			--disable-shared \
+			--enable-static \
+			--with-system-zlib \
+			--with-bugurl=https://issues.openmandriva.org \
+			--disable-multilib \
+			--disable-threads \
+			--disable-libmpx \
+			--target=${i} \
+			$EXTRA_FLAGS
+%else
+		../configure \
+			--prefix=%{_prefix} \
+			--libexecdir=%{_libexecdir} \
+			--libdir=%{_libdir} \
+			--with-slibdir=%{_prefix}/${i}/lib \
+			--mandir=%{_mandir} \
+			--infodir=%{_infodir} \
+			--with-sysroot=%{_prefix}/${i} \
+			--with-native-system-header-dir=/include \
+			--enable-threads \
+			--enable-shared \
+			--enable-lto \
+			--enable-plugin \
+			--enable-languages=c,c++,fortran,lto,objc,obj-c++ \
+			--target=${i} \
+			$EXTRA_FLAGS
+%endif
+%endif
+	fi
+	cd ..
+done
+
+#-----------------------------------------------------------------------
+%build
+# FIXME: extra tools needed
+export PATH=$PATH:$PWD/bin
+export sysroot=%{target_prefix}
+#_prefix}/%{gcc_target_platform}
+
+# The -gdwarf-4 removal is a workaround for gcc bug #52420
+OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
+    sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
+    -e 's/-m\(31\|32\|64\)//g' \
+    -e 's/-fstack-protector//g' \
+    -e 's/--param=ssp-buffer-size=4//' \
+    -e 's/-gdwarf-4/-g/' \
+    -e 's/-pipe//g'`
+OPT_FLAGS=`echo "$OPT_FLAGS" | sed -e 's/[[:blank:]]\+/ /g'`
+
+# don't build crt files with -fasynchronous-unwind-tables
+case " $OPT_FLAGS " in
+*" -fasynchronous-unwind-tables "*)
+  sed -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables /' -i gcc/Makefile.in
+  ;;
+esac
+
 BOOTSTRAP=bootstrap
 %if %isarch %{ix86} x86_64
     %if %{system_compiler}
@@ -2860,171 +3086,51 @@ BOOTSTRAP=bootstrap
     %endif
 %endif
 
-# We can't currently compile gcc with clang, even
-# though that would be great for bootstrapping
-CC=gcc \
-CXX=g++ \
-CFLAGS="$OPT_FLAGS" \
-CXXFLAGS="$OPT_FLAGS" \
-GCJFLAGS="$OPT_FLAGS" \
-TCFLAGS="$OPT_FLAGS" \
-XCFLAGS="$OPT_FLAGS" \
-ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
-NM_FOR_TARGET="%{_bindir}/binutils-nm" \
-../configure \
-        --prefix=%{_prefix} \
-        --libexecdir=%{_libexecdir} \
-	--libdir=%{_libdir} \
-	--with-slibdir=%{target_slibdir} \
-        --mandir=%{_mandir} \
-        --infodir=%{_infodir} \
-%if !%{build_java}
-        --disable-libgcj \
-%else
-        --disable-libjava-multilib \
-        --with-java-home=%{_jvmdir}/java-1.5.0-gcj-1.5.0.0/jre \
-        --with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar \
-        --enable-java-awt=gtk \
-        --enable-gtk-cairo \
-%endif
-%if !%{build_cloog}
-        --without-cloog \
-        --without-ppl \
-%else
-        --with-cloog \
-        --with-ppl \
-        --enable-cloog-backend=isl \
-        --disable-cloog-version-check \
-	--disable-isl-version-check \
-%endif
-%if !%{build_ffi}
-        --disable-libffi \
-%endif
-%if !%{build_gomp}
-        --disable-libgomp \
-%endif
-%if !%{build_quadmath}
-        --disable-libquadmath \
-  %if %{build_fortran}
-        --disable-libquadmath-support \
-  %endif
-%endif
-%if !%{build_ssp}
-        --disable-libssp \
-%endif
-        --disable-werror \
-        --enable-__cxa_atexit \
-%if !%isarch %{mipsx}
-        --enable-gold=default \
-%endif
-        --with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
-%if %{system_compiler}
-        --enable-bootstrap \
-%endif
-        --enable-checking=release \
-        --enable-gnu-unique-object \
-%if %mdvver <= 3000000
-        --with-default-libstdcxx-abi=gcc4-compatible \
-%endif
-	--enable-gnu-indirect-function \
-	--with-linker-hash-style=gnu \
-        --enable-languages="$LANGUAGES" \
-	$PROGRAM_PREFIX \
-        --enable-linker-build-id \
-%if !%{build_plugin}
-        --disable-plugin \
-%else
-        --enable-plugin \
-        --enable-lto \
-%endif
-%if !%{build_lto}
-	--disable-lto \
-%endif
-%if %{build_atomic}
-	--enable-libatomic \
-%else
-	--disable-libatomic \
-%endif
-	$LIBC_FLAGS \
-        --with-system-zlib \
-        --with-bugurl=%{bugurl} \
-  %if !%{build_multilib}
-        --disable-multilib \
-  %endif
-%if %isarch armv5te
-        --with-arch=armv5te \
-%endif
-%if %isarch armv7l armv7hl armv7hln armv7hnl
-        --without-multilib \
-        --disable-multilib \
-        --with-mode=thumb \
-  %if %isarch armv7l
-        --with-float=softfp \
-  %else
-        --with-float=hard \
-  %endif
-  %if 0
-# should be be armv7hl only
-        --with-fpu=vfpv3-d16 \
-# should be be armv7hln armv7hnl
-  %endif
-  %if %isarch armv7hl armv7hln armv7hnl
-        --with-fpu=neon \
-        --with-abi=aapcs-linux \
-   %endif
-%endif
-        --host=%{_target_platform} \
-	--build=%{_target_platform} \
-	$CROSS_FLAGS \
-	$TARGET_FLAGS
+# FIXME debugedit
+[ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
+[ ! -z "x$TMPDIR" ] && export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
 
-%if %{?x32_bootstrap}0
-mkdir -p %{_target_platform}/x32/libgcc
-pushd %{_target_platform}/x32/libgcc
-tar -Jxf %{SOURCE8}
-popd
-%endif
+for i in %{long_targets}; do
+	cd obj-${i}
+	if [ "%{gcc_target_platform}" = "$i" ]; then
+		# Native host compiler gets special treatment...
 
-if ! %make BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
-	# Let's try to get a better error message
-	# (Workaround for builds working locally and failing in abf,
-	# let's see where exactly it's failing)
-	make -j1 BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP
-fi
+		if ! %make BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
+			# Let's try to get a better error message
+			# (Workaround for builds working locally and failing in abf,
+			# let's see where exactly it's failing)
+			make -j1 BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP
+		fi
 
 %if %{build_pdf}
-    %make pdf || :
+		%make pdf || :
 %endif
 
 %if %{build_doc}
-    pushd host-%{gcc_target_platform}/gcc
-        %make html || :
-        %if %{build_pdf}
-            %make pdf || :
-        %endif
-    popd
+		pushd host-%{gcc_target_platform}/gcc
+		%make html || :
+%if %{build_pdf}
+		%make pdf || :
+%endif
+		popd
 %endif
 
 %if %{with java_build_tar}
-find libjava -name \*.h -type f | \
-    xargs grep -l '// DO NOT EDIT THIS FILE - it is machine generated' \
-    > libjava-classes.list
-find libjava -name \*.class -type f >> libjava-classes.list
-find libjava/testsuite -name \*.jar -type f >> libjava-classes.list
-tar cf - -T libjava-classes.list | bzip2 -9 \
-    > %{make_rpmlint_happy_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
+		find libjava -name \*.h -type f | \
+			xargs grep -l '// DO NOT EDIT THIS FILE - it is machine generated' \
+			> libjava-classes.list
+		find libjava -name \*.class -type f >> libjava-classes.list
+		find libjava/testsuite -name \*.jar -type f >> libjava-classes.list
+		tar cf - -T libjava-classes.list | bzip2 -9 \
+			> %{make_rpmlint_happy_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
 %endif
-
-# Build crosscompilers
-cd ..
 %if %{with crosscompilers}
-for i in %{long_targets}; do
-	[ "%{gcc_target_platform}" = "$i" ] && continue
-	cd obj-${i}
-	%make
+	else
+		%make
+	fi
+%endif
 	cd ..
 done
-%endif
 
 #-----------------------------------------------------------------------
 
@@ -3184,6 +3290,16 @@ popd
             %{buildroot}%{multirootlibdir}
         ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
             %{buildroot}%{multilibdir}/libgcc_s.so
+
+%if ! %{with cross_bootstrap}
+        %ifarch x86_64
+            mkdir -p %{buildroot}/libx32
+            mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
+                %{buildroot}/libx32/
+            ln -srf %{buildroot}/libx32/libgcc_s.so.%{gcc_major} \
+                %{buildroot}%{_prefix}/libx32/libgcc_s.so
+        %endif
+%endif
     %endif
 %endif
 
@@ -3221,11 +3337,21 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     rm -f %{buildroot}%{_libdir}/libgcc_s.so
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libgcc_s.so
+%if ! %{with cross_bootstrap}
+        %ifarch x86_64
+            rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
+        %endif
+%endif
     %endif
     %if !%{build_libgcc}
          rm -f %{buildroot}%{target_libdir}/libgcc_s.so.*
          %if %{build_multilib}
              rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
+%if ! %{with cross_bootstrap}
+             %ifarch x86_64
+                 rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
+             %endif
+%endif
          %endif
     %endif
 %endif
@@ -3429,33 +3555,36 @@ done
 %(
 for i in %{long_targets}; do
 	[ "$i" = "%{_target_platform}" ] && continue
-	cat <<EOF
 %if %{with cross_bootstrap}
-%package -n cross-${i}-gcc-bootstrap
+	package=cross-${i}-gcc-bootstrap
 %else
-%package -n cross-${i}-gcc
+	package=cross-${i}-gcc
+%endif
+	cat <<EOF
+%package -n ${package}
+%if ! %{with cross_bootstrap}
 # Full compiler can also be used for bootstrapping...
-Provides: cross-${i}-gcc-bootstrap = %{EVRD}
+%rename cross-${i}-gcc-bootstrap
+BuildRequires: cross-${i}-libc
+Recommends: cross-${i}-libc
 %endif
 Summary: Gcc for crosscompiling to ${i}
 Group: Development/Other
+BuildRequires: cross-${i}-binutils
+Recommends: cross-${i}-binutils
 
-%if %{with cross_bootstrap}
-%description -n cross-${i}-gcc-bootstrap
-%else
-%description -n cross-${i}-gcc
-%endif
+%description -n ${package}
 Gcc for crosscompiling to ${i}
 
-%if %{with cross_bootstrap}
-%files -n cross-${i}-gcc-bootstrap
-%else
-%files -n cross-${i}-gcc
-%endif
+%files -n ${package}
 %{_bindir}/${i}-*
 %{_mandir}/man?/${i}-*
 %{_libdir}/gcc/${i}
 %{_libexecdir}/gcc/${i}
+%if ! %{with cross_bootstrap}
+%{_prefix}/${i}/include/*
+%{_prefix}/${i}/lib*/*
+%endif
 EOF
 
 	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
