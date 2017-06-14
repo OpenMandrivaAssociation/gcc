@@ -234,11 +234,7 @@
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
 # system_compiler && build_ffi
-%if %isarch %{ix86} x86_64 %{arm}
-  %define	build_java		%{system_compiler}
-%else
-  %define	build_java		0
-%endif
+%define		build_java		0
 # need to build if major does not conflict with current system_compiler
 %define		build_libgcc		%{system_compiler}
 %define		build_pdf		%{build_doc}
