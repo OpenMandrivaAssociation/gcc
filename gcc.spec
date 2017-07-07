@@ -85,7 +85,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.05
+%define		linaro			2017.06
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -405,6 +405,7 @@ Patch9:		gcc-4.7-androidcompat.patch
 Patch10:	gcc-4.7.3-texinfo-5.0.patch
 # Fix build failure
 Patch11:	gcc-4.8-istream-ignore.patch
+# Seems to be still required on armv7hl
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
@@ -2741,7 +2742,7 @@ Static liblsan.
 #patch9 -p1 -b .android~
 #patch10 -p1 -b .texi50~
 %patch11 -p1 -b .buildfix~
-#patch12 -p1 -b .compare~
+%patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
 %patch15 -p1 -b .gcj++~
