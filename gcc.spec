@@ -1,6 +1,6 @@
 # Listed targets are short form and will be expanded by rpm
 # gnueabihf variants etc. are inserted by rpm into long_targets
-%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux x32-linux aarch64-linuxmusl armv7hl-linuxmusl i586-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl
+%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux x32-linux aarch64-linuxmusl armv7hl-linuxmusl i586-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl aarch64-android armv7nl-android armv8nl-android
 %global long_targets %(
         for i in %{targets}; do
                 CPU=$(echo $i |cut -d- -f1)
@@ -83,9 +83,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			6.3
-%define		ver			%{branch}.1
-%define		linaro			2017.06
+%define		branch			7.2
+%define		ver			%{branch}.0
+%define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -115,7 +115,7 @@
 %define		gcj_bc_major		1
 %define		libgcj_bc		%mklibname gcj_bc %{gcj_bc_major}
 # gcj multilib explicitly disabled
-%define		gfortran_major		3
+%define		gfortran_major		4
 %define		libgfortran		%mklibname gfortran %{gfortran_major}
 %define		libgfortran_devel	%mklibname gfortran -d
 %define		libgfortran_static_devel %mklibname gfortran -d -s
@@ -140,7 +140,7 @@
 %define		libgnat_devel		%mklibname gnat -d
 %define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		9
+%define		go_major		11
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname go -d
 %define		libgo_static_devel	%mklibname go -d -s
@@ -174,7 +174,7 @@
 %define		libitm_devel		%mklibname itm -d
 %define		libitm_static_devel	%mklibname itm -d -s
 %define		multilibitm		libitm%{itm_major}
-%define		asan_major		3
+%define		asan_major		4
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_devel		%mklibname asan -d
 %define		libasan_static_devel	%mklibname asan -d -s
@@ -358,7 +358,7 @@ Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
 %if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %else
 Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
 %endif
@@ -366,7 +366,7 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 Version:	%{ver}
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
-Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.bz2
+Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://gcc.parentingamerica.com/releases/gcc-%{version}/sha512.sum
 %else
   # http://gcc.gnu.org/mirrors.html
@@ -391,7 +391,6 @@ Source12:	gcc.csh
 Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
-Patch1:		gcc-4.6.0-java-nomulti.patch
 Patch2:		gcc-4.8-aarch64-ld-path.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
@@ -411,7 +410,6 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 # Alias -Oz to -Os for compatibility with clang's -Oz flag
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
-Patch15:	gcc-link-libgcj-to-stdc++.patch
 # FIXME this is ***evil***
 # Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
 # A notable difference:
@@ -1260,12 +1258,10 @@ with the GNU Compiler Collection.
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
 %{_libdir}/libgolibbegin.a
-%{_libdir}/libnetgo.a
 %if %{build_multilib}
 %{multilibdir}/go/%{ver}
 %{multilibdir}/libgobegin.a
 %{multilibdir}/libgolibbegin.a
-%{multilibdir}/libnetgo.a
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-go
@@ -2370,6 +2366,7 @@ to use Thread Sanitizer features.
 
 %files -n %{libtsan_devel}
 %{target_libdir}/libtsan.so
+%{target_libdir}/libtsan_preinit.o
 
 #-----------------------------------------------------------------------
 
@@ -2717,7 +2714,7 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}-%{linaro_spin}
+  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
   %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
 %endif
@@ -2730,7 +2727,6 @@ Static liblsan.
 %endif
 
 %patch0 -p1 -b .uclibc~
-%patch1 -p1 -b .java~
 #patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
@@ -2745,7 +2741,6 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
-%patch15 -p1 -b .gcj++~
 %patch16 -p1 -b .EVILaarch64~
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
