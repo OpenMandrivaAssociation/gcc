@@ -1,0 +1,44 @@
+--- gcc-4.6.0/libjava/configure.ac.orig	2011-04-19 02:35:30.832337880 -0300
++++ gcc-4.6.0/libjava/configure.ac	2011-04-19 02:35:48.560405043 -0300
+@@ -139,6 +139,13 @@ AC_ARG_ENABLE(java-maintainer-mode,
+ 	[allow rebuilding of .class and .h files]))
+ AM_CONDITIONAL(JAVA_MAINTAINER_MODE, test "$enable_java_maintainer_mode" = yes)
+ 
++AC_ARG_ENABLE(libjava-multilib,
++	AS_HELP_STRING([--enable-libjava-multilib], [build libjava as multilib]))
++if test "$enable_libjava_multilib" = no; then
++  multilib=no
++  ac_configure_args="$ac_configure_args --disable-multilib"
++fi
++
+ # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
+ GCC_NO_EXECUTABLES
+ 
+--- gcc-4.6.0/libjava/configure.orig	2011-04-19 02:34:39.573143560 -0300
++++ gcc-4.6.0/libjava/configure	2011-04-19 02:35:48.565405064 -0300
+@@ -1619,6 +1619,8 @@ Optional Features:
+                           default=yes
+   --enable-java-maintainer-mode
+                           allow rebuilding of .class and .h files
++  --enable-libjava-multilib
++                          build libjava as multilib
+   --disable-dependency-tracking  speeds up one-time build
+   --enable-dependency-tracking   do not reject slow dependency extractors
+   --enable-maintainer-mode  enable make rules and dependencies not useful
+@@ -3363,6 +3365,16 @@ else
+ fi
+ 
+ 
++# Check whether --enable-libjava-multilib was given.
++if test "${enable_libjava_multilib+set}" = set; then
++  enableval=$enable_libjava_multilib;
++fi
++
++if test "$enable_libjava_multilib" = no; then
++  multilib=no
++  ac_configure_args="$ac_configure_args --disable-multilib"
++fi
++
+ # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
+ 
+ 
