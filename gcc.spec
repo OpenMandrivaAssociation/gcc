@@ -1,6 +1,11 @@
 # Listed targets are short form and will be expanded by rpm
 # gnueabihf variants etc. are inserted by rpm into long_targets
+%if %mdvver <= 3000000
+%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
+%else
+# (tpg) set cross targets here for cooker
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux x32-linux aarch64-linuxmusl armv7hl-linuxmusl i586-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl aarch64-android armv7nl-android armv8nl-android
+%endif
 %global long_targets %(
         for i in %{targets}; do
                 CPU=$(echo $i |cut -d- -f1)
