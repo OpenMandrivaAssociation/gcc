@@ -111,9 +111,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			7.2
+%define		branch			6.3
 %define		ver			%{branch}.1
-%define		linaro			2017.09
+%define		linaro			2017.02
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
