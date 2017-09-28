@@ -2746,7 +2746,9 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
+%ifarch aarch64
 %patch16 -p1 -b .EVILaarch64~
+%endif
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
 %patch19 -p1 -b .lld~
