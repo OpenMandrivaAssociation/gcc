@@ -1,14 +1,19 @@
---- gcc-linaro-snapshot-5.3-2016.03/gcc/cp/except.c.EVILaarch64~	2016-03-22 09:47:21.301481356 +0100
-+++ gcc-linaro-snapshot-5.3-2016.03/gcc/cp/except.c	2016-03-22 09:48:05.271185252 +0100
-@@ -1040,8 +1040,12 @@ nothrow_libfn_p (const_tree fn)
+--- gcc-linaro-7.1-2017.08-rc1/gcc/cp/except.c.EVILaarch64~	2017-08-09 20:12:38.299700509 +0200
++++ gcc-linaro-7.1-2017.08-rc1/gcc/cp/except.c	2017-08-09 20:14:51.656324364 +0200
+@@ -896,6 +896,9 @@ nothrow_libfn_p (const_tree fn)
       unless the system headers are playing rename tricks, and if
       they are, we don't want to be confused by them.  */
    id = DECL_NAME (fn);
 +#ifdef __aarch64__
 +  return 0;
 +#else
-   return !!libc_name::libc_name_p (IDENTIFIER_POINTER (id),
- 				   IDENTIFIER_LENGTH (id));
+   const struct libc_name_struct *s
+     = libc_name::libc_name_p (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
+   if (s == NULL)
+@@ -907,6 +910,7 @@ nothrow_libfn_p (const_tree fn)
+     case 11: return !flag_iso || flag_isoc11;
+     default: gcc_unreachable ();
+     }
 +#endif
  }
  

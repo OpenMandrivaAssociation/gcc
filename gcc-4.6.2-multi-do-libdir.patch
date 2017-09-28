@@ -1,24 +1,10 @@
-From cb0b9bc849d55ed15fbd656cd96e83fc6b831ad9 Mon Sep 17 00:00:00 2001
-From: unknown author <cooker@mandrivalinux.org>
-Date: Tue, 10 Feb 2009 15:47:49 +0000
-Subject: gcc33 multi do libdir
-
-Rebase for gcc-4.6.2
-Signed-off-by: Thomas Backlund <tmb@mageia.org>
-
----
- config-ml.in |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/config-ml.in b/config-ml.in
-index f2497ad..cddf8ef 100644
---- a/config-ml.in
-+++ b/config-ml.in
-@@ -515,6 +515,7 @@ multi-do:
- 				FFLAGS="$(FFLAGS) $${flags}" \
+--- gcc-linaro-7.1-2017.08-rc1/config-ml.in.multi-do-libdir~	2017-08-09 20:20:17.937310686 +0200
++++ gcc-linaro-7.1-2017.08-rc1/config-ml.in	2017-08-09 20:25:04.640823156 +0200
+@@ -511,6 +511,7 @@ multi-do:
  				ADAFLAGS="$(ADAFLAGS) $${flags}" \
  				prefix="$(prefix)" \
-+				libdir="$(libdir)" \
  				exec_prefix="$(exec_prefix)" \
- 				GCJFLAGS="$(GCJFLAGS) $${flags}" \
++				libdir="$(libdir)" \
  				GOCFLAGS="$(GOCFLAGS) $${flags}" \
+ 				CXXFLAGS="$(CXXFLAGS) $${flags}" \
+ 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
