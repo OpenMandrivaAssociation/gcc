@@ -90,7 +90,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			7.2
 %define		ver			%{branch}.1
-%define		linaro			2017.10
+%define		linaro			2017.11
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
