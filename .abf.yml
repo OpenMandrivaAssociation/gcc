@@ -1,4 +1,4 @@
 sources:
   gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47
   libc-x32-seed.tar.xz: 3b11f56265c94b18c93d0df07d926cb9e73d8858
-  gcc-linaro-snapshot-7.2-2017.10.tar.xz: ddda3d9ec418b854f3507f3cbd6c041ea4e5f3f9
+  gcc-linaro-snapshot-7.2-2017.11.tar.xz: 3891eb68143f47c5f1b9330701343c89b38d261e
