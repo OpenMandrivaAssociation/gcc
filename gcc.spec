@@ -356,7 +356,7 @@ Name:		gcc
 %else
 Name:		gcc%{package_suffix}
 %endif
-Release:	1
+Release:	2
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
@@ -463,6 +463,8 @@ Patch209:	0009-musl-x86.patch
 Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
+
+Patch1008:	retpoline.patch
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -2767,6 +2769,7 @@ Static liblsan.
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
+%patch1008 -p1 -b .retpoline
 
 aclocal -I config
 autoconf
