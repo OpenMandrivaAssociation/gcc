@@ -464,15 +464,16 @@ Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
-#(tpg) ClearLinux patches for RETPOLINE
-Patch1008:	0001-i386-Move-struct-ix86_frame-to-machine_function.patch
-Patch1009:	0002-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch
+#(tpg) upstream patches for Spectre/Meltdown issue
+Patch1008:	0000-i386-Move-struct-ix86_frame-to-machine_function.patch
+Patch1009:	0001-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch
 Patch1010:	0003-i386-More-use-reference-of-struct-ix86_frame-to-avoi.patch
-Patch1011:	0004-x86-Add-mindirect-branch.patch
-Patch1012:	0005-x86-Add-mindirect-branch-loop.patch
-Patch1013:	0006-x86-Add-mfunction-return.patch
-Patch1014:	0007-x86-Add-mindirect-branch-register.patch
-Patch1015:	0008-x86-Add-V-register-operand-modifier.patch
+Patch1011:	0008-x86-Add-mindirect-branch.patch
+Patch1012:	0010-x86-Add-mfunction-return.patch
+Patch1013:	0011-x86-Add-mindirect-branch-register.patch
+Patch1014:	0012-x86-Add-V-register-operand-modifier.patch
+Patch1015:	0013-x86-Disallow-mindirect-branch-mfunction-return-with-.patch
+
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -2778,7 +2779,7 @@ Static liblsan.
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
-# (tpg) retpoline patches
+# (tpg) upstream patches for Spectre/Meltdown
 %patch1008 -p1
 %patch1009 -p1
 %patch1010 -p1
