@@ -67,25 +67,6 @@ index 8133372..397ef7c 100644
    allocate = frame.stack_pointer_offset - INCOMING_FRAME_SP_OFFSET;
  
    /* This is the label we will branch to if we have enough stack
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index b925fcf..7ca04e2 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
-@@ -1,6 +1,14 @@
- 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
- 
- 	Backport from mainline
-+	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
-+	of struct ix86_frame.
-+	(ix86_initial_elimination_offset): Likewise.
-+	(ix86_expand_split_stack_prologue): Likewise.
-+
-+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
-+
-+	Backport from mainline
- 	* config/i386/i386.c (ix86_frame): Moved to ...
- 	* config/i386/i386.h (ix86_frame): Here.
- 	(machine_function): Add frame.
 -- 
 2.8.3
 
