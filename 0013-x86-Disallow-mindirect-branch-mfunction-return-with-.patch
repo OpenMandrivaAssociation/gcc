@@ -71,30 +71,6 @@ git-svn-id: svn+ssh://gcc.gnu.org/svn/gcc/branches/gcc-7-branch@256737 138bc75d-
  create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-20.c
  create mode 100644 gcc/testsuite/gcc.target/i386/ret-thunk-21.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index fc222f0..1ef5254 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -3,6 +3,19 @@
- 	Backport from mainline
- 	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
- 
-+	* config/i386/i386.c (ix86_set_indirect_branch_type): Disallow
-+	-mcmodel=large with -mindirect-branch=thunk,
-+	-mindirect-branch=thunk-extern, -mfunction-return=thunk and
-+	-mfunction-return=thunk-extern.
-+	* doc/invoke.texi: Document -mcmodel=large is incompatible with
-+	-mindirect-branch=thunk, -mindirect-branch=thunk-extern,
-+	-mfunction-return=thunk and -mfunction-return=thunk-extern.
-+
-+2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
-+
-+	Backport from mainline
-+	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
-+
- 	* config/i386/i386.c (print_reg): Print the name of the full
- 	integer register without '%'.
- 	(ix86_print_operand): Handle 'V'.
 diff --git a/gcc/config/i386/i386.c b/gcc/config/i386/i386.c
 index 1bbdd0c..e758387 100644
 --- a/gcc/config/i386/i386.c
@@ -168,34 +144,6 @@ index 1e572b1..6f3c344 100644
  @item -mindirect-branch-register
  @opindex -mindirect-branch-register
  Force indirect call and jump via register.
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index b2e8538..6752d76 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
-@@ -3,6 +3,23 @@
- 	Backport from mainline
- 	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
- 
-+	* gcc.target/i386/indirect-thunk-10.c: New test.
-+	* gcc.target/i386/indirect-thunk-8.c: Likewise.
-+	* gcc.target/i386/indirect-thunk-9.c: Likewise.
-+	* gcc.target/i386/indirect-thunk-attr-10.c: Likewise.
-+	* gcc.target/i386/indirect-thunk-attr-11.c: Likewise.
-+	* gcc.target/i386/indirect-thunk-attr-9.c: Likewise.
-+	* gcc.target/i386/ret-thunk-17.c: Likewise.
-+	* gcc.target/i386/ret-thunk-18.c: Likewise.
-+	* gcc.target/i386/ret-thunk-19.c: Likewise.
-+	* gcc.target/i386/ret-thunk-20.c: Likewise.
-+	* gcc.target/i386/ret-thunk-21.c: Likewise.
-+
-+2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
-+
-+	Backport from mainline
-+	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
-+
- 	* gcc.target/i386/indirect-thunk-register-4.c: New test.
- 
- 2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 diff --git a/gcc/testsuite/gcc.target/i386/indirect-thunk-10.c b/gcc/testsuite/gcc.target/i386/indirect-thunk-10.c
 new file mode 100644
 index 0000000..a0674bd
