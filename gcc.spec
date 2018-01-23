@@ -3086,6 +3086,7 @@ export sysroot=%{target_prefix}
 OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
     sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
     -e 's/-m\(31\|32\|64\)//g' \
+    -e 's/-fstack-protector-strong//g' \
     -e 's/-fstack-protector//g' \
     -e 's/--param=ssp-buffer-size=4//' \
     -e 's/-gdwarf-4/-g/' \
