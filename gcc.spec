@@ -88,9 +88,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			7.2
-%define		ver			%{branch}.1
-%define		linaro			2017.11
+%define		branch			7.3
+%define		ver			%{branch}.0
+%define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -463,17 +463,6 @@ Patch209:	0009-musl-x86.patch
 Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
-
-#(tpg) upstream patches for Spectre/Meltdown issue
-Patch1008:	0000-i386-Move-struct-ix86_frame-to-machine_function.patch
-Patch1009:	0001-i386-Use-reference-of-struct-ix86_frame-to-avoid-cop.patch
-Patch1010:	0003-i386-More-use-reference-of-struct-ix86_frame-to-avoi.patch
-Patch1011:	0008-x86-Add-mindirect-branch.patch
-Patch1012:	0010-x86-Add-mfunction-return.patch
-Patch1013:	0011-x86-Add-mindirect-branch-register.patch
-Patch1014:	0012-x86-Add-V-register-operand-modifier.patch
-Patch1015:	0013-x86-Disallow-mindirect-branch-mfunction-return-with-.patch
-
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -2779,16 +2768,6 @@ Static liblsan.
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
-# (tpg) upstream patches for Spectre/Meltdown
-%patch1008 -p1
-%patch1009 -p1
-%patch1010 -p1
-%patch1011 -p1
-%patch1012 -p1
-%patch1013 -p1
-%patch1014 -p1
-%patch1015 -p1
-
 aclocal -I config
 autoconf
 
@@ -3086,6 +3065,7 @@ export sysroot=%{target_prefix}
 OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
     sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
     -e 's/-m\(31\|32\|64\)//g' \
+    -e 's/-fstack-protector-strong//g' \
     -e 's/-fstack-protector//g' \
     -e 's/--param=ssp-buffer-size=4//' \
     -e 's/-gdwarf-4/-g/' \
