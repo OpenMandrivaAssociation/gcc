@@ -761,7 +761,7 @@ The C preprocessor provides four separate functionalities:
 
 * Inclusion of header files. These are files of declarations that can be
   substituted into your program.
-* Macro expansion. You can define 'macros,' which are abbreviations for 
+* Macro expansion. You can define 'macros,' which are abbreviations for
   arbitrary fragments of C code, and then the C preprocessor will replace
   the macros with their definitions throughout the program.
 * Conditional compilation. Using special preprocessing directives,
@@ -2719,15 +2719,15 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
+%setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
+%setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
-  %setup -q -n gcc-%{version}%{snapshot}
+%setup -q -n gcc-%{version}%{snapshot}
 %else
-  %setup -q -n gcc-%{branch}%{snapshot}
+%setup -q -n gcc-%{branch}%{snapshot}
 %endif
 %endif
 
@@ -2783,7 +2783,7 @@ echo %{vendor} > gcc/DEV-PHASE
 %if %{?x32_bootstrap}0
     pushd gcc
         tar -xf %{SOURCE7}
-        mkdir gnu
+        mkdir -p gnu
         ln -s /usr/include/gnu/stubs-64.h gnu/stubs-x32.h
     popd
 %endif
@@ -2847,7 +2847,7 @@ for i in %{long_targets}; do
 	EXTRA_FLAGS=""
 	CFLAGS_FOR_TARGET=""
 	CXXFLAGS_FOR_TARGET=""
-	mkdir obj-${i}
+	mkdir -p obj-${i}
 	cd obj-${i}
 	if echo ${i} |grep -q x32; then
 		EXTRA_FLAGS="--with-abi=mx32 --with-multilib-list=mx32"
