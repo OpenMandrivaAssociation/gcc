@@ -286,7 +286,7 @@
 %define		libc			glibc
 %define		libc_shared		1
 
-%define		build_minimal		1
+%define		build_minimal		0
 
 # (proyvind): TODO
 # This is a cheap knockoff of the former monolithic build, hastily thrown
