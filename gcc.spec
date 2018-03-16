@@ -1742,6 +1742,7 @@ using REAL*16 and programs using __float128 math.
 ########################################################################
 #-----------------------------------------------------------------------
 
+%if ! %{build_minimal}
 %package -n %{libcc1}
 Summary:	GCC parsing shared library
 Group:		System/Libraries
@@ -1778,6 +1779,7 @@ Static library containing the gcc parser
 
 %files -n %{libcc1_static_devel}
 %{_libdir}/libcc1.a
+%endif
 
 #-----------------------------------------------------------------------
 ########################################################################
