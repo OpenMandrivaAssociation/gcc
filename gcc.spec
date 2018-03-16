@@ -4,13 +4,13 @@
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
 %else
 # (tpg) set cross targets here for cooker
-%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux x32-linux aarch64-linuxmusl armv7hl-linuxmusl i586-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl aarch64-android armv7nl-android armv8nl-android
+%global targets aarch64-linux armv7hl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android
 %endif
 %global long_targets %(
         for i in %{targets}; do
                 CPU=$(echo $i |cut -d- -f1)
                 OS=$(echo $i |cut -d- -f2)
-                echo -n "$(rpm --macros %%{_usrlibrpm}/macros:%%{_usrlibrpm}/platform/${CPU}-${OS}/macros --target=${CPU} -E %%{_target_platform}) "
+                echo -n "$(rpm --target=${CPU}-${OS} -E %%{_target_platform}) "
         done
 )
 %bcond_without crosscompilers
@@ -46,7 +46,6 @@
 %define majorver %(echo %{version} |cut -d. -f1)
 
 %if %{system_compiler}
-%define alternative_priority	30%{branch_tag}
 %define cross_prefix		%{nil}
 %define cross_program_prefix	%{nil}
 %define package_suffix		%{nil}
@@ -54,7 +53,6 @@
 %define program_suffix		%{nil}
 %define	program_long_suffix	-%{version}
 %else
-%define alternative_priority	20%{branch_tag}
 %define cross_prefix		%{nil}
 %define cross_program_prefix	%{nil}
 %define package_suffix		%{branch}
@@ -92,7 +90,6 @@
 %define		ver			%{branch}.0
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
-%define		alternatives		/usr/sbin/update-alternatives
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -113,13 +110,6 @@
 %define		libstdcxx_devel		%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gcj_major		17
-%define		libgcj			%mklibname gcj %{gcj_major}
-%define		libgcj_devel		%mklibname gcj -d
-%define		libgcj_static_devel	%mklibname gcj -d -s
-%define		gcj_bc_major		1
-%define		libgcj_bc		%mklibname gcj_bc %{gcj_bc_major}
-# gcj multilib explicitly disabled
 %define		gfortran_major		4
 %define		libgfortran		%mklibname gfortran %{gfortran_major}
 %define		libgfortran_devel	%mklibname gfortran -d
@@ -238,8 +228,6 @@
 %define		build_ffi		%{system_compiler}
 %define		build_fortran		%{system_compiler}
 %define		build_gomp		%{system_compiler}
-# system_compiler && build_ffi
-%define		build_java		0
 # need to build if major does not conflict with current system_compiler
 %define		build_libgcc		%{system_compiler}
 %define		build_pdf		%{build_doc}
@@ -286,7 +274,7 @@
 %define		libc			glibc
 %define		libc_shared		1
 
-%define		build_minimal		1
+%define		build_minimal		0
 
 # (proyvind): TODO
 # This is a cheap knockoff of the former monolithic build, hastily thrown
@@ -325,24 +313,12 @@
 %define		build_ffi		0
 %define		build_fortran		0
 %define		build_gomp		0
-%define		build_java		0
 %define		build_libgcc		0
 %define		build_pdf		0
 %define		build_plugin		0
 %define		package_ffi		0
 %define		shared_libgnat		0
 %endif
-
-
-# Adapted from fedora procedure:
-#   If there is no usable gcc-java neither libgcj for the arch,
-# on an arch that has it, run:
-#	rpmbuild -bc --define "_topdir `pwd`" --with java_build_tar SPECS/gcc.spec
-# which creates libjava-classes-@{version}-@{release}.tar.bz2
-#   With the tarball on the new arch, run:
-#	rpmbuild -ba --define "_topdir `pwd`" -v --with java_bootstrap SPECS/gcc.spec
-%bcond_with	java_build_tar
-%bcond_with	java_bootstrap
 
 %if 0
 %define		x32_bootstrap	1
@@ -382,9 +358,6 @@ Source1:	md5.sum
 %endif
 Source4:	c89
 Source5:	c99
-%if %{with java_bootstrap}
-Source6:	libjava-classes-%{version}-%{release}.tar.bz2
-%endif
 Source7:	gcc-x32-seed.tar.xz
 Source8:	libc-x32-seed.tar.xz
 
@@ -584,11 +557,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %endif
 %dir %{gccdir}/include
 %{gccdir}/include/*.h
-%if %{build_java}
-%exclude %{gccdir}/include/jawt*.h
-%exclude %{gccdir}/include/jni*.h
-%exclude %{gccdir}/include/jvm*.h
-%endif
 %{gcclibexecdir}/install-tools
 %if "%{gcclibexecdir}" != "%{gccdir}"
 %{gccdir}/install-tools
@@ -929,9 +897,11 @@ development. This includes rewritten implementation of STL.
 %{_includedir}/c++/%{ver}
 %{target_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
+%{_datadir}/gdb/auto-load%{_libdir}/__pycache__/libstdc++*.pyc
 %if %{build_multilib}
 %{multilibdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
+%{_datadir}/gdb/auto-load%{multilibdir}/__pycache__/libstdc++*.pyc
 %endif
 %{py_puresitedir}/libstdcxx
 %if %{build_doc}
@@ -989,9 +959,6 @@ tools, the documents and Ada 95 compiler.
 
 %files gnat
 %{_bindir}/gnat*
-%if %{build_java}
-%exclude %{_bindir}/gnative2ascii
-%endif
 %{gcclibexecdir}/gnat1
 %{_infodir}/gnat*
 %if %{build_doc}
@@ -1346,216 +1313,6 @@ This package contains static Go libraries.
 
 #-----------------------------------------------------------------------
 # build go
-%endif
-
-########################################################################
-%if %{build_java}
-#-----------------------------------------------------------------------
-
-%package java
-Summary:	Java support for GCC
-Group:		Development/Java
-Requires:	%{name} = %{EVRD}
-Requires:	%{libgcj_devel} = %{EVRD}
-Requires:	ecj
-BuildRequires:	ecj
-BuildRequires:	jpackage-utils
-BuildRequires:	unzip
-BuildRequires:	zip
-
-%description java
-This package adds support for compiling Java(tm) programs and
-bytecode into native code.
-
-%files java
-%{_bindir}/aot-compile
-%{_bindir}/gc-analyze
-%{_bindir}/gcj-dbtool
-%{_bindir}/gjavah
-%{_bindir}/gjar
-%{_bindir}/gjarsigner
-%if %{without java_bootstrap}
-%{_bindir}/gjdoc
-%endif
-%{_bindir}/gnative2ascii
-%{_bindir}/grmic
-%{_bindir}/gserialver
-%{_bindir}/jcf-dump
-%{_bindir}/jv-convert
-%{_bindir}/rebuild-gcj-db
-%{_mandir}/man1/aot-compile.1*
-%{_mandir}/man1/gc-analyze.1*
-%{_mandir}/man1/gcj.1*
-%{_mandir}/man1/gcj-dbtool.1*
-%{_mandir}/man1/gcjh.1*
-%{_mandir}/man1/gjar.1*
-%{_mandir}/man1/gjarsigner.1*
-%{_mandir}/man1/gjavah.1*
-%{_mandir}/man1/gjdoc.1*
-%{_mandir}/man1/gnative2ascii.1*
-%{_mandir}/man1/grmic.1*
-%{_mandir}/man1/gserialver.1*
-%{_mandir}/man1/jcf-dump.1*
-%{_mandir}/man1/jv-convert.1*
-%{_mandir}/man1/rebuild-gcj-db.1*
-%{_infodir}/gcj.info*
-%{_infodir}/cp-tools.info*
-%{_bindir}/*gcj
-%{_bindir}/*gcj-%{ver}
-%{_bindir}/*gcjh
-%{gcclibexecdir}/jc1
-%{gcclibexecdir}/ecj1
-%{gcclibexecdir}/jvgenmain
-%if %{build_doc}
-%doc %{_docdir}/gcc-java
-%endif
-
-#-----------------------------------------------------------------------
-
-%package -n %{libgcj}
-Summary:	Java runtime library for gcc (platform dependent parts)
-Group:		System/Libraries
-Provides:	libgcj = %{EVRD}
-%if %{build_multilib}
-# for compatibility and/or make updates clean
-Provides:	libgcj%{gcj_major} = %{EVRD}
-%endif
-Requires:	zip >= 2.1
-Requires:	libgcj-java >= %{EVRD}
-%if %{without java_bootstrap}
-# We need antlr
-BuildRequires:	antlr-tool
-%endif
-BuildRequires:	pkgconfig(gtk+-2.0)
-BuildRequires:	pkgconfig(glib-2.0)
-BuildRequires:	pkgconfig(libart-2.0)
-BuildRequires:	pkgconfig(alsa)
-BuildRequires:	pkgconfig(xt)
-BuildRequires:	pkgconfig(xtst)
-BuildRequires:	spec-helper >= 0.31.10
-
-%description -n %{libgcj}
-The Java(tm) runtime library. You will need this package to run your Java
-programs compiled using the Java compiler from GNU Compiler Collection (gcj).
-
-%files -n %{libgcj}
-%dir %{target_libdir}/gcj-%{ver}-%{gcj_major}
-%{target_libdir}/gcj-%{ver}-%{gcj_major}/*.so
-%attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) %{target_libdir}/gcj-%{ver}-%{gcj_major}/classmap.db
-%{target_libdir}/libgcj.so.%{gcj_major}*
-%{target_libdir}/libgcj-tools.so.%{gcj_major}*
-%{target_libdir}/libgij.so.%{gcj_major}*
-
-#-----------------------------------------------------------------------
-
-%package -n %{libgcj_bc}
-Summary:	Java runtime library for gcc
-Group:		System/Libraries
-%if %{build_multilib}
-Provides:	libgcj_bc%{gcj_bc_major} = %{EVRD}
-%endif
-Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
-Conflicts:	%{_lib}gcj15 < 4.9.1_2014.05-2
-
-%description -n %{libgcj_bc}
-The Java(tm) runtime library. You will need this package to run your Java
-programs compiled using the Java compiler from GNU Compiler Collection (gcj).
-
-%files -n %{libgcj_bc}
-%{target_libdir}/libgcj_bc.so.%{gcj_bc_major}*
-
-#-----------------------------------------------------------------------
-
-%package -n libgcj-java
-Summary:	Java runtime library for gcc (Java parts)
-Group:		System/Libraries
-Conflicts:	%{_lib}gcj13 < 4.7.3_2012.10-4
-Requires:	%{libgcj} = %{EVRD}
-
-%description -n libgcj-java
-The Java(tm) runtime library. You will need this package to run your Java
-programs compiled using the Java compiler from GNU Compiler Collection (gcj).
-
-%files -n libgcj-java
-%{_javadir}/libgcj*.jar
-
-#-----------------------------------------------------------------------
-
-%package -n gcj-tools
-Summary:	Tools needed to use applications in the GCJ Java runtime
-Group:		System/Libraries
-Requires:	%{libgcj} = %{EVRD}
-Requires:	zip >= 2.1
-
-%description -n gcj-tools
-Tools needed to run applications in the GCJ Java(tm) runtime. You will
-need this package to run your Java programs in the Java Virtual Machine
-(JVM) provided by the GNU Compiler Collection (gcj).
-
-%files -n gcj-tools
-%{_bindir}/gappletviewer
-%{_bindir}/gij
-%{_bindir}/grmid
-%{_bindir}/grmiregistry
-%{_bindir}/gtnameserv
-%{_bindir}/gkeytool
-%{_bindir}/gorbd
-%{_mandir}/man1/gappletviewer.1*
-%{_mandir}/man1/gij.1*
-%{_mandir}/man1/grmiregistry.1*
-%{_mandir}/man1/gkeytool.1*
-%{_mandir}/man1/gorbd.1*
-%{_mandir}/man1/grmid.1*
-%{_mandir}/man1/gtnameserv.1*
-%{_libdir}/logging.properties
-%{_libdir}/security
-%if %{build_pdf}
-%doc %{_docdir}/libjava
-%endif
-
-#-----------------------------------------------------------------------
-
-%package -n %{libgcj_devel}
-Summary:	Libraries for Java development using GCC
-Group:		Development/Java
-Requires:	%{libgcj} = %{EVRD}
-Requires:	%{libgcj_bc} = %{EVRD}
-Requires:	awk
-Requires:	pkgconfig(zlib)
-Provides:	libgcj-devel = %{EVRD}
-Provides:	gcj-devel = %{EVRD}
-
-%description -n %{libgcj_devel}
-The Java(tm) static libraries and C header files. You will need this
-package to compile your Java programs using the GCC Java compiler (gcj).
-
-%files -n %{libgcj_devel}
-%{gccdir}/include/gcj
-%{gccdir}/include/jawt*.h
-%{gccdir}/include/jni*.h
-%{gccdir}/include/jvm*.h
-%{py_puresitedir}/libjava
-%{target_libdir}/pkgconfig/libgcj-%{majorver}.pc
-%{target_libdir}/libgcj*.spec
-%{target_libdir}/libgcj*.so
-%{target_libdir}/libgij.so
-
-#-----------------------------------------------------------------------
-
-%package -n libgcj%{gcj_major}-src
-Summary:	Java library sources
-Group:		Development/Java
-Requires:	%{libgcj} = %{EVRD}
-Provides:	libgcj-src = %{EVRD}
-
-%description -n libgcj%{gcj_major}-src
-The Java(tm) runtime library sources.
-
-%files -n libgcj%{gcj_major}-src
-%{_javadir}/src-%{ver}.zip
-
-#-----------------------------------------------------------------------
-# build java
 %endif
 
 ########################################################################
@@ -2719,15 +2476,15 @@ Static liblsan.
 %prep
 %if "%{linaro}" != ""
 %if "%{linaro_spin}" != ""
-  %setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
+%setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
-  %setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
+%setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
 %endif
 %else
 %if %{official}
-  %setup -q -n gcc-%{version}%{snapshot}
+%setup -q -n gcc-%{version}%{snapshot}
 %else
-  %setup -q -n gcc-%{branch}%{snapshot}
+%setup -q -n gcc-%{branch}%{snapshot}
 %endif
 %endif
 
@@ -2776,10 +2533,6 @@ echo %{vendor} > gcc/DEV-PHASE
     sed -i -e 's/4\.8\..*/%{version}/' gcc/BASE-VER
 %endif
 
-%if %{with java_bootstrap}
-    tar xjf %{SOURCE6}
-%endif
-
 %if %{?x32_bootstrap}0
     pushd gcc
         tar -xf %{SOURCE7}
@@ -2801,9 +2554,6 @@ LANGUAGES=c
 %endif
 %if %{build_go}
     LANGUAGES="$LANGUAGES,go"
-%endif
-%if %{build_java}
-    LANGUAGES="$LANGUAGES,java"
 %endif
 %if %{build_lto}
     LANGUAGES="$LANGUAGES,lto"
@@ -2872,6 +2622,7 @@ for i in %{long_targets}; do
 		fi
 	fi
 	if [ "%{gcc_target_platform}" = "$i" ]; then
+		echo "===== Building native $i compiler ====="
 		# This is the native compiler...
 
 		# We can't currently compile gcc with clang, even
@@ -2892,15 +2643,6 @@ for i in %{long_targets}; do
 			--with-slibdir=%{target_slibdir} \
 			--mandir=%{_mandir} \
 			--infodir=%{_infodir} \
-%if !%{build_java}
-			--disable-libgcj \
-%else
-			--disable-libjava-multilib \
-			--with-java-home=%{_jvmdir}/java-1.5.0-gcj-1.5.0.0/jre \
-			--with-ecj-jar=%{_datadir}/java/eclipse-ecj.jar \
-			--enable-java-awt=gtk \
-			--enable-gtk-cairo \
-%endif
 %if !%{build_cloog}
 			--without-cloog \
 			--without-ppl \
@@ -2949,6 +2691,8 @@ for i in %{long_targets}; do
 			--disable-plugin \
 %else
 			--enable-plugin \
+			--enable-shared \
+			--enable-libcc1 \
 			--enable-lto \
 %endif
 %if !%{build_lto}
@@ -2968,11 +2712,11 @@ for i in %{long_targets}; do
 %if %isarch armv5te
 			--with-arch=armv5te \
 %endif
-%if %isarch armv7l armv7hl armv7hln armv7hnl
+%if %isarch armv7l armv7hl armv7hln armv7hnl armv8l armv8hl armv8hnl
 			--without-multilib \
 			--disable-multilib \
 			--with-mode=thumb \
-%if %isarch armv7l
+%if %isarch armv7l armv8l
 			--with-float=softfp \
 %else
 			--with-float=hard \
@@ -2982,7 +2726,7 @@ for i in %{long_targets}; do
 			--with-fpu=vfpv3-d16 \
 		# should be be armv7hln armv7hnl
 %endif
-%if %isarch armv7hl armv7hln armv7hnl
+%if %isarch armv7hl armv7hln armv7hnl armv8hl armv8hnl
 			--with-fpu=neon \
 			--with-abi=aapcs-linux \
 %endif
@@ -2994,6 +2738,7 @@ for i in %{long_targets}; do
 %if %{with crosscompilers}
 	else
 %if %{with cross_bootstrap}
+		echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
 		../configure \
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
@@ -3001,7 +2746,6 @@ for i in %{long_targets}; do
 			--with-slibdir=%{_prefix}/${i}/lib \
 			--mandir=%{_mandir} \
 			--infodir=%{_infodir} \
-			--disable-libgcj \
 			--without-cloog \
 			--without-ppl \
 			--disable-libffi \
@@ -3032,6 +2776,7 @@ for i in %{long_targets}; do
 			--target=${i} \
 			$EXTRA_FLAGS
 %else
+		echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
 		../configure \
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
@@ -3115,15 +2860,6 @@ for i in %{long_targets}; do
 		popd
 %endif
 
-%if %{with java_build_tar}
-		find libjava -name \*.h -type f | \
-			xargs grep -l '// DO NOT EDIT THIS FILE - it is machine generated' \
-			> libjava-classes.list
-		find libjava -name \*.class -type f >> libjava-classes.list
-		find libjava/testsuite -name \*.jar -type f >> libjava-classes.list
-		tar cf - -T libjava-classes.list | bzip2 -9 \
-			> %{make_rpmlint_happy_sourcedir}/libjava-classes-%{version}-%{release}.tar.bz2
-%endif
 %if %{with crosscompilers}
 	else
 		%make
@@ -3163,25 +2899,12 @@ mkdir -p %{buildroot}%{_libdir}/bfd-plugins
 ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
 %endif
 
-%if %{build_java}
-    %make -C obj-%{gcc_target_platform} \
-        DESTDIR=%{buildroot} \
-        JAR=$PWD/obj-%{gcc_target_platform}/%{gcc_target_platform}/libjava/scripts/jar \
-        -C %{gcc_target_platform}/libjava \
-        install-src.zip
-%endif
-
-# configure python dir option does not cover libstdc++ and needs to remove
-# /usr prefix for libjava
+# configure python dir option does not cover libstdc++
 mkdir -p %{buildroot}%{py_puresitedir}
     if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
         mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/* \
             %{buildroot}%{py_puresitedir}
         rm -fr %{buildroot}%{_datadir}/gcc-%{ver}
-        %if %{build_java}
-        perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
-            %{buildroot}%{_bindir}/aot-compile
-        %endif
     fi
 
 pushd %{buildroot}%{_bindir}
@@ -3199,9 +2922,6 @@ pushd %{buildroot}%{_bindir}
     %endif
     %if %{build_go}
         PROGRAMS="$PROGRAMS gccgo"
-    %endif
-    %if %{build_java}
-        PROGRAMS="$PROGRAMS gcj"
     %endif
     %if %{build_fortran}
         PROGRAMS="$PROGRAMS gfortran"
@@ -3253,11 +2973,6 @@ pushd %{buildroot}%{_bindir}
         ln -srf %{buildroot}%{multirootlibdir}/libstdc++.so.%{stdcxx_major}.*.* \
             %{buildroot}%{multilibdir}/libstdc++.so
     %endif
-%endif
-%if %{build_java}
-    ln -sf gcjh %{gcc_target_platform}-gcjh
-    # For some reason, the .so file is a real file, not a symlink
-    ln -sf libgcj_bc.so.1.0.0 %{buildroot}%{_libdir}/libgcj_bc.so
 %endif
 popd
 
@@ -3430,10 +3145,6 @@ pushd obj-%{gcc_target_platform}
             mkdir -p %{buildroot}%{_docdir}/gcc-go/html
             cp -far go %{buildroot}%{_docdir}/gcc-go/html
         %endif
-        %if %{build_java}
-            mkdir -p %{buildroot}%{_docdir}/gcc-java/html
-            cp -far java %{buildroot}%{_docdir}/gcc-java/html
-        %endif
     popd
     %if %{build_pdf}
     pushd host-%{gcc_target_platform}/gcc/doc
@@ -3459,9 +3170,6 @@ pushd obj-%{gcc_target_platform}
         %if %{build_go}
             install -m 0644 -D gccgo.pdf %{buildroot}%{_docdir}/gcc-go/gccgo.pdf
         %endif
-        %if %{build_java}
-            install -m 0644 -D gcj.pdf %{buildroot}%{_docdir}/gcc-java/gcj.pdf
-        %endif
     popd
     pushd %{gcc_target_platform}
         %if %{build_gomp}
@@ -3469,9 +3177,6 @@ pushd obj-%{gcc_target_platform}
         %endif
         %if %{build_quadmath}
             install -m 0644 -D libquadmath/libquadmath.pdf %{buildroot}%{_docdir}/libquadmath/libquadmath.pdf
-        %endif
-        %if %{build_java}
-            install -m 0644 -D libjava/classpath/doc/cp-tools.pdf %{buildroot}%{_docdir}/libjava/cp-tools.pdf
         %endif
     popd
     %endif
@@ -3487,28 +3192,6 @@ rm -f \
 	%{buildroot}%{_bindir}/c89 \
 	%{buildroot}%{_bindir}/c99 \
 	%{buildroot}%{_bindir}/c++
-%endif
-
-%if %{build_java}
-# Workaround for all gcj related tools
-# somehow getting the same build ID
-strip --strip-unneeded \
-	%{buildroot}%{_bindir}/gc-analyze \
-	%{buildroot}%{_bindir}/gappletviewer \
-	%{buildroot}%{_bindir}/gjar \
-	%{buildroot}%{_bindir}/gij \
-	%{buildroot}%{_bindir}/gjavah \
-	%{buildroot}%{_bindir}/gjarsigner \
-	%{buildroot}%{_bindir}/gkeytool \
-	%{buildroot}%{_bindir}/gorbd \
-	%{buildroot}%{_bindir}/grmic \
-	%{buildroot}%{_bindir}/grmid \
-	%{buildroot}%{_bindir}/gnative2ascii \
-	%{buildroot}%{_bindir}/gserialver \
-	%{buildroot}%{_bindir}/grmiregistry \
-	%{buildroot}%{_bindir}/jv-convert \
-	%{buildroot}%{_bindir}/gtnameserv \
-	%{buildroot}%{_bindir}/gcjh
 %endif
 
 %if %{system_compiler}
