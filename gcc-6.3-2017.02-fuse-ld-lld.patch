@@ -58,30 +58,6 @@
  fuse-linker-plugin
  Common Undocumented Var(flag_use_linker_plugin)
  
---- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/g++.1.omv~	2017-03-15 13:41:27.239567754 +0100
-+++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/g++.1	2017-03-15 13:41:46.408113265 +0100
-@@ -10378,6 +10378,9 @@ Use the \fBbfd\fR linker instead of the
- .IP "\fB\-fuse\-ld=gold\fR" 4
- .IX Item "-fuse-ld=gold"
- Use the \fBgold\fR linker instead of the default linker.
-+.IP "\fB\-fuse\-ld=lld\fR" 4
-+.IX Item "-fuse-ld=lld"
-+Use the \fBlld\fR linker instead of the default linker.
- .IP "\fB\-l\fR\fIlibrary\fR" 4
- .IX Item "-llibrary"
- .PD 0
---- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/gcc.1.omv~	2017-03-15 13:41:52.200975935 +0100
-+++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/gcc.1	2017-03-15 13:42:03.988696515 +0100
-@@ -10378,6 +10378,9 @@ Use the \fBbfd\fR linker instead of the
- .IP "\fB\-fuse\-ld=gold\fR" 4
- .IX Item "-fuse-ld=gold"
- Use the \fBgold\fR linker instead of the default linker.
-+.IP "\fB\-fuse\-ld=lld\fR" 4
-+.IX Item "-fuse-ld=lld"
-+Use the \fBlld\fR linker instead of the default linker.
- .IP "\fB\-l\fR\fIlibrary\fR" 4
- .IX Item "-llibrary"
- .PD 0
 --- gcc-linaro-snapshot-6.3-2017.02/gcc/doc/invoke.texi.omv~	2017-03-15 13:42:10.327546272 +0100
 +++ gcc-linaro-snapshot-6.3-2017.02/gcc/doc/invoke.texi	2017-03-15 13:42:21.278286742 +0100
 @@ -10509,6 +10509,10 @@ Use the @command{bfd} linker instead of

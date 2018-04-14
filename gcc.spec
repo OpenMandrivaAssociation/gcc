@@ -86,8 +86,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			7.3
-%define		ver			%{branch}.0
+%define		branch			8.0
+%define		ver			%{branch}.1
+%define		prerelease		20180408
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -110,7 +111,7 @@
 %define		libstdcxx_devel		%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		gfortran_major		4
+%define		gfortran_major		5
 %define		libgfortran		%mklibname gfortran %{gfortran_major}
 %define		libgfortran_devel	%mklibname gfortran -d
 %define		libgfortran_static_devel %mklibname gfortran -d -s
@@ -135,7 +136,7 @@
 %define		libgnat_devel		%mklibname gnat -d
 %define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		11
+%define		go_major		13
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname go -d
 %define		libgo_static_devel	%mklibname go -d -s
@@ -169,7 +170,7 @@
 %define		libitm_devel		%mklibname itm -d
 %define		libitm_static_devel	%mklibname itm -d -s
 %define		multilibitm		libitm%{itm_major}
-%define		asan_major		4
+%define		asan_major		5
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_devel		%mklibname asan -d
 %define		libasan_static_devel	%mklibname asan -d -s
@@ -183,12 +184,7 @@
 %define		libatomic_devel		%mklibname atomic -d
 %define		libatomic_static_devel	%mklibname atomic -d -s
 %define		multilibatomic		libatomic%{atomic_major}
-%define		cilk_major		5
-%define		libcilkrts		%mklibname cilkrts %{cilk_major}
-%define		libcilkrts_devel	%mklibname cilkrts -d
-%define		libcilkrts_static_devel	%mklibname cilkrts -d -s
-%define		multilibcilkrts		libcilkrts%{cilk_major}
-%define		ubsan_major		0
+%define		ubsan_major		1
 %define		libubsan		%mklibname ubsan %{ubsan_major}
 %define		libubsan_devel		%mklibname ubsan -d
 %define		libubsan_static_devel	%mklibname ubsan -d -s
@@ -241,7 +237,6 @@
 %endif
 %endif
 %if %isarch %{ix86} x86_64
-  %define	build_cilkrts		%{system_compiler}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # system_compiler && build_cxx
@@ -295,7 +290,6 @@
 %define		build_asan		0
 %define		build_atomic		0
 %define		build_check		0
-%define		build_cilkrts		0
 %define		build_go		0
 %define		build_lto		0
 %define		build_lsan		0
@@ -332,28 +326,42 @@ Name:		gcc
 %else
 Name:		gcc%{package_suffix}
 %endif
-Release:	3
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
+Release:	1
 %if "%{linaro_spin}" != ""
 Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
+%define srcname gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
 %else
 Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
+%define srcname gcc-linaro-%{branch}-%{linaro}
 %endif
 %else
+%if "%{prerelease}" != ""
 Version:	%{ver}
+Release:	0.%{prerelease}.1
+%global major %(echo %{ver} |cut -d. -f1)
+Source0:	http://gcc.parentingamerica.com/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
+Source1:	http://gcc.parentingamerica.com/snapshots/%{major}-%{prerelease}/sha512.sum
+%define srcname gcc-%{major}-%{prerelease}
+%else
+Version:	%{ver}
+Release:	1
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
 Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://gcc.parentingamerica.com/releases/gcc-%{version}/sha512.sum
+%define srcname gcc-%{version}
 %else
   # http://gcc.gnu.org/mirrors.html
   # <<mirror>>/snapshots/@{branch}@{snapshot}/
 Source0:	gcc-%{branch}%{snapshot}.tar.bz2
 Source1:	md5.sum
+%define srcname gcc-%{branch}%{snapshot}
+%endif
 %endif
 %endif
 Source4:	c89
@@ -547,6 +555,9 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %dir %{gcclibexecdir}
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
+%{gcclibexecdir}/buildid
+%{gcclibexecdir}/test2json
+%{gcclibexecdir}/vet
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
 %{gccdir}/libgcov.a
@@ -2216,77 +2227,6 @@ Static libatomic.
 %endif
 
 ########################################################################
-# Intel CILK
-########################################################################
-%if %isarch %{ix86} x86_64
-%if %{build_cilkrts}
-%package -n %{libcilkrts}
-Summary:	CILK (multithreading programming language) runtime
-Group:		Development/C
-
-%description -n %{libcilkrts}
-CILK (multithreading programming language) runtime.
-
-%files -n %{libcilkrts}
-%{target_libdir}/libcilkrts.so.%{cilk_major}*
-
-#-----------------------------------------------------------------------
-
-%if %{build_multilib}
-%package -n %{multilibcilkrts}
-Summary:	CILK (multithreading programming language) runtime
-Group:		Development/C
-
-%description -n %{multilibcilkrts}
-CILK (multithreading programming language) runtime.
-
-%files -n %{multilibcilkrts}
-%{multilibdir}/libcilkrts.so.%{cilk_major}*
-%endif
-
-#-----------------------------------------------------------------------
-
-%package -n %{libcilkrts_devel}
-Summary:	Development files for the CILK multithreading programming language
-Group:		Development/C
-Requires:	%{libcilkrts} = %{EVRD}
-%if %{build_multilib}
-Requires:	%{multilibcilkrts} = %{EVRD}
-%endif
-Provides:	libcilkrts-devel = %{EVRD}
-Provides:	cilkrts-devel = %{EVRD}
-
-%description -n %{libcilkrts_devel}
-Development files for the CILK multithreading programming language.
-
-%files -n %{libcilkrts_devel}
-%{target_libdir}/libcilkrts.so
-%{target_libdir}/libcilkrts.spec
-%if %{build_multilib}
-%{multilibdir}/libcilkrts.so
-%{multilibdir}/libcilkrts.spec
-%endif
-%{gccdir}/include/cilk
-
-#-----------------------------------------------------------------------
-
-%package -n %{libcilkrts_static_devel}
-Summary:	Static libcilkrts
-Group:		Development/C
-Requires:	%{libcilkrts_devel} = %{EVRD}
-
-%description -n %{libcilkrts_static_devel}
-Static libcilkrts.
-
-%files -n %{libcilkrts_static_devel}
-%{target_libdir}/libcilkrts.a
-%if %{build_multilib}
-%{multilibdir}/libcilkrts.a
-%endif
-%endif
-%endif
-
-########################################################################
 # VTV (VTable Verification)
 ########################################################################
 %if 0
@@ -2458,6 +2398,7 @@ to use Leak Sanitizer features.
 
 %files -n %{liblsan_devel}
 %{target_libdir}/liblsan.so
+%{_libdir}/liblsan_preinit.o
 
 #-----------------------------------------------------------------------
 
@@ -2476,19 +2417,7 @@ Static liblsan.
 
 ########################################################################
 %prep
-%if "%{linaro}" != ""
-%if "%{linaro_spin}" != ""
-%setup -q -n gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
-%else
-%setup -q -n gcc-linaro-snapshot-%{branch}-%{linaro}
-%endif
-%else
-%if %{official}
-%setup -q -n gcc-%{version}%{snapshot}
-%else
-%setup -q -n gcc-%{branch}%{snapshot}
-%endif
-%endif
+%setup -q -n %{srcname}
 
 %patch0 -p1 -b .uclibc~
 #patch2 -p1 -b .aarch64~
