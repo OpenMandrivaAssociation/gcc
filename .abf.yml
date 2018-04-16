@@ -1,4 +1,4 @@
 sources:
   gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47
   libc-x32-seed.tar.xz: 3b11f56265c94b18c93d0df07d926cb9e73d8858
-  gcc-8-20180408.tar.xz: 16e207dd8d9513fd63f1da7ce8623ef533aaefce
+  gcc-8-20180415.tar.xz: 1ef50c49b5c6cd6095513b72257352db38a408d6

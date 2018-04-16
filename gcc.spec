@@ -88,7 +88,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			8.0
 %define		ver			%{branch}.1
-%define		prerelease		20180408
+%define		prerelease		20180415
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -344,8 +344,8 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 Version:	%{ver}
 Release:	0.%{prerelease}.1
 %global major %(echo %{ver} |cut -d. -f1)
-Source0:	http://gcc.parentingamerica.com/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
-Source1:	http://gcc.parentingamerica.com/snapshots/%{major}-%{prerelease}/sha512.sum
+Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %define srcname gcc-%{major}-%{prerelease}
 %else
 Version:	%{ver}
