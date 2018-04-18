@@ -342,7 +342,7 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 %else
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%{prerelease}.1
+Release:	0.%{prerelease}.2
 %global major %(echo %{ver} |cut -d. -f1)
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
@@ -2418,7 +2418,6 @@ Static liblsan.
 ########################################################################
 %prep
 %setup -q -n %{srcname}
-
 %patch0 -p1 -b .uclibc~
 #patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
@@ -2643,7 +2642,7 @@ for i in %{long_targets}; do
 %if %isarch armv5te
 			--with-arch=armv5te \
 %endif
-%if %isarch armv7l armv7hl armv7hln armv7hnl armv8l armv8hl armv8hnl
+%if %isarch armv7l armv7hl armv7hln armv7hnl armv8l armv8hl armv8hnl armv8hcnl
 			--without-multilib \
 			--disable-multilib \
 			--with-mode=thumb \
@@ -2657,7 +2656,7 @@ for i in %{long_targets}; do
 			--with-fpu=vfpv3-d16 \
 		# should be be armv7hln armv7hnl
 %endif
-%if %isarch armv7hl armv7hln armv7hnl armv8hl armv8hnl
+%if %isarch armv7hl armv7hln armv7hnl armv8hl armv8hnl armv8hcnl
 			--with-fpu=neon \
 			--with-abi=aapcs-linux \
 %endif
@@ -2668,6 +2667,18 @@ for i in %{long_targets}; do
 			$EXTRA_FLAGS
 %if %{with crosscompilers}
 	else
+		if echo $i |grep -q '^arm'; then
+			if echo $i |grep -q h; then
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-float=softfp --with-abi=aapcs-linux"
+			else
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-float=hard --with-abi=aapcs-linux"
+			fi
+			if echo $i |grep -q n; then
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-fpu=neon"
+			else
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-fpu=vfpv3"
+			fi
+		fi
 %if %{with cross_bootstrap}
 		echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
 		../configure \
@@ -3169,19 +3180,23 @@ done
 %(
 for i in %{long_targets}; do
 	[ "$i" = "%{_target_platform}" ] && continue
-%if %{with cross_bootstrap}
-	package=cross-${i}-gcc-bootstrap
-%else
-	package=cross-${i}-gcc
-%endif
+	if [ "%{with cross_bootstrap}" = "1" ]; then
+		package=cross-${i}-gcc-bootstrap
+	else
+		package=cross-${i}-gcc
+	fi
 	cat <<EOF
 %package -n ${package}
-%if ! %{with cross_bootstrap}
+EOF
+	if [ "%{with cross_bootstrap}" != "1" ]; then
+		cat <<EOF
 # Full compiler can also be used for bootstrapping...
 %rename cross-${i}-gcc-bootstrap
 BuildRequires: cross-${i}-libc
 Recommends: cross-${i}-libc
-%endif
+EOF
+	fi
+	cat <<EOF
 Summary: Gcc for crosscompiling to ${i}
 Group: Development/Other
 BuildRequires: cross-${i}-binutils
@@ -3195,11 +3210,13 @@ Gcc for crosscompiling to ${i}
 %{_mandir}/man?/${i}-*
 %{_libdir}/gcc/${i}
 %{_libexecdir}/gcc/${i}
-%if ! %{with cross_bootstrap}
+EOF
+	if [ "%{with cross_bootstrap}" != "1" ]; then
+		cat <<EOF
 %{_prefix}/${i}/include/*
 %{_prefix}/${i}/lib*/*
-%endif
 EOF
+	fi
 
 	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
 		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
