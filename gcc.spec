@@ -342,7 +342,7 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 %else
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%{prerelease}.2
+Release:	0.%{prerelease}.3
 %global major %(echo %{ver} |cut -d. -f1)
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
@@ -2669,9 +2669,9 @@ for i in %{long_targets}; do
 	else
 		if echo $i |grep -q '^arm'; then
 			if echo $i |grep -q h; then
-				EXTRA_FLAGS="$EXTRA_FLAGS --with-float=softfp --with-abi=aapcs-linux"
-			else
 				EXTRA_FLAGS="$EXTRA_FLAGS --with-float=hard --with-abi=aapcs-linux"
+			else
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-float=softfp --with-abi=aapcs-linux"
 			fi
 			if echo $i |grep -q n; then
 				EXTRA_FLAGS="$EXTRA_FLAGS --with-fpu=neon"
