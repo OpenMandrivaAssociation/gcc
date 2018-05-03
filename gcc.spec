@@ -86,9 +86,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			8.0
-%define		ver			%{branch}.1
-%define		prerelease		20180415
+%define		branch			8.1
+%define		ver			%{branch}.0
+%define		prerelease		%{nil}
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -352,8 +352,8 @@ Version:	%{ver}
 Release:	1
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
-Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.xz
-Source1:	http://gcc.parentingamerica.com/releases/gcc-%{version}/sha512.sum
+Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
 %else
   # http://gcc.gnu.org/mirrors.html
