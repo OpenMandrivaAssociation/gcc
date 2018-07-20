@@ -31,18 +31,9 @@
 #-----------------------------------------------------------------------
 
 %define nof_arches		noarch
-%define lsb_arches		i386 x86_64
-%define biarches		x86_64 mips64 mips64el mips mipsel
+%define biarches		%{x86_64} mips64 mips64el mips mipsel
 
-%define		system_compiler		1
-
-%define		official		1
-%if %{official}
-  %define	snapshot		%{nil}
-%else
-  %define	snapshot		-20120413
-%endif
-
+%define	system_compiler		1
 %define majorver %(echo %{version} |cut -d. -f1)
 
 %if %{system_compiler}
@@ -71,8 +62,8 @@
 %define target_slibdir32	/lib
 %define isarch()		%(case " %* " in (*" %{arch} "*) echo 1;; (*) echo 0;; esac)
 
-%if %isarch x86_64
-%define multilib_32_arch	i586
+%if %isarch %{x86_64}
+%define multilib_32_arch	i686
 %endif
 %if %isarch mips64
 %define	multilib_32_arch	mips
@@ -86,9 +77,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			8.1
+%define		branch			8.2
 %define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		prerelease		RC-20180719
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -212,7 +203,7 @@
 %define		build_quadmath		0
 %define		build_ssp		0
 %define		build_ubsan		%{system_compiler}
-%if %isarch %{ix86} x86_64 %{arm}
+%if %isarch %{ix86} %{x86_64} %{arm}
 %define		build_itm		1
 %else
 # aarch64 libitm support not implemented yet
@@ -228,29 +219,29 @@
 %define		build_libgcc		%{system_compiler}
 %define		build_pdf		%{build_doc}
 %define		build_plugin		%{system_compiler}
-%if %isarch x86_64 %{armx}
+%if %isarch %{x86_64} %{armx}
   %define	build_tsan		%{system_compiler}
   %define	build_lsan		%{system_compiler}
 
-%if %isarch x86_64
+%if %isarch %{x86_64}
   %define	build_multilib		%{system_compiler}
 %endif
 %endif
-%if %isarch %{ix86} x86_64
+%if %isarch %{ix86} %{x86_64}
   %define	build_quadmath		%{system_compiler}
   %define	build_doc		1
 # system_compiler && build_cxx
   %define	build_go		%{system_compiler}
   %define	build_vtv		%{system_compiler}
 %endif
-%if %isarch %{ix86} x86_64
+%if %isarch %{ix86} %{x86_64}
   %define	build_ada		%{system_compiler}
 %endif
-%if %isarch %{ix86} x86_64 %{armx}
+%if %isarch %{ix86} %{x86_64} %{armx}
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
   %define	build_go		%{system_compiler}
-%if %isarch %{ix86} x86_64 %{arm}
+%if %isarch %{ix86} %{x86_64} %{arm}
   %define	build_asan		%{system_compiler}
 %else
   %define	build_asan		0
@@ -342,26 +333,18 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 %else
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%{prerelease}.3
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
-Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/gcc-%{major}-%{prerelease}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
-%define srcname gcc-%{major}-%{prerelease}
+Source0:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/gcc-%{version}-%{prerelease}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.sum
+%define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
 Release:	1
-%if %{official}
-  #http://www.gnu.org/prep/ftp.html ...
+# http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
-%else
-  # http://gcc.gnu.org/mirrors.html
-  # <<mirror>>/snapshots/@{branch}@{snapshot}/
-Source0:	gcc-%{branch}%{snapshot}.tar.bz2
-Source1:	md5.sum
-%define srcname gcc-%{branch}%{snapshot}
-%endif
 %endif
 %endif
 Source4:	c89
@@ -536,7 +519,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-%ifarch x86_64
+%ifarch %{x86_64}
 %if ! %{with cross_bootstrap}
 # 3-fold multilib...
 %{_prefix}/libx32/libgcc_s.so
@@ -670,7 +653,7 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 %files -n %{multilibgcc}
 %{multirootlibdir}/libgcc_s.so.%{gcc_major}
 
-%ifarch x86_64
+%ifarch %{x86_64}
 %package -n %{libx32gcc}
 Summary:	GNU C library
 Group:		System/Libraries
@@ -1517,7 +1500,7 @@ to compile FFI support.
 
 ########################################################################
 #-----------------------------------------------------------------------
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} %{x86_64}
 %package -n %{libmpx}
 Summary:	GCC support library for MPX
 Group:		System/Libraries
@@ -2113,7 +2096,7 @@ Static libasan.
 #-----------------------------------------------------------------------
 # Thread Sanitizer
 #-----------------------------------------------------------------------
-%if %isarch x86_64 aarch64
+%if %isarch %{x86_64} aarch64
 %if %{build_tsan}
 %package -n %{libtsan}
 Summary:	GCC Thread Sanitizer library
@@ -2370,7 +2353,7 @@ Static libubsan.
 ########################################################################
 # LSan (Leak Sanitizer)
 ########################################################################
-%if %isarch x86_64 aarch64
+%if %isarch %{x86_64} aarch64
 %if %{build_lsan}
 %package -n %{liblsan}
 Summary:	Leak Sanitizer library
@@ -2459,8 +2442,8 @@ aclocal -I config
 autoconf
 
 echo %{vendor} > gcc/DEV-PHASE
-%if !%{official}
-    sed -i -e 's/4\.8\..*/%{version}/' gcc/BASE-VER
+%if "%{snapshot}" != ""
+echo %{version} > gcc/BASE-VER
 %endif
 
 %if %{?x32_bootstrap}0
@@ -2514,12 +2497,13 @@ LIBC_FLAGS="$LIBC_FLAGS --disable-shared --enable-static"
 %endif
 # target specific flags (don't %ifarch for cross compilers)
 case %{target_cpu} in
-x86_64)		TARGET_FLAGS="--with-cpu=generic %{?build_multilib:--with-arch_32=i586 --with-multilib-list=m32,m64}%{?x32_bootstrap:,mx32}";;
-i?86|athlon)	TARGET_FLAGS="--with-arch=i586 --with-cpu=generic";;
+x86_64)		TARGET_FLAGS="--with-cpu=generic %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64}%{?x32_bootstrap:,mx32}";;
+znver1)		TARGET_FLAGS="--with-cpu=znver1 %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64}%{?x32_bootstrap:,mx32}";;
+i?86|athlon)	TARGET_FLAGS="--with-arch=i686 --with-cpu=generic";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64 --enable-targets=all";;
 mips32|mips32el) TARGET_FLAGS="--enable-long-long --with-abi=n32 --enable-targets=all";;
 mips|mipsel) TARGET_FLAGS="--enable-long-long --enable-targets=all --enable-multiarch";;
-armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a9 ";;
+armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a15 ";;
 esac
 
 # Configure for building some key crosscompilers
@@ -2533,7 +2517,7 @@ for i in %{long_targets}; do
 		EXTRA_FLAGS="--with-abi=mx32 --with-multilib-list=mx32"
 		export CFLAGS_FOR_TARGET="-mx32"
 		export CXXFLAGS_FOR_TARGET="-mx32"
-	elif echo ${i} |grep -q x86_64; then
+	elif echo ${i} |grep -qE '(x86_64|znver1)'; then
 		# FIXME add mx32 once X32 is bootstrapped far enough
 		EXTRA_FLAGS="--with-multilib-list=m64,m32"
 	fi
@@ -2541,11 +2525,11 @@ for i in %{long_targets}; do
 		# gcc sanitizers currently aren't compatible with musl
 		# (too many hardcoded assumptions that match glibc/bionic behavior)
 		EXTRA_FLAGS="$EXTRA_FLAGS --disable-libsanitizer"
-		if echo ${i} |grep -qE '(i.86|x86_64)'; then
+		if echo ${i} |grep -qE '(i.86|x86_64|znver1)'; then
 			# Incomplete struct _libc_fpstate on x86 musl
 			# ../../../../libmpx/mpxrt/mpxrt.h:52:42: error: invalid application of ‘sizeof’ to incomplete type ‘struct _libc_fpstate’
 			EXTRA_FLAGS="$EXTRA_FLAGS --disable-libmpx"
-			if echo ${i} |grep x86_64; then
+			if echo ${i} |grep -E '(x86_64|znver1)'; then
 				# No multilib support in crosscompilers
 				EXTRA_FLAGS="$EXTRA_FLAGS --with-multilib-list=m64 --without-multilib --disable-multilib"
 			fi
@@ -2767,7 +2751,7 @@ case " $OPT_FLAGS " in
 esac
 
 BOOTSTRAP=bootstrap
-%if %isarch %{ix86} x86_64
+%if %isarch %{ix86} %{x86_64}
     %if %{system_compiler}
         BOOSTRAP=profiledbootstrap
     %endif
@@ -2949,7 +2933,7 @@ popd
             %{buildroot}%{multilibdir}/libgcc_s.so
 
 %if ! %{with cross_bootstrap}
-        %ifarch x86_64
+        %ifarch %{x86_64}
             mkdir -p %{buildroot}/libx32
             mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
                 %{buildroot}/libx32/
@@ -2995,7 +2979,7 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libgcc_s.so
 %if ! %{with cross_bootstrap}
-        %ifarch x86_64
+        %ifarch %{x86_64}
             rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
         %endif
 %endif
@@ -3005,7 +2989,7 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
          %if %{build_multilib}
              rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
 %if ! %{with cross_bootstrap}
-             %ifarch x86_64
+             %ifarch %{x86_64}
                  rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
              %endif
 %endif
