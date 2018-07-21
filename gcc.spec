@@ -4,7 +4,7 @@
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
 %else
 # (tpg) set cross targets here for cooker
-%global targets aarch64-linux armv7hl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android
+%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android
 %endif
 %global long_targets %(
         for i in %{targets}; do
@@ -373,7 +373,7 @@ Patch9:		gcc-4.7-androidcompat.patch
 Patch10:	gcc-4.7.3-texinfo-5.0.patch
 # Fix build failure
 Patch11:	gcc-4.8-istream-ignore.patch
-# Seems to be still required on armv7hl
+# Seems to be still required on armv7hnl
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
