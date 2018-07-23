@@ -1193,7 +1193,7 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgo_devel} = %{EVRD}
-BuildRequires:	gcc-go go
+BuildRequires:	gcc-go
 
 %description go
 The gcc-go package provides support for compiling Go programs
