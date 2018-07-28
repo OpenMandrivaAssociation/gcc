@@ -79,7 +79,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			8.2
 %define		ver			%{branch}.0
-%define		prerelease		RC-20180719
+%define		prerelease		%{nil}
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
