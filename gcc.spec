@@ -340,7 +340,7 @@ Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.
 %define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
-Release:	1
+Release:	2
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -2521,6 +2521,8 @@ for i in %{long_targets}; do
 	elif echo ${i} |grep -qE '(x86_64|znver1)'; then
 		# FIXME add mx32 once X32 is bootstrapped far enough
 		EXTRA_FLAGS="--with-multilib-list=m64,m32"
+		export CFLAGS_FOR_TARGET="-m64"
+		export CXXFLAGS_FOR_TARGET="-m64"
 	fi
 	if echo ${i} |grep -q musl; then
 		# gcc sanitizers currently aren't compatible with musl
