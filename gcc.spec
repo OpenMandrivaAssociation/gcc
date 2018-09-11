@@ -97,6 +97,8 @@
 %define		libgcc			%mklibname gcc %{gcc_major}
 %define		multilibgcc		libgcc%{gcc_major}
 %define		libx32gcc		libx32gcc%{gcc_major}
+%define		libgcc_devel		%mklibname gcc -d
+%define		libgcc_static_devel	%mklibname gcc -d -s
 %define		stdcxx_major		6
 %define		libstdcxx		%mklibname stdc++ %{stdcxx_major}
 %define		libstdcxx_devel		%mklibname stdc++ -d
@@ -262,20 +264,6 @@
 
 %define		build_minimal		0
 
-# (proyvind): TODO
-# This is a cheap knockoff of the former monolithic build, hastily thrown
-# together to get non-bootstrap cross build without unnecessary complexity
-# of package libification etc.
-# Returning it to it's former state will require rearranging the spec layout
-# with all %%files sections collected together at the end, reverting back to
-# what earlier was before pcpa cleaned it out (at a time of cross build being
-# broken, thus build support for removed).
-# Unless any loud objections from pcpa or anyone else, I intend to do so
-# eventually, this would not only improve and make the cross compiler support
-# easier to maintain, but also easier to maintain package in general as it
-# would make it easier to share efforts with Mageia.
-%define		build_monolithic	0
-
 %if %{build_minimal}
 %define		build_ada		0
 %define		build_asan		0
@@ -404,6 +392,8 @@ Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
 
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
 
+Patch21:	gcc-8.2.0-isl-0.20.patch
+
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
 Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
@@ -463,6 +453,7 @@ BuildRequires:	pkgconfig(isl)
 %if %{system_compiler}
 Requires:	%{name}-cpp >= %{EVRD}
 Requires:	%{libgcc} >= %{EVRD}
+Requires:	%{libgcc_devel} >= %{EVRD}
 Requires:	%{libgomp} >= %{EVRD}
 Requires:	%{libcc1} >= %{EVRD}
 # as gcc now has it's own output color support, let's obsolete the old
@@ -516,20 +507,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
-%{target_libdir}/libgcc_s.so
-%if %{build_multilib}
-%{multilibdir}/libgcc_s.so
-%ifarch %{x86_64}
-%if ! %{with cross_bootstrap}
-# 3-fold multilib...
-%{_prefix}/libx32/libgcc_s.so
-%endif
-%endif
-%endif
-%if %isarch mips mipsel
-%{target_libdir}32/libgcc_s.so
-%{target_libdir}64/libgcc_s.so
-%endif
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdirparent}
@@ -538,8 +515,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %dir %{gcclibexecdir}
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
-%{gccdir}/*.o
-%{gccdir}/libgcc*.a
 %{gccdir}/libgcov.a
 %{gcclibexecdir}/lto*
 %if %{build_lto}
@@ -555,23 +530,17 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_quadmath}
 %exclude %{gccdir}/include/quadmath*.h
 %endif
-%if %{build_gomp} && !%{build_monolithic}
+%if %{build_gomp}
 %exclude %{gccdir}/include/omp*.h
 %endif
 %if %{build_multilib}
 %if %isarch mips mipsel
 %dir %{multigccdirn32}
-%{multigccdirn32}/*.o
-%{multigccdirn32}/libgcc*.a
 %{multigccdirn32}/libgcov.a
 %dir %{multigccdir64}
-%{multigccdir64}/*.o
-%{multigccdir64}/libgcc*.a
 %{multigccdir64}/libgcov.a
 %else
 %dir %{multigccdir}
-%{multigccdir}/*.o
-%{multigccdir}/libgcc*.a
 %{multigccdir}/libgcov.a
 %endif
 %endif
@@ -581,46 +550,10 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %if %{build_check}
 %doc %{_docdir}/gcc/test_summary.log
 %endif
-%if %{build_monolithic}
-%if %{build_atomic}
-%{target_libdir}/libatomic.a
-%{target_libdir}/libatomic.so
-%{target_libdir}/libatomic.so.%{atomic_major}*
-%endif
-%if %{build_gomp}
-%{target_libdir}/libgomp.a
-%{target_libdir}/libgomp.so
-%{target_libdir}/libgomp.so.%{gomp_major}*
-%{target_libdir}/libgomp.spec
-%endif
-%if %{build_libgcc}
-%{target_libdir}/libgcc_s.so
-%{target_libdir}/libgcc_s.so.%{gcc_major}
-%endif
-%if %{build_ssp}
-%dir %{gccdir}/include/ssp
-%{gccdir}/include/ssp/*.h
-%{target_libdir}/libssp.so.%{ssp_major}*
-%{target_libdir}/libssp.so
-%{target_libdir}/libssp.a
-%{target_libdir}/libssp_nonshared.a
-%endif
-%if %{build_asan} || %{build_lsan}
-%dir %{gccdir}/include/sanitizer/
-%{gccdir}/include/sanitizer/common_interface_defs.h
-%if %{build_asan}
-%{gccdir}/include/sanitizer/asan_interface.h
-%endif
-%if %{build_lsan}
-%{gccdir}/include/sanitizer/lsan_interface.h
-%endif
-%endif
-%endif
-
 
 
 ########################################################################
-%if %{build_libgcc} && !%{build_monolithic}
+%if %{build_libgcc}
 #-----------------------------------------------------------------------
 
 %package -n %{libgcc}
@@ -635,6 +568,49 @@ The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{libgcc}
 /%{_lib}/libgcc_s.so.%{gcc_major}
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgcc_devel}
+Summary:	Development files for libgcc
+Group:		System/Libraries
+Requires:	%{libgcc} = %{EVRD}
+
+%description -n %{libgcc_devel}
+The %{libgcc} package contains header files and object files needed to
+build applications with libgcc.
+
+%files -n %{libgcc_devel}
+%{target_libdir}/libgcc_s.so
+%if %{build_multilib}
+%{multilibdir}/libgcc_s.so
+%ifarch %{x86_64}
+%if ! %{with cross_bootstrap}
+# 3-fold multilib...
+%{_prefix}/libx32/libgcc_s.so
+%endif
+%endif
+%endif
+%if %isarch mips mipsel
+%{target_libdir}32/libgcc_s.so
+%{target_libdir}64/libgcc_s.so
+%endif
+%{gccdir}/*.o
+%{gccdir}/libgcc*.a
+%if %{build_multilib}
+%ifarch mips mipsel
+%dir %{multigccdirn32}
+%{multigccdirn32}/*.o
+%{multigccdirn32}/libgcc*.a
+%dir %{multigccdir64}
+%{multigccdir64}/*.o
+%{multigccdir64}/libgcc*.a
+%else
+%dir %{multigccdir}
+%{multigccdir}/*.o
+%{multigccdir}/libgcc*.a
+%endif
+%endif
 
 #-----------------------------------------------------------------------
 
@@ -787,32 +763,6 @@ including templates and exception handling.
 	fi
 )
 %{gcclibexecdir}/cc1plus
-%if %{build_monolithic}
-%{target_slibdir}/libstdc++.a
-%{target_slibdir}/libstdc++fs.a
-%{target_slibdir}/libstdc++.so
-%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
-%{target_slibdir}/libsupc++.a
-%{target_prefix}/include/c++/%{ver}
-%if %{build_itm}
-%{target_libdir}/libitm.so.%{itm_major}*
-%{target_libdir}/libitm.so
-%{target_libdir}/libitm.spec
-%{target_libdir}/libitm.a
-%endif
-%if %{build_asan}
-%{target_libdir}/libasan.so.%{asan_major}*
-%{target_libdir}/libasan.so
-%{target_libdir}/libasan_preinit.o
-%{target_libdir}/libasan.a
-%endif
-%if %{build_ubsan}
-%{target_libdir}/libubsan.so.%{ubsan_major}*
-%{target_libdir}/libubsan.so
-%{target_libdir}/libsanitizer.spec
-%{target_libdir}/libubsan.a
-%endif
-%else
 
 #-----------------------------------------------------------------------
 
@@ -922,11 +872,6 @@ Static libraries for the GNU standard C++ library.
 %{multilibdir}/libstdc++fs.*a
 %{multilibdir}/libsupc++.*a
 %endif
-
-%endif
-#-----------------------------------------------------------------------
-# build_monolithic
-
 
 #-----------------------------------------------------------------------
 # build_cxx
@@ -1778,7 +1723,7 @@ Static library containing the gcc parser
 
 #-----------------------------------------------------------------------
 ########################################################################
-%if %{build_gomp} && !%{build_monolithic}
+%if %{build_gomp}
 #-----------------------------------------------------------------------
 
 %package -n %{libgomp}
@@ -1864,7 +1809,7 @@ to compile OpenMP v3.0 support.
 %endif
 
 ########################################################################
-%if %{build_ssp} && !%{build_monolithic}
+%if %{build_ssp}
 #-----------------------------------------------------------------------
 
 %package -n %{libssp}
@@ -1944,7 +1889,7 @@ to compile SSP support.
 %endif
 
 ########################################################################
-%if %{build_itm} && !%{build_monolithic}
+%if %{build_itm}
 #-----------------------------------------------------------------------
 
 %package -n %{libitm}
@@ -2024,7 +1969,7 @@ to compile Transactional Memory support.
 # build itm
 %endif
 
-%if %{build_asan} && !%{build_monolithic}
+%if %{build_asan}
 #-----------------------------------------------------------------------
 # Address Sanitizer
 #-----------------------------------------------------------------------
@@ -2145,7 +2090,7 @@ Static libtsan.
 #-----------------------------------------------------------------------
 # Atomic operations
 #-----------------------------------------------------------------------
-%if %{build_atomic} && !%{build_monolithic}
+%if %{build_atomic}
 %package -n %{libatomic}
 Summary:	GCC Atomic operations library
 Group:		Development/C
@@ -2283,7 +2228,7 @@ Static libvtv
 ########################################################################
 # UBSan (Undefined Behavior Sanitizer)
 ########################################################################
-%if %{build_ubsan} && !%{build_monolithic}
+%if %{build_ubsan}
 %package -n %{libubsan}
 Summary:	Undefined Behavior Sanitizer library
 Group:		Development/C
@@ -2424,6 +2369,7 @@ Static liblsan.
 %patch18 -p1 -b .musl1~
 %patch19 -p1 -b .lld~
 %patch20 -p1 -b .musllibgcc~
+%patch21 -p1 -b .isl020~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
