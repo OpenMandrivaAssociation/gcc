@@ -340,7 +340,7 @@ Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.
 %define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
-Release:	2
+Release:	3
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -538,9 +538,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %dir %{gcclibexecdir}
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
-%{gcclibexecdir}/buildid
-%{gcclibexecdir}/test2json
-%{gcclibexecdir}/vet
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
 %{gccdir}/libgcov.a
@@ -1222,6 +1219,9 @@ with the GNU Compiler Collection.
 %{_bindir}/gccgo-%{ver}
 %{_bindir}/%{gcc_target_platform}-gccgo-%{ver}
 %{gcclibexecdir}/go1
+%{gcclibexecdir}/buildid
+%{gcclibexecdir}/test2json
+%{gcclibexecdir}/vet
 %{_libdir}/go/%{ver}
 %{_libdir}/libgobegin.a
 %{_libdir}/libgolibbegin.a
