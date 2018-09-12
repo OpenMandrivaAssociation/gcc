@@ -2467,8 +2467,12 @@ for i in %{long_targets}; do
 	elif echo ${i} |grep -qE '(x86_64|znver1)'; then
 		# FIXME add mx32 once X32 is bootstrapped far enough
 		EXTRA_FLAGS="--with-multilib-list=m64,m32"
-		export CFLAGS_FOR_TARGET="-m64"
-		export CXXFLAGS_FOR_TARGET="-m64"
+		if [ "%{gcc_target_platform}" != "$i" ]; then
+			# We need to force 64-bit mode for crosscompilers,
+			# but not native compilers, for some reason.
+			export CFLAGS_FOR_TARGET="-m64"
+			export CXXFLAGS_FOR_TARGET="-m64"
+		fi
 	fi
 	if echo ${i} |grep -q musl; then
 		# gcc sanitizers currently aren't compatible with musl
@@ -2762,11 +2766,11 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 # Install crosscompilers first so the native compiler can overwrite stuff
 for i in %{long_targets}; do
 	[ "%{gcc_target_platform}" = "$i" ] && continue
-	%makeinstall_std -C obj-${i}
+	%make_install -C obj-${i}
 done
 %endif
 # Native compiler
-%makeinstall_std -C obj-%{gcc_target_platform}
+%make_install -C obj-%{gcc_target_platform}
 
 %if %{build_lto}
 # Put the LTO plugin where ld can see it...
