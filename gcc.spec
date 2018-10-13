@@ -16,9 +16,6 @@
 %bcond_without crosscompilers
 %bcond_without cross_bootstrap
 
-# (tpg) optimize it a bit
-%global optflags %{optflags} -O3
-
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
 %define		Werror_cflags			%{nil}
@@ -31,6 +28,8 @@
 %define		_disable_libtoolize		1
 %define		_disable_lto			1
 
+# (tpg) optimize it a bit
+%global optflags %{optflags} -O3
 #-----------------------------------------------------------------------
 
 %define nof_arches		noarch
