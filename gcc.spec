@@ -16,6 +16,9 @@
 %bcond_without crosscompilers
 %bcond_without cross_bootstrap
 
+# (tpg) optimize it a bit
+%global optflags %{optflags} -O3
+
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
 %define		Werror_cflags			%{nil}
@@ -328,7 +331,7 @@ Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.
 %define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
-Release:	3
+Release:	4
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
