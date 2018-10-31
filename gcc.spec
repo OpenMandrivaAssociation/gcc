@@ -312,7 +312,7 @@ Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{linaro}" != ""
 Version:	%{ver}_%{linaro}
-Release:	1
+Release:	2
 %if "%{linaro_spin}" != ""
 Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
 %define srcname gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
@@ -330,7 +330,7 @@ Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.
 %define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
-Release:	4
+Release:	5
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
