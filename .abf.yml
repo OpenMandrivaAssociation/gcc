@@ -1,4 +1,6 @@
+removed_sources:
+  gcc-7.3.0.tar.xz: 9689b9cae7b2886fdaa08449a26701f095c04e48
 sources:
+  gcc-7.4.0.tar.xz: bf09553cfa08ae6e29dfbbd541e5c69c3cbc6c66
   gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47
   libc-x32-seed.tar.xz: 3b11f56265c94b18c93d0df07d926cb9e73d8858
-  gcc-7.3.0.tar.xz: 9689b9cae7b2886fdaa08449a26701f095c04e48

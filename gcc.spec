@@ -88,7 +88,7 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			7.3
+%define		branch			7.4
 %define		ver			%{branch}.0
 %define		linaro			%{nil}
 %define		linaro_spin		%{nil}
@@ -371,8 +371,8 @@ Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%
 Version:	%{ver}
 %if %{official}
   #http://www.gnu.org/prep/ftp.html ...
-Source0:	http://gcc.parentingamerica.com/releases/gcc-%{version}/gcc-%{version}.tar.xz
-Source1:	http://gcc.parentingamerica.com/releases/gcc-%{version}/sha512.sum
+Source0:	http://mirrors-usa.go-parts.com/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
+Source1:	http://mirrors-usa.go-parts.com/gcc/releases/gcc-%{version}/sha512.sum
 %else
   # http://gcc.gnu.org/mirrors.html
   # <<mirror>>/snapshots/@{branch}@{snapshot}/
