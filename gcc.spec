@@ -330,7 +330,7 @@ Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.
 %define srcname gcc-%{version}-%{prerelease}
 %else
 Version:	%{ver}
-Release:	5
+Release:	6
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
