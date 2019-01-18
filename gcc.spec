@@ -1448,7 +1448,7 @@ to compile FFI support.
 
 ########################################################################
 #-----------------------------------------------------------------------
-%ifarch %{ix86} %{x86_64}
+%if 0
 %package -n %{libmpx}
 Summary:	GCC support library for MPX
 Group:		System/Libraries
@@ -2518,6 +2518,7 @@ for i in %{long_targets}; do
 %else
 			--with-cloog \
 			--with-ppl \
+			--disable-libmpx \
 			--enable-cloog-backend=isl \
 			--disable-cloog-version-check \
 			--disable-isl-version-check \
