@@ -79,7 +79,7 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			8.2
+%define		branch			8.3
 %define		ver			%{branch}.0
 %define		prerelease		%{nil}
 %define		linaro			%{nil}
@@ -393,8 +393,6 @@ Patch18:	gcc-5.1.0-libstdc++-musl.patch
 Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
 
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
-
-Patch21:	gcc-8.2.0-isl-0.20.patch
 
 # From Google's tree
 # 539bbad457e7161f89fd4db3017b4abf478466f4
@@ -2371,7 +2369,6 @@ Static liblsan.
 %patch18 -p1 -b .musl1~
 %patch19 -p1 -b .lld~
 %patch20 -p1 -b .musllibgcc~
-%patch21 -p1 -b .isl020~
 
 %patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
