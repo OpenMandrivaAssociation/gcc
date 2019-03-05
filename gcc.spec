@@ -2742,8 +2742,8 @@ for i in %{long_targets}; do
 %if %{with crosscompilers}
 	else
 		%make
-	fi
 %endif
+	fi
 	cd ..
 done
 
