@@ -1,18 +1,7 @@
-diff -up gcc-8-20180408/gcc/ada/terminals.c.musl1~ gcc-8-20180408/gcc/ada/terminals.c
---- gcc-8-20180408/gcc/ada/terminals.c.musl1~	2018-04-11 15:27:53.559477629 +0200
-+++ gcc-8-20180408/gcc/ada/terminals.c	2018-04-11 15:28:21.632733022 +0200
-@@ -1111,7 +1111,7 @@ __gnat_setup_winsize (void *desc, int ro
- /* On some system termio is either absent or including it will disable termios
-    (HP-UX) */
- #if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
--  && !defined (__rtems__) && !defined (__QNXNTO__)
-+  && !defined (__rtems__) && !defined (__QNXNTO__) && !defined(__linux__)
- #   include <termio.h>
- #endif
- 
-diff -up gcc-8-20180408/libstdc++-v3/config/os/gnu-linux/os_defines.h.musl1~ gcc-8-20180408/libstdc++-v3/config/os/gnu-linux/os_defines.h
---- gcc-8-20180408/libstdc++-v3/config/os/gnu-linux/os_defines.h.musl1~	2018-01-03 11:03:58.000000000 +0100
-+++ gcc-8-20180408/libstdc++-v3/config/os/gnu-linux/os_defines.h	2018-04-11 15:27:53.559477629 +0200
+diff -up gcc-9.0.1-RC-20190430/gcc/ada/terminals.c.musl1~ gcc-9.0.1-RC-20190430/gcc/ada/terminals.c
+diff -up gcc-9.0.1-RC-20190430/libstdc++-v3/config/os/gnu-linux/os_defines.h.musl1~ gcc-9.0.1-RC-20190430/libstdc++-v3/config/os/gnu-linux/os_defines.h
+--- gcc-9.0.1-RC-20190430/libstdc++-v3/config/os/gnu-linux/os_defines.h.musl1~	2019-01-01 13:31:55.000000000 +0100
++++ gcc-9.0.1-RC-20190430/libstdc++-v3/config/os/gnu-linux/os_defines.h	2019-05-01 21:06:43.299063081 +0200
 @@ -41,7 +41,7 @@
  // Provide a declaration for the possibly deprecated gets function, as
  // glibc 2.15 and later does not declare gets for ISO C11 when

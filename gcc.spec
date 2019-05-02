@@ -79,11 +79,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			8.3
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
-%define		linaro			%{nil}
-%define		linaro_spin		%{nil}
+%define		branch			9.0
+%define		ver			%{branch}.1
+%define		prerelease		RC-20190430
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -131,7 +129,7 @@
 %define		libgnat_devel		%mklibname gnat -d
 %define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		13
+%define		go_major		14
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname go -d
 %define		libgo_static_devel	%mklibname go -d -s
@@ -310,17 +308,6 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
-%if "%{linaro}" != ""
-Version:	%{ver}_%{linaro}
-Release:	2
-%if "%{linaro_spin}" != ""
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}-%{linaro_spin}/gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}.tar.xz
-%define srcname gcc-linaro-%{branch}-%{linaro}-%{linaro_spin}
-%else
-Source0:	http://snapshots.linaro.org/components/toolchain/gcc-linaro/%{branch}-%{linaro}/gcc-linaro-snapshot-%{branch}-%{linaro}.tar.xz
-%define srcname gcc-linaro-%{branch}-%{linaro}
-%endif
-%else
 %if "%{prerelease}" != ""
 Version:	%{ver}
 Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
@@ -335,7 +322,6 @@ Release:	6
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
-%endif
 %endif
 Source4:	c89
 Source5:	c99
@@ -355,7 +341,6 @@ Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
 Patch5:		gcc-4.8-disable-dependency-tracking.patch
-Patch6:		gcc-4.7.1-autoconf-2.69.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
@@ -388,9 +373,6 @@ Patch17:	gcc-6.3-libgcc-__muloti4.patch
 
 # MUSL Support
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
-
-# Add -fuse-ld=lld support
-Patch19:	gcc-6.3-2017.02-fuse-ld-lld.patch
 
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
 
@@ -1033,6 +1015,7 @@ programs with the GNU Compiler Collection.
 %if %{build_multilib}
 %{multigccdir}/libcaf_single.a
 %{multigccdir}/finclude
+%{multigccdir}/include/ISO_Fortran_binding.h
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
@@ -2352,7 +2335,6 @@ Static liblsan.
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
 %patch5 -p1 -b .deptrack~
-%patch6 -p1 -b .ac269~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
@@ -2367,7 +2349,6 @@ Static liblsan.
 %endif
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
-%patch19 -p1 -b .lld~
 %patch20 -p1 -b .musllibgcc~
 
 %patch100 -p2 -b .google1~
@@ -2618,7 +2599,7 @@ for i in %{long_targets}; do
 		fi
 %if %{with cross_bootstrap}
 		echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
-		../configure \
+		CC=gcc CXX=g++ ../configure \
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
 			--libdir=%{_libdir} \
@@ -2656,7 +2637,7 @@ for i in %{long_targets}; do
 			$EXTRA_FLAGS
 %else
 		echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
-		../configure \
+		CC=gcc CXX=g++ ../configure \
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
 			--libdir=%{_libdir} \
