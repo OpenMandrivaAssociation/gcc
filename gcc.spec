@@ -79,9 +79,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			9.0
-%define		ver			%{branch}.1
-%define		prerelease		RC-20190430
+%define		branch			9.1
+%define		ver			%{branch}.0
+%define		prerelease		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -1015,7 +1015,6 @@ programs with the GNU Compiler Collection.
 %if %{build_multilib}
 %{multigccdir}/libcaf_single.a
 %{multigccdir}/finclude
-%{multigccdir}/include/ISO_Fortran_binding.h
 %endif
 %if %{build_doc}
 %doc %{_docdir}/gcc-gfortran
