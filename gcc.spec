@@ -77,7 +77,11 @@
 %define gcc32_target_platform	%{multilib_32_arch}-%{_target_vendor}-%{_target_os}%{?_gnu}
 %endif
 
+%ifarch %{riscv}
+%define		default_compiler	1
+%else
 %define		default_compiler	0
+%endif
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.1
 %define		ver			%{branch}.0
