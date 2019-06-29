@@ -84,8 +84,8 @@
 %endif
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.1
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20190622
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -318,13 +318,14 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
+%define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
 Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
-Source0:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/gcc-%{version}-%{prerelease}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{version}-%{prerelease}/sha512.sum
-%define srcname gcc-%{version}-%{prerelease}
+%define srcname gcc-%{major}-%{prerelease}
+Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
 Release:	6
@@ -346,6 +347,7 @@ Source12:	gcc.csh
 Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
+Patch1:		libstdc++-pthread-linkage.patch
 Patch2:		gcc-4.8-aarch64-ld-path.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
@@ -2346,6 +2348,7 @@ Static liblsan.
 %prep
 %setup -q -n %{srcname}
 %patch0 -p1 -b .uclibc~
+%patch1 -p1 -b .pthreadlinkage~
 #patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
