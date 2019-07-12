@@ -85,7 +85,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.1
 %define		ver			%{branch}.1
-%define		prerelease		20190622
+%define		prerelease		20190706
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -353,6 +353,7 @@ Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=55930
 Patch5:		gcc-4.8-disable-dependency-tracking.patch
+Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
@@ -2353,6 +2354,7 @@ Static liblsan.
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
 %patch5 -p1 -b .deptrack~
+%patch6 -p1 -b .ltobfd~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
