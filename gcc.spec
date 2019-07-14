@@ -85,7 +85,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.1
 %define		ver			%{branch}.1
-%define		prerelease		20190706
+%define		prerelease		20190713
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -367,6 +367,8 @@ Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
 # Alias -Oz to -Os for compatibility with clang's -Oz flag
 Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
+# Fix libstdc++ for use with clang
+Patch15:	gcc-9-libstdc++-locale-clang.patch
 # FIXME this is ***evil***
 # Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
 # A notable difference:
@@ -2364,6 +2366,7 @@ Static liblsan.
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
 %patch14 -p1 -b .Oz~
+%patch15 -p1 -b .libstdc++clang~
 %ifarch aarch64
 %patch16 -p1 -b .EVILaarch64~
 %endif
