@@ -1,4 +1,4 @@
 sources:
   gcc-x32-seed.tar.xz: c656c8f0d0f17a94f0a21ec65ba6633b56e6ea47
   libc-x32-seed.tar.xz: 3b11f56265c94b18c93d0df07d926cb9e73d8858
-  gcc-9-20190713.tar.xz: fcdba05832276a14bd86ac1cd28e1576e6027707
+  gcc-9.2.0.tar.xz: 306d27c3465fa36862c206738d06d65fff5c3645
