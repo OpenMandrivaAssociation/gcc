@@ -84,8 +84,8 @@
 %endif
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.2
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20190824
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
