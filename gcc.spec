@@ -4,7 +4,8 @@
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
 %else
 # (tpg) set cross targets here for cooker
-%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv32-linuxmusl riscv64-linuxmusl aarch64-android armv7l-android armv8l-android
+%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl
+# Once bionic is built, add: aarch64-android armv7l-android armv8l-android
 %endif
 %global long_targets %(
         for i in %{targets}; do
@@ -14,7 +15,7 @@
         done
 )
 %bcond_without crosscompilers
-%bcond_without cross_bootstrap
+%bcond_with cross_bootstrap
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -85,7 +86,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.2
 %define		ver			%{branch}.1
-%define		prerelease		20190824
+%define		prerelease		20190928
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -2490,6 +2491,10 @@ for i in %{long_targets}; do
 				EXTRA_FLAGS="$EXTRA_FLAGS --with-multilib-list=m64 --without-multilib --disable-multilib"
 			fi
 		fi
+	fi
+	if echo ${i} |grep -q riscv; then
+		# RISC-V 32 is not yet supported
+		EXTRA_FLAGS="$EXTRA_FLAGS --without-multilib --disable-multilib"
 	fi
 	if [ "%{gcc_target_platform}" = "$i" ]; then
 		echo "===== Building native $i compiler ====="
