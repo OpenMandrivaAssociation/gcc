@@ -86,7 +86,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.2
 %define		ver			%{branch}.1
-%define		prerelease		20190928
+%define		prerelease		20191109
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -322,14 +322,14 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	6
+Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -3139,6 +3139,7 @@ EOF
 # Full compiler can also be used for bootstrapping...
 %rename cross-${i}-gcc-bootstrap
 BuildRequires: cross-${i}-libc
+BuildRequires: cross-${i}-kernel-release-headers
 Recommends: cross-${i}-libc
 EOF
 	fi
