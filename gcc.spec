@@ -418,7 +418,6 @@ Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
-BuildRequires:	kernel-devel
 BuildRequires:	elfutils-devel >= 0.147
 BuildRequires:	bison
 BuildRequires:	flex
