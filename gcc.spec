@@ -2472,8 +2472,9 @@ for i in %{long_targets}; do
 		# FIXME add mx32 once X32 is bootstrapped far enough
 		EXTRA_FLAGS="--with-multilib-list=m64,m32"
 		if [ "%{gcc_target_platform}" != "$i" ]; then
-			# We need to force 64-bit mode for crosscompilers,
-			# but not native compilers, for some reason.
+			# We have separate crosscompilers for i686 and x32,
+			# let's make sure we get a 64bit libgcc.a
+			EXTRA_FLAGS="--with-abi=m64 --without-multilib --disable-multilib"
 			export CFLAGS_FOR_TARGET="-m64"
 			export CXXFLAGS_FOR_TARGET="-m64"
 		fi
@@ -2488,7 +2489,7 @@ for i in %{long_targets}; do
 			EXTRA_FLAGS="$EXTRA_FLAGS --disable-libmpx"
 			if echo ${i} |grep -E '(x86_64|znver1)'; then
 				# No multilib support in crosscompilers
-				EXTRA_FLAGS="$EXTRA_FLAGS --with-multilib-list=m64 --without-multilib --disable-multilib"
+				EXTRA_FLAGS="$EXTRA_FLAGS --with-abi=m64 --with-multilib-list=m64 --without-multilib --disable-multilib"
 			fi
 		fi
 	fi
