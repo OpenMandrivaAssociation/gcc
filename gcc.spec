@@ -15,7 +15,11 @@
         done
 )
 %bcond_without crosscompilers
+%ifarch %{arm} %{ix86}
+%bcond_without cross_bootstrap
+%else
 %bcond_with cross_bootstrap
+%endif
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
