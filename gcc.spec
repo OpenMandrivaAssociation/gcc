@@ -2493,7 +2493,11 @@ for i in %{long_targets}; do
 			EXTRA_FLAGS="$EXTRA_FLAGS --disable-libmpx"
 			if echo ${i} |grep -E '(x86_64|znver1)'; then
 				# No multilib support in crosscompilers
-				EXTRA_FLAGS="$EXTRA_FLAGS --with-abi=m64 --with-multilib-list=m64 --without-multilib --disable-multilib"
+				if echo ${i} |grep x32; then
+					EXTRA_FLAGS="$EXTRA_FLAGS --with-abi=mx32 --with-multilib-list=mx32 --without-multilib --disable-multilib"
+				else
+					EXTRA_FLAGS="$EXTRA_FLAGS --with-abi=m64 --with-multilib-list=m64 --without-multilib --disable-multilib"
+				fi
 			fi
 		fi
 	fi
