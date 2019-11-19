@@ -90,7 +90,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.2
 %define		ver			%{branch}.1
-%define		prerelease		20191109
+%define		prerelease		20191116
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -3157,6 +3157,7 @@ Summary: Gcc for crosscompiling to ${i}
 Group: Development/Other
 BuildRequires: cross-${i}-binutils
 Recommends: cross-${i}-binutils
+AutoProv: no
 
 %description -n ${package}
 Gcc for crosscompiling to ${i}
