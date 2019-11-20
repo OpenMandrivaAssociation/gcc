@@ -515,6 +515,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
+%{_infodir}/libquadmath.info*
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdirparent}
@@ -1658,7 +1659,6 @@ REAL*16 and programs using __float128 math.
 %if %{build_multilib}
 %{multilibdir}/libquadmath.so
 %endif
-%{_infodir}/libquadmath.info*
 %{gccdir}/include/quadmath*.h
 %if %{build_pdf}
 %doc %{_docdir}/libquadmath
