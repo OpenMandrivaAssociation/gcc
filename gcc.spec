@@ -3123,6 +3123,12 @@ for i in %{long_targets}; do
 done
 %endif
 
+# Not sure why this ends up in /usr as well as the crosscompiler
+# directories... Doesn't belong there for sure
+%ifarch %{aarch64} %{riscv}
+rm -f %{buildroot}%{_prefix}/libx32
+%endif
+
 %if %{system_compiler}
 %find_lang cpplib
 %find_lang gcc
