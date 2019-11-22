@@ -515,6 +515,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
+%{_infodir}/libquadmath.info*
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdirparent}
@@ -592,7 +593,7 @@ build applications with libgcc.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-%ifarch %{x86_64}
+%ifarch %{x86_64} aarch64 riscv64
 %if ! %{with cross_bootstrap}
 # 3-fold multilib...
 %{_prefix}/libx32/libgcc_s.so
@@ -634,7 +635,7 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 %files -n %{multilibgcc}
 %{multirootlibdir}/libgcc_s.so.%{gcc_major}
 
-%ifarch %{x86_64}
+%ifarch %{x86_64} aarch64 riscv64
 %package -n %{libx32gcc}
 Summary:	GNU C library
 Group:		System/Libraries
@@ -1658,7 +1659,6 @@ REAL*16 and programs using __float128 math.
 %if %{build_multilib}
 %{multilibdir}/libquadmath.so
 %endif
-%{_infodir}/libquadmath.info*
 %{gccdir}/include/quadmath*.h
 %if %{build_pdf}
 %doc %{_docdir}/libquadmath
@@ -2904,7 +2904,7 @@ popd
             %{buildroot}%{multilibdir}/libgcc_s.so
 
 %if ! %{with cross_bootstrap}
-        %ifarch %{x86_64}
+        %ifarch %{x86_64} aarch64 riscv64
             mkdir -p %{buildroot}/libx32
             mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
                 %{buildroot}/libx32/
@@ -2950,7 +2950,7 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libgcc_s.so
 %if ! %{with cross_bootstrap}
-        %ifarch %{x86_64}
+        %ifarch %{x86_64} aarch64 riscv64
             rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
         %endif
 %endif
@@ -2960,7 +2960,7 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
          %if %{build_multilib}
              rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
 %if ! %{with cross_bootstrap}
-             %ifarch %{x86_64}
+             %ifarch %{x86_64} aarch64 riscv64
                  rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
              %endif
 %endif
