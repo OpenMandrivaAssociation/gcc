@@ -3126,7 +3126,7 @@ done
 # Not sure why this ends up in /usr as well as the crosscompiler
 # directories... Doesn't belong there for sure
 %ifarch %{aarch64} %{riscv}
-rm -f %{buildroot}%{_prefix}/libx32
+rm -rf %{buildroot}%{_prefix}/libx32
 %endif
 
 %if %{system_compiler}
