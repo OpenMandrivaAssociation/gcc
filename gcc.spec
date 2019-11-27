@@ -3163,7 +3163,7 @@ Summary: Gcc for crosscompiling to ${i}
 Group: Development/Other
 BuildRequires: cross-${i}-binutils
 Recommends: cross-${i}-binutils
-AutoProv: no
+AutoReqProv: no
 
 %description -n ${package}
 Gcc for crosscompiling to ${i}
