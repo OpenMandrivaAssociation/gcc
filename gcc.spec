@@ -515,7 +515,8 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
 %{_infodir}/gccinstall.info*
-%{_infodir}/libquadmath.info*
+# Marked optional because of weird failure on armv7hnl
+%optional %{_infodir}/libquadmath.info*
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{gccdirparent}
