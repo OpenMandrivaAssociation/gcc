@@ -90,7 +90,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			9.2
 %define		ver			%{branch}.1
-%define		prerelease		20191123
+%define		prerelease		20191207
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -837,7 +837,7 @@ Provides:	stdc++-devel = %{ver}-%{release}
 %endif
 # We don't want to pull in an entire Python environment just because of
 # libstdc++'s python based gdb plugin...
-%define __noautoreq '.*python.*'
+%define __requires_exclude_from ^(%{py_puresitedir}|%{_datadir}/gdb/).*$
 
 %description -n %{libstdcxx_devel}
 This is the GNU implementation of the standard C++ libraries.  This
