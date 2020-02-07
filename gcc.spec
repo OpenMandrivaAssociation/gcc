@@ -490,7 +490,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %config(noreplace) %{_sysconfdir}/sysconfig/gcc
 %{_sysconfdir}/profile.d/90gcc.sh
 %{_sysconfdir}/profile.d/90gcc.csh
-%ifarch %{riscv}
+%if %{default_compiler}
 %{_bindir}/c++
 %{_bindir}/c89
 %{_bindir}/c99
