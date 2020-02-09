@@ -1,5 +1,6 @@
---- gcc-6.2.0/gcc/config/i386/biarch64.h.linux32~	2016-01-04 15:30:50.000000000 +0100
-+++ gcc-6.2.0/gcc/config/i386/biarch64.h	2016-08-23 11:45:49.747855871 +0200
+diff -up gcc-10-20200202/gcc/config/i386/biarch64.h.linux32~ gcc-10-20200202/gcc/config/i386/biarch64.h
+--- gcc-10-20200202/gcc/config/i386/biarch64.h.linux32~	2020-02-02 23:32:04.000000000 +0100
++++ gcc-10-20200202/gcc/config/i386/biarch64.h	2020-02-08 14:28:40.221907875 +0100
 @@ -27,3 +27,11 @@ see the files COPYING3 and COPYING.RUNTI
  
  #define TARGET_64BIT_DEFAULT (OPTION_MASK_ISA_64BIT | OPTION_MASK_ABI_64)
@@ -12,8 +13,9 @@
 +               ((syscall(SYS_personality, 0xffffffff) & PER_MASK) == PER_LINUX32)
 +#endif
 +#endif
---- gcc-6.2.0/gcc/opts-common.c.linux32~	2016-06-30 16:39:10.000000000 +0200
-+++ gcc-6.2.0/gcc/opts-common.c	2016-08-23 11:46:51.668445295 +0200
+diff -up gcc-10-20200202/gcc/opts-common.c.linux32~ gcc-10-20200202/gcc/opts-common.c
+--- gcc-10-20200202/gcc/opts-common.c.linux32~	2020-02-02 23:32:07.000000000 +0100
++++ gcc-10-20200202/gcc/opts-common.c	2020-02-08 14:30:54.370913791 +0100
 @@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.
  #include "system.h"
  #include "intl.h"
@@ -22,7 +24,7 @@
  #include "opts.h"
  #include "options.h"
  #include "diagnostic.h"
-@@ -802,6 +803,10 @@ decode_cmdline_options_to_array (unsigne
+@@ -943,6 +944,10 @@ decode_cmdline_options_to_array (unsigne
    unsigned int n, i;
    struct cl_decoded_option *opt_array;
    unsigned int num_decoded_options;
@@ -33,8 +35,8 @@
  
    opt_array = XNEWVEC (struct cl_decoded_option, argc);
  
-@@ -831,11 +836,33 @@ decode_cmdline_options_to_array (unsigne
- 	  continue;
+@@ -981,11 +986,33 @@ decode_cmdline_options_to_array (unsigne
+ 	  argv[++i] = replacement;
  	}
  
 +#ifdef TARGET_32BIT_PERSONALITY

@@ -84,9 +84,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			9.2
-%define		ver			%{branch}.1
-%define		prerelease		20200201
+%define		branch			10.0
+%define		ver			%{branch}.0
+%define		prerelease		20200202
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -134,7 +134,7 @@
 %define		libgnat_devel		%mklibname gnat -d
 %define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		14
+%define		go_major		16
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname go -d
 %define		libgo_static_devel	%mklibname go -d -s
@@ -168,7 +168,7 @@
 %define		libitm_devel		%mklibname itm -d
 %define		libitm_static_devel	%mklibname itm -d -s
 %define		multilibitm		libitm%{itm_major}
-%define		asan_major		5
+%define		asan_major		6
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_devel		%mklibname asan -d
 %define		libasan_static_devel	%mklibname asan -d -s
@@ -393,8 +393,6 @@ Patch18:	gcc-5.1.0-libstdc++-musl.patch
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
 
 # From Google's tree
-# 539bbad457e7161f89fd4db3017b4abf478466f4
-Patch100:	gcc-4.9-libstdc++-clang-c++11.patch
 # 771c2f9542b4e84b08c107060319603d12ec8867
 Patch101:	gcc-4.9-neon-alignment.patch
 # d7c9c7963a79b60e2247bd5a41decc80938023f4
@@ -477,6 +475,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/%{gcc_target_platform}-gcc-ar
 %{_bindir}/%{gcc_target_platform}-gcc-nm
 %{_bindir}/%{gcc_target_platform}-gcc-ranlib
+%{_bindir}/lto-dump
 %(
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
@@ -507,6 +506,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_mandir}/man1/gcov.1*
 %{_mandir}/man1/gcov-dump.1*
 %{_mandir}/man1/gcov-tool.1*
+%{_mandir}/man1/lto-dump.1*
 %{_mandir}/man7/*
 %{_infodir}/gcc.info*
 %{_infodir}/gccint.info*
@@ -973,7 +973,9 @@ libraries, which are required to compile with the GNAT.
 %{gccdir}/adalib
 %{gccdir}/adainclude
 %exclude %{gccdir}/adalib/lib*.a
+%{_libdir}/gcc/*/*/ada_target_properties
 %if %{build_multilib}
+%{_libdir}/gcc/*/*/32/ada_target_properties
 %if %{shared_libgnat}
 %{multilibdir}/libgnat*.so
 %{multilibdir}/libgnarl*.so
@@ -2376,7 +2378,6 @@ Static liblsan.
 %patch18 -p1 -b .musl1~
 %patch20 -p1 -b .musllibgcc~
 
-%patch100 -p2 -b .google1~
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
 #patch104 -p1 -b .google5~
