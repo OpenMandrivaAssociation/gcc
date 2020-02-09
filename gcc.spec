@@ -844,11 +844,9 @@ development. This includes rewritten implementation of STL.
 %{_includedir}/c++/%{ver}
 %{target_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
-%{_datadir}/gdb/auto-load%{_libdir}/__pycache__/libstdc++*.pyc
 %if %{build_multilib}
 %{multilibdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
-%{_datadir}/gdb/auto-load%{multilibdir}/__pycache__/libstdc++*.pyc
 %endif
 %{py_puresitedir}/libstdcxx
 %if %{build_doc}
