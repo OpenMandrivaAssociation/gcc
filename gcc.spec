@@ -88,7 +88,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.0
 %define		ver			%{branch}.0
-%define		prerelease		20200202
+%define		prerelease		20200216
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -422,9 +422,6 @@ Patch209:	0009-musl-x86.patch
 Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
-
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93744
-Patch1008:	gcc10-pr93744.patch
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -2521,8 +2518,6 @@ Static liblsan.
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
-%patch1008 -p0 -b .bug93744~
-
 aclocal -I config
 autoconf
 
@@ -3293,7 +3288,9 @@ for i in %{long_targets}; do
 %package -n ${package}
 EOF
 	if [ "%{with cross_bootstrap}" = "1" ]; then
-		echo "BuildRequires: cross-${i}-libc-bootstrap"
+		if echo $i |grep -q mingw; then
+			echo "BuildRequires: cross-${i}-libc-bootstrap"
+		fi
 	else
 		cat <<EOF
 # Full compiler can also be used for bootstrapping...
