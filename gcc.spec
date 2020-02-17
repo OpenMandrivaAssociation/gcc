@@ -4,7 +4,7 @@
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
 %else
 # (tpg) set cross targets here for cooker
-%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl
+%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
 %endif
 %global long_targets %(
@@ -18,7 +18,7 @@
 %ifarch %{arm} %{ix86}
 %bcond_without cross_bootstrap
 %else
-%bcond_with cross_bootstrap
+%bcond_without cross_bootstrap
 %endif
 
 # functions with printf format attribute but with special parser and also
@@ -31,6 +31,8 @@
 
 # avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
+# -flto in compiler flags breaks things, but --with-build-config=bootstrap-lto
+# does the right thing
 %define		_disable_lto			1
 
 # (tpg) optimize it a bit
@@ -109,6 +111,11 @@
 %define		libstdcxx_devel		%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
+%define		d_major			76
+%define		libgdruntime		%mklibname gdruntime %{d_major}
+%define		libgdruntime_devel	%mklibname gdruntime -d
+%define		libgdruntime_static_devel	%mklibname gdruntime -d -s
+%define		multilibgdruntime	libgdruntime%{d_major}
 %define		gfortran_major		5
 %define		libgfortran		%mklibname gfortran %{gfortran_major}
 %define		libgfortran_devel	%mklibname gfortran -d
@@ -203,6 +210,7 @@
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
+%define		build_d			%{system_compiler}
 %define		build_lto		1
 %define		build_atomic		1
 %define		build_objc		0
@@ -281,6 +289,7 @@
 %define		build_atomic		0
 %define		build_check		0
 %define		build_go		0
+%define		build_d			0
 %define		build_lto		0
 %define		build_lsan		0
 %define		build_objc		0
@@ -413,6 +422,9 @@ Patch209:	0009-musl-x86.patch
 Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
+
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93744
+Patch1008:	gcc10-pr93744.patch
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -882,6 +894,126 @@ Static libraries for the GNU standard C++ library.
 %endif
 
 ########################################################################
+%if %{build_d}
+#-----------------------------------------------------------------------
+
+%package d
+Summary:	D support for gcc
+Group:		Development/C++
+Requires:	%{name} = %{EVRD}
+%if %{system_compiler}
+Requires:	%{libgdruntime_devel} = %{version}
+%endif
+
+%description d
+This package adds D support to the GNU Compiler Collection.
+
+%files d
+%if %{system_compiler}
+%{_bindir}/gdc
+%{_mandir}/man1/gdc.1*
+%{_infodir}/gdc.info*
+%endif
+%if %{system_compiler}
+%{_bindir}/%{gcc_target_platform}-gdc
+%endif
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-gdc"
+	fi
+)
+%{gcclibexecdir}/d21
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgdruntime}
+Summary:	D standard library
+Group:		System/Libraries
+%if "%{libgdruntime}" != "libgdruntime"
+Provides:	libgdruntime = %{EVRD}
+%endif
+
+%description -n %{libgdruntime}
+The libphobos package contains a version of the
+D Standard Library.
+
+%files -n %{libgdruntime}
+%{target_libdir}/libgdruntime.so.%{d_major}*
+%{target_libdir}/libgphobos.so.%{d_major}*
+
+#-----------------------------------------------------------------------
+
+%if %{build_multilib}
+%package -n %{multilibgdruntime}
+Summary:	D Standard library
+Group:		System/Libraries
+
+%description -n %{multilibgdruntime}
+The libphobos package contains a version of the
+D Standard Library.
+
+%files -n %{multilibgdruntime}
+%{multilibdir}/libgdruntime.so.%{d_major}*
+%{multilibdir}/libgphobos.so.%{d_major}*
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgdruntime_devel}
+Summary:	Header files and libraries for D development
+Group:		Development/D
+Requires:	%{libgdruntime} = %{EVRD}
+%if %{build_multilib}
+Requires:	%{multilibgdruntime} = %{EVRD}
+%endif
+%if "%{libgdruntime_devel}" != "libgdruntime-devel"
+Provides:	libgdruntime-devel = %{EVRD}
+%endif
+
+%description -n %{libgdruntime_devel}
+This is the GNU implementation of the D standard libraries.  This
+package includes the header files and libraries needed for D
+development.
+
+%files -n %{libgdruntime_devel}
+%{target_libdir}/libgdruntime.so
+%{target_libdir}/libgphobos.so
+%{target_libdir}/libgphobos.spec
+%{gccdir}/include/d
+%if %{build_multilib}
+%{multilibdir}/libgdruntime.so
+%{multilibdir}/libgphobos.so
+%{multilibdir}/libgphobos.spec
+%endif
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgdruntime_static_devel}
+Summary:	Static libraries for the D standard library
+Group:		Development/D
+Requires:	%{libgdruntime_devel} = %{EVRD}
+%if "%{libgdruntime_static_devel}" != "libgdruntime-static-devel"
+Provides:	libgdruntime-static-devel = %{EVRD}
+%endif
+Provides:	gdruntime-static-devel = %{EVRD}
+
+%description -n %{libgdruntime_static_devel}
+Static libraries for the GNU standard D library.
+
+%files -n %{libgdruntime_static_devel}
+%{target_libdir}/libgdruntime.*a
+%{target_libdir}/libgphobos.*a
+%if %{build_multilib}
+%{multilibdir}/libgdruntime.*a
+%{multilibdir}/libgphobos.*a
+%endif
+
+#-----------------------------------------------------------------------
+# build_d
+%endif
+
+########################################################################
 %if %{build_ada}
 #-----------------------------------------------------------------------
 
@@ -1141,7 +1273,7 @@ Summary:	Go support for gcc
 Group:		Development/Other
 Requires:	%{name} = %{EVRD}
 Requires:	%{libgo_devel} = %{EVRD}
-BuildRequires:	gcc-go
+BuildRequires:	(gcc-go or golang-bin)
 
 %description go
 The gcc-go package provides support for compiling Go programs
@@ -2389,6 +2521,8 @@ Static liblsan.
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
+%patch1008 -p0 -b .bug93744~
+
 aclocal -I config
 autoconf
 
@@ -2412,6 +2546,9 @@ LANGUAGES=c
 %endif
 %if %{build_cxx}
     LANGUAGES="$LANGUAGES,c++"
+%endif
+%if %{build_d}
+    LANGUAGES="$LANGUAGES,d"
 %endif
 %if %{build_fortran}
     LANGUAGES="$LANGUAGES,fortran"
@@ -2507,6 +2644,9 @@ for i in %{long_targets}; do
 
 		# We can't currently compile gcc with clang, even
 		# though that would be great for bootstrapping
+		# --with-build-config=bootstrap-lto would be nice to
+		# add, but currently errors out on "make install" in
+		# fixincludes
 		CC=gcc \
 		CXX=g++ \
 		CFLAGS="$OPT_FLAGS" \
@@ -2781,6 +2921,13 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 for i in %{long_targets}; do
 	[ "%{gcc_target_platform}" = "$i" ] && continue
 	%make_install -C obj-${i}
+done
+# *-mingw32 crosscompilers include a float.h file that hides
+# mingw's own float.h, causing mingw-crt to fail
+for i in %{buildroot}%{_libdir}/gcc/*mingw32/*/include/float.h; do
+	[ -e "$i" ] || continue
+	echo >>$i
+	echo '#include_next <float.h>' >>$i
 done
 %endif
 # Native compiler
@@ -3145,14 +3292,20 @@ for i in %{long_targets}; do
 	cat <<EOF
 %package -n ${package}
 EOF
-	if [ "%{with cross_bootstrap}" != "1" ]; then
+	if [ "%{with cross_bootstrap}" = "1" ]; then
+		echo "BuildRequires: cross-${i}-libc-bootstrap"
+	else
 		cat <<EOF
 # Full compiler can also be used for bootstrapping...
 %rename cross-${i}-gcc-bootstrap
 BuildRequires: cross-${i}-libc
-BuildRequires: cross-${i}-kernel-release-headers
 Recommends: cross-${i}-libc
 EOF
+		if ! echo $i |grep -q mingw; then
+			cat <<EOF
+BuildRequires: cross-${i}-kernel-release-headers
+EOF
+		fi
 	fi
 	cat <<EOF
 Summary: Gcc for crosscompiling to ${i}
