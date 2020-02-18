@@ -262,7 +262,7 @@
   %define	build_objc		%{system_compiler}
   %define	build_objcxx		%{system_compiler}
   %define	build_go		%{system_compiler}
-%if %isarch %{ix86} %{x86_64} %{arm}
+%if %isarch %{ix86} %{x86_64} %{arm} %{riscv}
   %define	build_asan		%{system_compiler}
 %else
   %define	build_asan		0
