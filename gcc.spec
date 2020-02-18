@@ -331,7 +331,7 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
@@ -400,6 +400,11 @@ Patch17:	gcc-6.3-libgcc-__muloti4.patch
 Patch18:	gcc-5.1.0-libstdc++-musl.patch
 
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
+
+# Revert changes causing
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93818
+# https://bugs.llvm.org/show_bug.cgi?id=44955
+Patch30:	libstdc++-10-revert-changes-causing-bug93818.patch
 
 # From Google's tree
 # 771c2f9542b4e84b08c107060319603d12ec8867
@@ -2504,6 +2509,8 @@ Static liblsan.
 %patch17 -p1 -b .compilerRt~
 %patch18 -p1 -b .musl1~
 %patch20 -p1 -b .musllibgcc~
+
+%patch30 -p1 -b .revert-libstdc++~
 
 %patch101 -p2 -b .google2~
 %patch102 -p2 -b .google3~
