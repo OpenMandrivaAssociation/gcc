@@ -217,13 +217,7 @@
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
-%if %isarch %{ix86} %{x86_64} %{armx}
 %define		build_ubsan		%{system_compiler}
-%else
-# riscv arch
-# ubsan not ported yet
-%define		build_ubsan		0
-%endif
 %if %isarch %{ix86} %{x86_64} %{arm}
 %define		build_itm		1
 %else
