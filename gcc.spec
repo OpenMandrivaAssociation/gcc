@@ -42,10 +42,10 @@
 %define nof_arches		noarch
 %define biarches		%{x86_64} mips64 mips64el mips mipsel
 
-%define	system_compiler		1
+%define	system_gcc		1
 %define majorver %(echo %{version} |cut -d. -f1)
 
-%if %{system_compiler}
+%if %{system_gcc}
 %define cross_prefix		%{nil}
 %define cross_program_prefix	%{nil}
 %define package_suffix		%{nil}
@@ -210,54 +210,54 @@
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
-%define		build_d			%{system_compiler}
+%define		build_d			%{system_gcc}
 %define		build_lto		1
 %define		build_atomic		1
 %define		build_objc		0
 %define		build_objcxx		0
 %define		build_quadmath		0
 %define		build_ssp		0
-%define		build_ubsan		%{system_compiler}
+%define		build_ubsan		%{system_gcc}
 %if %isarch %{ix86} %{x86_64} %{arm}
 %define		build_itm		1
 %else
 # aarch64 libitm support not implemented yet
 %define		build_itm		0
 %endif
-%define		build_cloog		%{system_compiler}
-%define		build_cxx		%{system_compiler}
+%define		build_cloog		%{system_gcc}
+%define		build_cxx		%{system_gcc}
 %define		build_doc		0
-%define		build_ffi		%{system_compiler}
-%define		build_fortran		%{system_compiler}
-%define		build_gomp		%{system_compiler}
-# need to build if major does not conflict with current system_compiler
-%define		build_libgcc		%{system_compiler}
+%define		build_ffi		%{system_gcc}
+%define		build_fortran		%{system_gcc}
+%define		build_gomp		%{system_gcc}
+# need to build if major does not conflict with current system_gcc
+%define		build_libgcc		%{system_gcc}
 %define		build_pdf		%{build_doc}
-%define		build_plugin		%{system_compiler}
+%define		build_plugin		%{system_gcc}
 %if %isarch %{x86_64} %{armx}
-  %define	build_tsan		%{system_compiler}
-  %define	build_lsan		%{system_compiler}
+  %define	build_tsan		%{system_gcc}
+  %define	build_lsan		%{system_gcc}
 
 %if %isarch %{x86_64}
-  %define	build_multilib		%{system_compiler}
+  %define	build_multilib		%{system_gcc}
 %endif
 %endif
 %if %isarch %{ix86} %{x86_64}
-  %define	build_quadmath		%{system_compiler}
+  %define	build_quadmath		%{system_gcc}
   %define	build_doc		1
-# system_compiler && build_cxx
-  %define	build_go		%{system_compiler}
-  %define	build_vtv		%{system_compiler}
+# system_gcc && build_cxx
+  %define	build_go		%{system_gcc}
+  %define	build_vtv		%{system_gcc}
 %endif
 %if %isarch %{ix86} %{x86_64}
-  %define	build_ada		%{system_compiler}
+  %define	build_ada		%{system_gcc}
 %endif
 %if %isarch %{ix86} %{x86_64} %{armx}
-  %define	build_objc		%{system_compiler}
-  %define	build_objcxx		%{system_compiler}
-  %define	build_go		%{system_compiler}
+  %define	build_objc		%{system_gcc}
+  %define	build_objcxx		%{system_gcc}
+  %define	build_go		%{system_gcc}
 %if %isarch %{ix86} %{x86_64} %{arm} %{riscv}
-  %define	build_asan		%{system_compiler}
+  %define	build_asan		%{system_gcc}
 %else
   %define	build_asan		0
 %endif
@@ -314,7 +314,7 @@
 #-----------------------------------------------------------------------
 
 Summary:	GNU Compiler Collection
-%if %{system_compiler}
+%if %{system_gcc}
 Name:		gcc
 %else
 Name:		gcc%{package_suffix}
@@ -447,7 +447,7 @@ BuildRequires:	pkgconfig(cloog-isl)
 BuildRequires:	pkgconfig(isl)
 %endif
 
-%if %{system_compiler}
+%if %{system_gcc}
 Requires:	%{name}-cpp >= %{EVRD}
 Requires:	%{libgcc} >= %{EVRD}
 Requires:	%{libgcc_devel} >= %{EVRD}
@@ -467,7 +467,7 @@ Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
 
-%if %{system_compiler}
+%if %{system_gcc}
 %files -f gcc.lang
 %else
 %files
@@ -683,7 +683,7 @@ not stable, so plugins must be rebuilt any time GCC is updated.
 %endif
 
 ########################################################################
-%if %{system_compiler}
+%if %{system_gcc}
 #-----------------------------------------------------------------------
 
 %package cpp
@@ -713,13 +713,13 @@ The C preprocessor provides four separate functionalities:
   into an intermediate file which is then compiled, you can use line
   control to inform the compiler about where each source line originated.
 
-%if %{system_compiler}
+%if %{system_gcc}
 %files cpp -f cpplib.lang
 %else
 %files cpp
 %endif
 %{_bindir}/cpp
-%if %{system_compiler}
+%if %{system_gcc}
 /lib/cpp
 %{_mandir}/man1/cpp.1*
 %{_infodir}/cpp*
@@ -729,7 +729,7 @@ The C preprocessor provides four separate functionalities:
 %endif
 
 #-----------------------------------------------------------------------
-# system_compiler
+# system_gcc
 %endif
 
 ########################################################################
@@ -740,7 +740,7 @@ The C preprocessor provides four separate functionalities:
 Summary:	C++ support for gcc
 Group:		Development/C++
 Requires:	%{name} = %{EVRD}
-%if %{system_compiler}
+%if %{system_gcc}
 Requires:	%{libstdcxx_devel} = %{version}
 %endif
 
@@ -750,11 +750,11 @@ It includes support for most of the current C++ specification,
 including templates and exception handling.
 
 %files c++
-%if %{system_compiler}
+%if %{system_gcc}
 %{_bindir}/g++
 %{_mandir}/man1/g++.1*
 %endif
-%if %{system_compiler}
+%if %{system_gcc}
 %{_bindir}/%{gcc_target_platform}-c++
 %{_bindir}/%{gcc_target_platform}-g++
 %endif
@@ -788,7 +788,7 @@ BuildRequires:	graphviz
 The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
-%if %{system_compiler}
+%if %{system_gcc}
 %files -n %{libstdcxx} -f libstdc++.lang
 %else
 %files -n %{libstdcxx}
@@ -890,7 +890,7 @@ Static libraries for the GNU standard C++ library.
 Summary:	D support for gcc
 Group:		Development/C++
 Requires:	%{name} = %{EVRD}
-%if %{system_compiler}
+%if %{system_gcc}
 Requires:	%{libgdruntime_devel} = %{version}
 %endif
 
@@ -898,12 +898,12 @@ Requires:	%{libgdruntime_devel} = %{version}
 This package adds D support to the GNU Compiler Collection.
 
 %files d
-%if %{system_compiler}
+%if %{system_gcc}
 %{_bindir}/gdc
 %{_mandir}/man1/gdc.1*
 %{_infodir}/gdc.info*
 %endif
-%if %{system_compiler}
+%if %{system_gcc}
 %{_bindir}/%{gcc_target_platform}-gdc
 %endif
 %(
@@ -2068,7 +2068,7 @@ to use Transactional Memory features.
 %{multilibdir}/libitm.so
 %{multilibdir}/libitm.spec
 %endif
-%if %{system_compiler}
+%if %{system_gcc}
 %{_infodir}/libitm.info*
 %endif
 
@@ -2681,7 +2681,7 @@ for i in %{long_targets}; do
 			--enable-gold=default \
 %endif
 			--with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
-%if %{system_compiler}
+%if %{system_gcc}
 			--enable-bootstrap \
 %endif
 			--enable-checking=release \
@@ -2845,7 +2845,7 @@ esac
 
 BOOTSTRAP=bootstrap
 %if %isarch %{ix86} %{x86_64}
-    %if %{system_compiler}
+    %if %{system_gcc}
         BOOSTRAP=profiledbootstrap
     %endif
 %endif
@@ -2934,7 +2934,7 @@ mkdir -p %{buildroot}%{py_puresitedir}
     fi
 
 pushd %{buildroot}%{_bindir}
-%if %{system_compiler}
+%if %{system_gcc}
     mkdir -p %{buildroot}/lib
     ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
@@ -2959,7 +2959,7 @@ pushd %{buildroot}%{_bindir}
         fi
         rm -f $prog
         ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
-        %if %{system_compiler}
+        %if %{system_gcc}
             ln -sf %{gcc_target_platform}-$prog-%{ver} $prog
             ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
         %endif
@@ -2967,10 +2967,10 @@ pushd %{buildroot}%{_bindir}
 %if %{build_cxx}
     rm -f c++ %{gcc_target_platform}-c++{,-%{ver}}
     ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
-    %if %{system_compiler}
+    %if %{system_gcc}
         ln -sf %{gcc_target_platform}-g++-%{ver} c++
     %endif
-    %if %{system_compiler}
+    %if %{system_gcc}
         ln -sf %{gcc_target_platform}-g++-%{ver} %{gcc_target_platform}-c++
     %endif
 
@@ -3018,7 +3018,7 @@ popd
     %endif
 %endif
 
-%if %{system_compiler}
+%if %{system_gcc}
     mkdir -p %{buildroot}/%{target_slibdir}
     mv %{buildroot}%{target_libdir}/libgcc_s.so.%{gcc_major} \
         %{buildroot}/%{target_slibdir}
@@ -3070,7 +3070,7 @@ mv -f %{buildroot}%{gccdir}/include{-fixed,}/limits.h
 rm -fr %{buildroot}%{gccdir}/include-fixed
 rm -fr %{buildroot}%{gccdir}/install-tools/include
 
-%if !%{system_compiler}
+%if !%{system_gcc}
     rm -fr %{buildroot}%{_infodir}
     rm -fr %{buildroot}%{_mandir}
     rm -fr %{buildroot}%{_localedir}
@@ -3120,7 +3120,7 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
         rm -f %{buildroot}%{multilibdir}/libitm*
     %endif
 %else
-    %if !%{system_compiler}
+    %if !%{system_gcc}
         rm -f %{buildroot}%{_infodir}/libitm.info*
     %endif
 %endif
@@ -3157,7 +3157,7 @@ pushd obj-%{gcc_target_platform}
         for doc in gcc gccinstall gccint; do
             cp -far $doc %{buildroot}%{_docdir}/gcc/html
         done
-        %if %{system_compiler}
+        %if %{system_gcc}
             mkdir -p %{buildroot}%{_docdir}/gcc-cpp/html
             for doc in cpp cppinternals; do
                 cp -far $doc %{buildroot}%{_docdir}/gcc-cpp/html
@@ -3177,7 +3177,7 @@ pushd obj-%{gcc_target_platform}
         for doc in gcc.pdf gccinstall.pdf gccint.pdf; do
             install -m 0644 $doc %{buildroot}%{_docdir}/gcc/$doc
         done
-        %if %{system_compiler}
+        %if %{system_gcc}
             for doc in cpp.pdf cppinternals.pdf; do
                 install -m 0644 $doc %{buildroot}%{_docdir}/gcc-cpp/$doc
             done
@@ -3220,7 +3220,7 @@ rm -f \
 	%{buildroot}%{_bindir}/c++
 %endif
 
-%if %{system_compiler}
+%if %{system_gcc}
 install -m644 %{SOURCE10} -D %{buildroot}%{_sysconfdir}/sysconfig/gcc
 install -m644 %{SOURCE11} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.sh
 install -m644 %{SOURCE12} -D %{buildroot}%{_sysconfdir}/profile.d/90gcc.csh
@@ -3258,7 +3258,7 @@ done
 rm -rf %{buildroot}%{_prefix}/libx32
 %endif
 
-%if %{system_compiler}
+%if %{system_gcc}
 %find_lang cpplib
 %find_lang gcc
 %if %{build_cxx}
