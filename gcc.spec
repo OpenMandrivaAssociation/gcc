@@ -325,7 +325,7 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').3
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').4
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
@@ -355,6 +355,7 @@ Patch1:		libstdc++-pthread-linkage.patch
 Patch2:		gcc-4.8-aarch64-ld-path.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
+Patch5:		gcc-10-20200301-libstdc++-clang.patch
 Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
@@ -2478,6 +2479,7 @@ Static liblsan.
 #patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
+%patch5 -p1 -b .libstdc++clang~
 %patch6 -p1 -b .ltobfd~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763

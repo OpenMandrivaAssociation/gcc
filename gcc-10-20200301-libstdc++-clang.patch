@@ -1,0 +1,12 @@
+diff -up gcc-10-20200301/libstdc++-v3/include/bits/ranges_algo.h.omv~ gcc-10-20200301/libstdc++-v3/include/bits/ranges_algo.h
+--- gcc-10-20200301/libstdc++-v3/include/bits/ranges_algo.h.omv~	2020-03-05 23:11:37.199361312 +0100
++++ gcc-10-20200301/libstdc++-v3/include/bits/ranges_algo.h	2020-03-05 23:12:00.130362323 +0100
+@@ -3710,7 +3710,7 @@ namespace ranges
+       if (__n == 0)
+ 	return __first;
+ 
+-      using _Cat = iterator_traits<ForwardIterator>::iterator_category;
++      using _Cat = typename iterator_traits<ForwardIterator>::iterator_category;
+       if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
+ 	{
+ 	  auto __mid = ranges::next(__last, -__n, __first);
