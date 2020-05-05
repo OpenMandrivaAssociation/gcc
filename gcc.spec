@@ -88,7 +88,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.0
 %define		ver			%{branch}.0
-%define		prerelease		20200301
+%define		prerelease		20200502
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -111,7 +111,7 @@
 %define		libstdcxx_devel		%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		d_major			76
+%define		d_major			1
 %define		libgdruntime		%mklibname gdruntime %{d_major}
 %define		libgdruntime_devel	%mklibname gdruntime -d
 %define		libgdruntime_static_devel	%mklibname gdruntime -d -s
@@ -355,7 +355,6 @@ Patch1:		libstdc++-pthread-linkage.patch
 Patch2:		gcc-4.8-aarch64-ld-path.patch
 Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
-Patch5:		gcc-10-20200301-libstdc++-clang.patch
 Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
@@ -2479,7 +2478,6 @@ Static liblsan.
 #patch2 -p1 -b .aarch64~
 %patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
-%patch5 -p1 -b .libstdc++clang~
 %patch6 -p1 -b .ltobfd~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
