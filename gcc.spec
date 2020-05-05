@@ -4,7 +4,13 @@
 %global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
 %else
 # (tpg) set cross targets here for cooker
+%ifarch %{ix86}
+# FIXME at some point, we need to figure out why x86_32 to
+# x86_64-mingw crosscompilers are broken
+%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32
+%else
 %global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
+%endif
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
 %endif
 %global long_targets %(
@@ -15,8 +21,8 @@
         done
 )
 %bcond_without crosscompilers
-%ifarch %{arm} %{ix86}
-%bcond_without cross_bootstrap
+%ifarch %{x86_64}
+%bcond_with cross_bootstrap
 %else
 %bcond_without cross_bootstrap
 %endif
@@ -325,7 +331,7 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').4
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').5
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
@@ -2756,6 +2762,10 @@ for i in %{long_targets}; do
 				EXTRA_FLAGS="$EXTRA_FLAGS --with-fpu=vfpv3"
 			fi
 		fi
+		if ! echo $i |grep -q 'mingw'; then
+			# We want --hash-stlye=gnu, but not on a non-ELF target
+			EXTRA_FLAGS="$EXTRA_FLAGS --with-linker-hash-style=gnu"
+		fi
 %if %{with cross_bootstrap}
 		echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
 		CC=gcc CXX=g++ ../configure \
@@ -2778,7 +2788,6 @@ for i in %{long_targets}; do
 			--enable-checking=release \
 			--enable-gnu-unique-object \
 			--enable-gnu-indirect-function \
-			--with-linker-hash-style=gnu \
 			--enable-languages=c \
 			--program-prefix=${i}- \
 			--enable-linker-build-id \
