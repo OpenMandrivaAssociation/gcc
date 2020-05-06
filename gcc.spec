@@ -22,7 +22,7 @@
 )
 %bcond_without crosscompilers
 %ifarch %{x86_64}
-%bcond_with cross_bootstrap
+%bcond_without cross_bootstrap
 %else
 %bcond_without cross_bootstrap
 %endif
