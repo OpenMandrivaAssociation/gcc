@@ -22,7 +22,7 @@
 )
 %bcond_without crosscompilers
 %ifarch %{x86_64}
-%bcond_without cross_bootstrap
+%bcond_with cross_bootstrap
 %else
 %bcond_without cross_bootstrap
 %endif
@@ -597,6 +597,7 @@ build applications with libgcc.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
+%{_prefix}/lib/libgcc_s.a
 %ifarch %{x86_64}
 %if ! %{with cross_bootstrap}
 # 3-fold multilib...
@@ -2628,6 +2629,10 @@ for i in %{long_targets}; do
 	fi
 	if echo ${i} |grep -q riscv; then
 		# RISC-V 32 is not yet supported
+		EXTRA_FLAGS="$EXTRA_FLAGS --without-multilib --disable-multilib"
+	elif echo ${i} |grep i686-w64; then
+		# Despite the "64" in its name, i686-w64-mingw32 is a 32-bit,
+		# non-multilib arch
 		EXTRA_FLAGS="$EXTRA_FLAGS --without-multilib --disable-multilib"
 	fi
 	if [ "%{gcc_target_platform}" = "$i" ]; then
