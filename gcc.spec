@@ -1,18 +1,15 @@
 # Listed targets are short form and will be expanded by rpm
 # gnueabihf variants etc. are inserted by rpm into long_targets
-%if %mdvver <= 3000000
-%global targets aarch64-linux armv7hl-linux i586-linux i686-linux x86_64-linux
-%else
-# (tpg) set cross targets here for cooker
 %ifarch %{ix86}
 # FIXME at some point, we need to figure out why x86_32 to
 # x86_64-mingw crosscompilers are broken
-%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32
+%global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc
 %else
-%global targets aarch64-linux armv7hnl-linux i686-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
+%global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc
 %endif
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
-%endif
 %global long_targets %(
         for i in %{targets}; do
                 CPU=$(echo $i |cut -d- -f1)
@@ -20,12 +17,14 @@
                 echo -n "$(rpm --target=${CPU}-${OS} -E %%{_target_platform}) "
         done
 )
+%global long_bootstraptargets %(
+        for i in %{bootstraptargets}; do
+                CPU=$(echo $i |cut -d- -f1)
+                OS=$(echo $i |cut -d- -f2)
+                echo -n "$(rpm --target=${CPU}-${OS} -E %%{_target_platform}) "
+        done
+)
 %bcond_without crosscompilers
-%ifarch %{x86_64}
-%bcond_with cross_bootstrap
-%else
-%bcond_without cross_bootstrap
-%endif
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -93,8 +92,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.1
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20200620
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -311,10 +310,6 @@
 %define		build_plugin		0
 %define		package_ffi		0
 %define		shared_libgnat		0
-%endif
-
-%if 0
-%define		x32_bootstrap	1
 %endif
 
 #-----------------------------------------------------------------------
@@ -599,10 +594,8 @@ build applications with libgcc.
 %{multilibdir}/libgcc_s.so
 %{_prefix}/lib/libgcc_s.a
 %ifarch %{x86_64}
-%if ! %{with cross_bootstrap}
 # 3-fold multilib...
-%{_prefix}/libx32/libgcc_s.so
-%endif
+%optional %{_prefix}/libx32/libgcc_s.so
 %endif
 %endif
 %if %isarch mips mipsel
@@ -649,10 +642,8 @@ Conflicts:	%{libgcc} < 4.6.2-11
 %description -n %{libx32gcc}
 The %{libx32gcc} package contains GCC shared libraries for gcc %{branch}
 
-%if ! %{with cross_bootstrap}
 %files -n %{libx32gcc}
 /libx32/libgcc_s.so.%{gcc_major}
-%endif
 %endif
 %endif
 
@@ -2588,7 +2579,7 @@ armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a15 ";;
 esac
 
 # Configure for building some key crosscompilers
-for i in %{long_targets}; do
+for i in %{long_bootstraptargets} %{long_targets}; do
 	EXTRA_FLAGS=""
 	CFLAGS_FOR_TARGET=""
 	CXXFLAGS_FOR_TARGET=""
@@ -2648,7 +2639,6 @@ for i in %{long_targets}; do
 		CXX=g++ \
 		CFLAGS="$OPT_FLAGS" \
 		CXXFLAGS="$OPT_FLAGS" \
-		GCJFLAGS="$OPT_FLAGS" \
 		TCFLAGS="$OPT_FLAGS" \
 		XCFLAGS="$OPT_FLAGS" \
 		ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
@@ -2771,62 +2761,63 @@ for i in %{long_targets}; do
 			# We want --hash-stlye=gnu, but not on a non-ELF target
 			EXTRA_FLAGS="$EXTRA_FLAGS --with-linker-hash-style=gnu"
 		fi
-%if %{with cross_bootstrap}
-		echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
-		CC=gcc CXX=g++ ../configure \
-			--prefix=%{_prefix} \
-			--libexecdir=%{_libexecdir} \
-			--libdir=%{_libdir} \
-			--with-slibdir=%{_prefix}/${i}/lib \
-			--mandir=%{_mandir} \
-			--infodir=%{_infodir} \
-			--without-cloog \
-			--without-ppl \
-			--disable-libffi \
-			--disable-libgomp \
-			--disable-libquadmath \
-			--disable-libssp \
-			--disable-werror \
-			--enable-__cxa_atexit \
-			--enable-gold=default \
-			--with-plugin-ld=%{_bindir}/${i}-ld \
-			--enable-checking=release \
-			--enable-gnu-unique-object \
-			--enable-gnu-indirect-function \
-			--enable-languages=c \
-			--program-prefix=${i}- \
-			--enable-linker-build-id \
-			--disable-plugin \
-			--disable-lto \
-			--disable-libatomic \
-			--disable-shared \
-			--enable-static \
-			--with-system-zlib \
-			--with-bugurl=https://issues.openmandriva.org \
-			--disable-multilib \
-			--disable-threads \
-			--disable-libmpx \
-			--target=${i} \
-			$EXTRA_FLAGS
-%else
-		echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
-		CC=gcc CXX=g++ ../configure \
-			--prefix=%{_prefix} \
-			--libexecdir=%{_libexecdir} \
-			--libdir=%{_libdir} \
-			--with-slibdir=%{_prefix}/${i}/lib \
-			--mandir=%{_mandir} \
-			--infodir=%{_infodir} \
-			--with-sysroot=%{_prefix}/${i} \
-			--with-native-system-header-dir=/include \
-			--enable-threads \
-			--enable-shared \
-			--enable-lto \
-			--enable-plugin \
-			--enable-languages=c,c++,fortran,lto,objc,obj-c++ \
-			--target=${i} \
-			$EXTRA_FLAGS
-%endif
+		if echo "%{long_bootstraptargets}" |grep -q $i; then
+			echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
+			CC=gcc CXX=g++ ../configure \
+				--prefix=%{_prefix} \
+				--libexecdir=%{_libexecdir} \
+				--libdir=%{_libdir} \
+				--with-slibdir=%{_prefix}/${i}/lib \
+				--mandir=%{_mandir} \
+				--infodir=%{_infodir} \
+				--without-cloog \
+				--without-ppl \
+				--disable-libffi \
+				--disable-libgomp \
+				--disable-libquadmath \
+				--disable-libssp \
+				--disable-werror \
+				--enable-__cxa_atexit \
+				--enable-gold=default \
+				--with-plugin-ld=%{_bindir}/${i}-ld \
+				--enable-checking=release \
+				--enable-gnu-unique-object \
+				--enable-gnu-indirect-function \
+				--enable-languages=c \
+				--program-prefix=${i}- \
+				--enable-linker-build-id \
+				--disable-plugin \
+				--disable-lto \
+				--disable-libatomic \
+				--disable-shared \
+				--enable-static \
+				--with-system-zlib \
+				--with-bugurl=https://issues.openmandriva.org \
+				--disable-multilib \
+				--disable-threads \
+				--disable-libmpx \
+				--target=${i} \
+				$EXTRA_FLAGS
+		else
+			echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
+			CC=gcc CXX=g++ ../configure \
+				--prefix=%{_prefix} \
+				--libexecdir=%{_libexecdir} \
+				--libdir=%{_libdir} \
+				--with-slibdir=%{_prefix}/${i}/lib \
+				--mandir=%{_mandir} \
+				--infodir=%{_infodir} \
+				--with-sysroot=%{_prefix}/${i} \
+				--with-native-system-header-dir=/include \
+				--enable-threads \
+				--enable-shared \
+				--enable-lto \
+				--enable-plugin \
+				--enable-languages=c,c++,fortran,lto,objc,obj-c++ \
+				--target=${i} \
+				--with-bugurl=https://issues.openmandriva.org \
+				$EXTRA_FLAGS
+		fi
 %endif
 	fi
 	cd ..
@@ -2841,8 +2832,10 @@ export sysroot=%{target_prefix}
 
 # The -gdwarf-4 removal is a workaround for gcc bug #52420
 OPT_FLAGS=`echo %{optflags} -fno-strict-aliasing | \
-    sed -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
+    sed -e 's/-Wall//g' -e 's/-all//g' \
+    -e 's/\(-Wp,\)\?-D_FORTIFY_SOURCE=[12]//g' \
     -e 's/-m\(31\|32\|64\)//g' \
+    -e 's/-mx32//g' \
     -e 's/-fstack-protector-strong//g' \
     -e 's/-fstack-protector//g' \
     -e 's/--param=ssp-buffer-size=4//' \
@@ -2856,11 +2849,12 @@ case " $OPT_FLAGS " in
   sed -e 's/-fno-exceptions /-fno-exceptions -fno-asynchronous-unwind-tables /' -i gcc/Makefile.in
   ;;
 esac
+echo "Using OPT_FLAGS $OPT_FLAGS"
 
 BOOTSTRAP=bootstrap
 %if %isarch %{ix86} %{x86_64}
     %if %{system_gcc}
-        BOOSTRAP=profiledbootstrap
+        BOOTSTRAP=profiledbootstrap
     %endif
 %endif
 
@@ -2868,16 +2862,16 @@ BOOTSTRAP=bootstrap
 [ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
 [ ! -z "x$TMPDIR" ] && export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
 
-for i in %{long_targets}; do
+for i in %{long_bootstraptargets} %{long_targets}; do
 	cd obj-${i}
 	if [ "%{gcc_target_platform}" = "$i" ]; then
 		# Native host compiler gets special treatment...
 
-		if ! %make BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
+		if ! %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
 			# Let's try to get a better error message
 			# (Workaround for builds working locally and failing in abf,
 			# let's see where exactly it's failing)
-			make -j1 BOOT_CFLAGS="$OPT_FLAGS" GCJFLAGS="$OPT_FLAGS" $BOOTSTRAP
+			make -j1 BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 		fi
 
 %if %{build_pdf}
@@ -2918,7 +2912,7 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 %install
 %if %{with crosscompilers}
 # Install crosscompilers first so the native compiler can overwrite stuff
-for i in %{long_targets}; do
+for i in %{long_bootstraptargets} %{long_targets}; do
 	[ "%{gcc_target_platform}" = "$i" ] && continue
 	%make_install -C obj-${i}
 done
@@ -3046,15 +3040,13 @@ popd
         ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
             %{buildroot}%{multilibdir}/libgcc_s.so
 
-%if ! %{with cross_bootstrap}
-        %ifarch %{x86_64} aarch64 riscv64
+	if [ -e %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} ]; then
             mkdir -p %{buildroot}/libx32
             mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
                 %{buildroot}/libx32/
             ln -srf %{buildroot}/libx32/libgcc_s.so.%{gcc_major} \
                 %{buildroot}%{_prefix}/libx32/libgcc_s.so
-        %endif
-%endif
+        fi
     %endif
 %endif
 
@@ -3092,21 +3084,13 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
     rm -f %{buildroot}%{_libdir}/libgcc_s.so
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libgcc_s.so
-%if ! %{with cross_bootstrap}
-        %ifarch %{x86_64} aarch64 riscv64
-            rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
-        %endif
-%endif
+        rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
     %endif
     %if !%{build_libgcc}
          rm -f %{buildroot}%{target_libdir}/libgcc_s.so.*
          %if %{build_multilib}
              rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
-%if ! %{with cross_bootstrap}
-             %ifarch %{x86_64} aarch64 riscv64
-                 rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
-             %endif
-%endif
+             rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
          %endif
     %endif
 %endif
@@ -3245,7 +3229,7 @@ ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
 %endif
 
 %if %{with crosscompilers}
-for i in %{long_targets}; do
+for i in %{long_bootstraptargets} %{long_targets}; do
 	# aarch64-mandriva-linux-gnu and aarch64-linux-gnu are similar enough...
 	longplatform=$(grep ^target_alias= obj-$i/Makefile |cut -d= -f2-)
 	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
@@ -3282,9 +3266,14 @@ rm -rf %{buildroot}%{_prefix}/libx32
 
 %if %{with crosscompilers}
 %(
-for i in %{long_targets}; do
+for i in %{long_bootstraptargets} %{long_targets}; do
 	[ "$i" = "%{_target_platform}" ] && continue
-	if [ "%{with cross_bootstrap}" = "1" ]; then
+	if echo "%{long_bootstraptargets}" |grep -q $i; then
+		bootstrap=true
+	else
+		bootstrap=false
+	fi
+	if $bootstrap; then
 		package=cross-${i}-gcc-bootstrap
 	else
 		package=cross-${i}-gcc
@@ -3292,7 +3281,7 @@ for i in %{long_targets}; do
 	cat <<EOF
 %package -n ${package}
 EOF
-	if [ "%{with cross_bootstrap}" = "1" ]; then
+	if $bootstrap; then
 		if echo $i |grep -q mingw; then
 			echo "BuildRequires: cross-${i}-libc-bootstrap"
 		fi
@@ -3325,7 +3314,7 @@ Gcc for crosscompiling to ${i}
 %{_libdir}/gcc/${i}
 %{_libexecdir}/gcc/${i}
 EOF
-	if [ "%{with cross_bootstrap}" != "1" ]; then
+	if ! $bootstrap; then
 		cat <<EOF
 %{_prefix}/${i}/include/*
 %{_prefix}/${i}/lib*/*
