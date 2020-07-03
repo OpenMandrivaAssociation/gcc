@@ -592,12 +592,12 @@ build applications with libgcc.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-%{_prefix}/lib/libgcc_s.a
 %ifarch %{x86_64}
 # 3-fold multilib...
 %optional %{_prefix}/libx32/libgcc_s.so
 %endif
 %endif
+%optional %{_prefix}/lib/libgcc_s.a
 %if %isarch mips mipsel
 %{target_libdir}32/libgcc_s.so
 %{target_libdir}64/libgcc_s.so
