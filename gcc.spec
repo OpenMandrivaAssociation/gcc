@@ -91,9 +91,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			10.1
-%define		ver			%{branch}.1
-%define		prerelease		20200620
+%define		branch			10.2
+%define		ver			%{branch}.0
+%define		prerelease		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -2763,7 +2763,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		fi
 		if echo "%{long_bootstraptargets}" |grep -q $i; then
 			echo "===== Building %{gcc_target_platform} -> $i bootstrap crosscompiler ====="
-			CC=gcc CXX=g++ ../configure \
+			CC=gcc CXX=g++ LDFLAGS="-fuse-ld=bfd" ../configure \
 				--prefix=%{_prefix} \
 				--libexecdir=%{_libexecdir} \
 				--libdir=%{_libdir} \
@@ -2800,7 +2800,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				$EXTRA_FLAGS
 		else
 			echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
-			CC=gcc CXX=g++ ../configure \
+			CC=gcc CXX=g++ LDFLAGS="-fuse-ld=bfd" ../configure \
 				--prefix=%{_prefix} \
 				--libexecdir=%{_libexecdir} \
 				--libdir=%{_libdir} \
