@@ -1,5 +1,9 @@
 # Listed targets are short form and will be expanded by rpm
 # gnueabihf variants etc. are inserted by rpm into long_targets
+%ifarch %{riscv}
+# Still missing a few deps...
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl
+%else
 %ifarch %{ix86}
 # FIXME at some point, we need to figure out why x86_32 to
 # x86_64-mingw crosscompilers are broken
@@ -8,6 +12,7 @@
 %else
 %global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
 %global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux
+%endif
 %endif
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
 %global long_targets %(
@@ -3236,14 +3241,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
 		cd %{buildroot}%{_bindir}
 		for j in $longplatform-*; do
-			ln -s $j $(echo $j |sed -e "s,$longplatform,$shortplatform,")
+			[ -e $(echo $j |sed -e "s,$longplatform,$shortplatform,") ] || ln -s $j $(echo $j |sed -e "s,$longplatform,$shortplatform,")
 		done
 		cd -
 	fi
 	if [ "$longplatform" != "$i" ]; then
 		cd %{buildroot}%{_bindir}
 		for j in $longplatform-*; do
-			ln -s $j $(echo $j |sed -e "s,$longplatform,$i,")
+			[ -e $(echo $j |sed -e "s,$longplatform,$i,") ] || ln -s $j $(echo $j |sed -e "s,$longplatform,$i,")
 		done
 		cd -
 	fi
