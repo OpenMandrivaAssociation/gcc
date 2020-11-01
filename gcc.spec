@@ -97,8 +97,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.2
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20201024
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -346,8 +346,6 @@ Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %endif
 Source4:	c89
 Source5:	c99
-Source7:	gcc-x32-seed.tar.xz
-Source8:	libc-x32-seed.tar.xz
 
 # environment variables for enabling/disabling colorized gcc output
 Source10:	gcc.sysconfig
@@ -2520,14 +2518,6 @@ echo %{vendor} > gcc/DEV-PHASE
 echo %{version} > gcc/BASE-VER
 %endif
 
-%if %{?x32_bootstrap}0
-    pushd gcc
-        tar -xf %{SOURCE7}
-        mkdir -p gnu
-        ln -s /usr/include/gnu/stubs-64.h gnu/stubs-x32.h
-    popd
-%endif
-
 # Let's get our flags right...
 LANGUAGES=c
 %if %{build_ada}
@@ -2574,8 +2564,8 @@ LIBC_FLAGS="$LIBC_FLAGS --disable-shared --enable-static"
 %endif
 # target specific flags (don't %ifarch for cross compilers)
 case %{target_cpu} in
-x86_64)		TARGET_FLAGS="--with-cpu=generic %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64}%{?x32_bootstrap:,mx32}";;
-znver1)		TARGET_FLAGS="--with-cpu=znver1 %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64}%{?x32_bootstrap:,mx32}";;
+x86_64)		TARGET_FLAGS="--with-cpu=generic %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64,mx32}";;
+znver1)		TARGET_FLAGS="--with-cpu=znver1 %{?build_multilib:--with-arch_32=i686 --with-multilib-list=m32,m64,mx32}";;
 i?86|athlon)	TARGET_FLAGS="--with-arch=i686 --with-cpu=generic";;
 mips64|mips64el) TARGET_FLAGS="--enable-long-long --with-abi=64 --enable-targets=all";;
 mips32|mips32el) TARGET_FLAGS="--enable-long-long --with-abi=n32 --enable-targets=all";;
@@ -3035,22 +3025,48 @@ popd
     mkdir -p %{buildroot}/%{target_slibdir}
     mv %{buildroot}%{target_libdir}/libgcc_s.so.%{gcc_major} \
         %{buildroot}/%{target_slibdir}
-    ln -srf %{buildroot}/%{target_slibdir}/libgcc_s.so.%{gcc_major} \
-        %{buildroot}%{target_libdir}/libgcc_s.so
+    # FIXME symlinking libgcc_s.so.%{gcc_major} to libgcc_s.so results in
+    # odd unresolved symbols as seen in
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1830472
+    # The fix works, but why isn't upstream doing anything like this?
+    # Need to keep checking if there has been an upstream fix.
+    #ln -srf %{buildroot}/%{target_slibdir}/libgcc_s.so.%{gcc_major} \
+    #    %{buildroot}%{target_libdir}/libgcc_s.so
+    cat >%{buildroot}%{target_libdir}/libgcc_s.so <<EOF
+/* GNU ld script
+   Use the shared library, but some functions are only in
+   the static library, so try that secondarily.  */
+OUTPUT_FORMAT(`gcc -Wl,--print-output-format -nostdlib -r -o /dev/null`)
+GROUP ( %{target_slibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
+EOF
 
     %if %{build_multilib}
         mkdir -p %{buildroot}%{multirootlibdir}
         mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major} \
             %{buildroot}%{multirootlibdir}
-        ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
-            %{buildroot}%{multilibdir}/libgcc_s.so
+#        ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
+#            %{buildroot}%{multilibdir}/libgcc_s.so
+        cat >%{buildroot}%{multilibdir}/libgcc_s.so <<EOF
+/* GNU ld script
+   Use the shared library, but some functions are only in
+   the static library, so try that secondarily.  */
+OUTPUT_FORMAT(`gcc -m32 -Wl,--print-output-format -nostdlib -r -o /dev/null`)
+GROUP ( %{multirootlibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
+EOF
 
 	if [ -e %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} ]; then
             mkdir -p %{buildroot}/libx32
             mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
                 %{buildroot}/libx32/
-            ln -srf %{buildroot}/libx32/libgcc_s.so.%{gcc_major} \
-                %{buildroot}%{_prefix}/libx32/libgcc_s.so
+#            ln -srf %{buildroot}/libx32/libgcc_s.so.%{gcc_major} \
+#                %{buildroot}%{_prefix}/libx32/libgcc_s.so
+            cat >%{buildroot}%{_prefix}/libx32/libgcc_s.so <<EOF
+/* GNU ld script
+   Use the shared library, but some functions are only in
+   the static library, so try that secondarily.  */
+OUTPUT_FORMAT(`gcc -mx32 -Wl,--print-output-format -nostdlib -r -o /dev/null`)
+GROUP ( %{multirootlibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
+EOF
         fi
     %endif
 %endif
