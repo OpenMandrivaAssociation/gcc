@@ -10,8 +10,8 @@
 %global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32
 %global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux
 %else
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32
-%global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux
+%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64-linuxmusl ppc64-linuxuclibc ppc64le-linux ppc64le-linuxmusl ppc64le-linuxuclibc
 %endif
 %endif
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
@@ -98,7 +98,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.2
 %define		ver			%{branch}.1
-%define		prerelease		20201024
+%define		prerelease		20201128
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -2594,6 +2594,15 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			export CFLAGS_FOR_TARGET="-m64"
 			export CXXFLAGS_FOR_TARGET="-m64"
 		fi
+	fi
+	# https://sourceware.org/bugzilla/show_bug.cgi?id=26360
+	# glibc on ppc64le assumes 128-bit long doubles, while gcc (when built
+	# without glibc headers already present) assumes 64-bit long doubles.
+	# Let's force glibc's view of the world to make it match.
+	# While other libcs don't barf as badly, --with-long-double-128 makes
+	# sense for all ppc64 targets.
+	if echo ${i} |grep -qE '^(ppc|powerpc)64'; then
+		EXTRA_FLAGS="$EXTRA_FLAGS --with-long-double-128"
 	fi
 	if echo ${i} |grep -q musl; then
 		# gcc sanitizers currently aren't compatible with musl
