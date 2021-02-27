@@ -12,8 +12,8 @@
 %ifarch %{ix86}
 # FIXME at some point, we need to figure out why x86_32 to
 # x86_64-mingw crosscompilers are broken
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32
-%global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux
+%global targets aarch64-linux armv7hnl-linux x32-linux riscv64-linux i686-mingw32
+%global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux x86_64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl
 %else
 %global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64-linux ppc64le-linux ppc64le-linuxmusl
 %global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc ppc64-linuxmusl
@@ -104,7 +104,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.2
 %define		ver			%{branch}.1
-%define		prerelease		20210123
+%define		prerelease		20210220
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -3299,6 +3299,10 @@ done
 # directories... Doesn't belong there for sure
 %ifarch %{aarch64} %{riscv}
 rm -rf %{buildroot}%{_prefix}/libx32
+%endif
+%ifarch %{ix86}
+# Not sure why ix86 would try to build multilib stuff?
+rm -rf %{buildroot}%{_prefix}/{lib64,libx32}
 %endif
 
 %if %{system_gcc}
