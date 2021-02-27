@@ -2516,6 +2516,9 @@ Static liblsan.
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
 
+# Allow building with current autoconf
+find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
+
 aclocal -I config
 autoconf
 
