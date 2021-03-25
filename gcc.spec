@@ -104,7 +104,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			10.2
 %define		ver			%{branch}.1
-%define		prerelease		20210220
+%define		prerelease		20210320
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -726,6 +726,15 @@ The C preprocessor provides four separate functionalities:
 %files cpp
 %endif
 %{_bindir}/cpp
+%{_bindir}/%{gcc_target_platform}-cpp
+%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-cpp"
+		echo "%%optional %{_bindir}/${shortplatform}-cpp-%{ver}"
+	fi
+)
 %if %{system_gcc}
 /lib/cpp
 %{_mandir}/man1/cpp.1*
@@ -2954,6 +2963,10 @@ done
 mkdir -p %{buildroot}%{_libdir}/bfd-plugins
 ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
 %endif
+
+# Make cpp names crosscompiler friendly
+ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp
+ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
 
 # configure python dir option does not cover libstdc++
 mkdir -p %{buildroot}%{py_puresitedir}
