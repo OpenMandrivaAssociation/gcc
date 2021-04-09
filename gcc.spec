@@ -6,8 +6,8 @@
 %else
 %ifarch %{arm}
 # Also missing a few deps...
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux
-%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc ppc64-linuxmusl ppc64-linux ppc64le-linux ppc64le-linuxmusl
+%global targets aarch64-linux armv7hnl-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux
+%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc ppc64-linuxmusl ppc64-linux ppc64le-linux ppc64le-linuxmusl x86_64-linux x86_64-linuxmusl
 %else
 %ifarch %{ix86}
 # FIXME at some point, we need to figure out why x86_32 to
@@ -726,6 +726,15 @@ The C preprocessor provides four separate functionalities:
 %files cpp
 %endif
 %{_bindir}/cpp
+%{_bindir}/%{gcc_target_platform}-cpp
+%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
+%(
+	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
+		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
+		echo "%%optional %{_bindir}/${shortplatform}-cpp"
+		echo "%%optional %{_bindir}/${shortplatform}-cpp-%{ver}"
+	fi
+)
 %if %{system_gcc}
 /lib/cpp
 %{_mandir}/man1/cpp.1*
@@ -2954,6 +2963,10 @@ done
 mkdir -p %{buildroot}%{_libdir}/bfd-plugins
 ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
 %endif
+
+# Make cpp names crosscompiler friendly
+ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp
+ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
 
 # configure python dir option does not cover libstdc++
 mkdir -p %{buildroot}%{py_puresitedir}
