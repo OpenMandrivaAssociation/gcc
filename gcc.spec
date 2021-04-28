@@ -344,7 +344,7 @@ Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	1
+Release:	2
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -601,15 +601,6 @@ build applications with libgcc.
 %{target_libdir}/libgcc_s.so
 %if %{build_multilib}
 %{multilibdir}/libgcc_s.so
-%ifarch %{x86_64}
-# 3-fold multilib...
-%optional %{_prefix}/libx32/libgcc_s.so
-%endif
-%endif
-%optional %{_prefix}/lib/libgcc_s.a
-%if %isarch mips mipsel
-%{target_libdir}32/libgcc_s.so
-%{target_libdir}64/libgcc_s.so
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
@@ -641,19 +632,6 @@ The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{multilibgcc}
 %{multirootlibdir}/libgcc_s.so.%{gcc_major}
-
-%ifarch %{x86_64} aarch64 riscv64
-%package -n %{libx32gcc}
-Summary:	GNU C library
-Group:		System/Libraries
-Conflicts:	%{libgcc} < 4.6.2-11
-
-%description -n %{libx32gcc}
-The %{libx32gcc} package contains GCC shared libraries for gcc %{branch}
-
-%files -n %{libx32gcc}
-/libx32/libgcc_s.so.%{gcc_major}
-%endif
 %endif
 
 #-----------------------------------------------------------------------
@@ -2626,7 +2604,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 	if echo ${i} |grep -qE '^(ppc|powerpc)64le.*-gnu'; then
 		EXTRA_FLAGS="$EXTRA_FLAGS --with-long-double-128"
 	fi
-	if echo ${i} |grep -q '-gnu'; then
+	if echo ${i} |grep -q -- '-gnu'; then
 		# glibc target -- when bootstrapping, make sure we set defaults
 		# for the right version anyway
 		EXTRA_FLAGS="$EXTRA_FLAGS --with-glibc-version=2.32"
@@ -2946,6 +2924,10 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 for i in %{long_bootstraptargets} %{long_targets}; do
 	[ "%{gcc_target_platform}" = "$i" ] && continue
 	%make_install -C obj-${i}
+	# libgcc_s.so* is always installed in the wrong place
+	# Using "%{_prefix}/lib*" to catch /usr/lib, /usr/lib64 and /usr/libx32
+	# Failure allowed because bootstrap compilers don't have shared libraries
+	mv %{buildroot}%{_prefix}/lib*/libgcc* %{buildroot}%{_prefix}/${i}/lib/ || :
 done
 # *-mingw32 crosscompilers include a float.h file that hides
 # mingw's own float.h, causing mingw-crt to fail
