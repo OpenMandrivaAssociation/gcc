@@ -1,6 +1,6 @@
-diff -up gcc-10-20200202/gcc/config/i386/biarch64.h.linux32~ gcc-10-20200202/gcc/config/i386/biarch64.h
---- gcc-10-20200202/gcc/config/i386/biarch64.h.linux32~	2020-02-02 23:32:04.000000000 +0100
-+++ gcc-10-20200202/gcc/config/i386/biarch64.h	2020-02-08 14:28:40.221907875 +0100
+diff -up gcc-11.1.0/gcc/config/i386/biarch64.h.linux32~ gcc-11.1.0/gcc/config/i386/biarch64.h
+--- gcc-11.1.0/gcc/config/i386/biarch64.h.linux32~	2021-04-27 12:00:13.000000000 +0200
++++ gcc-11.1.0/gcc/config/i386/biarch64.h	2021-05-03 03:05:06.984297940 +0200
 @@ -27,3 +27,11 @@ see the files COPYING3 and COPYING.RUNTI
  
  #define TARGET_64BIT_DEFAULT (OPTION_MASK_ISA_64BIT | OPTION_MASK_ABI_64)
@@ -13,9 +13,9 @@ diff -up gcc-10-20200202/gcc/config/i386/biarch64.h.linux32~ gcc-10-20200202/gcc
 +               ((syscall(SYS_personality, 0xffffffff) & PER_MASK) == PER_LINUX32)
 +#endif
 +#endif
-diff -up gcc-10-20200202/gcc/opts-common.c.linux32~ gcc-10-20200202/gcc/opts-common.c
---- gcc-10-20200202/gcc/opts-common.c.linux32~	2020-02-02 23:32:07.000000000 +0100
-+++ gcc-10-20200202/gcc/opts-common.c	2020-02-08 14:30:54.370913791 +0100
+diff -up gcc-11.1.0/gcc/opts-common.c.linux32~ gcc-11.1.0/gcc/opts-common.c
+--- gcc-11.1.0/gcc/opts-common.c.linux32~	2021-04-27 12:00:13.000000000 +0200
++++ gcc-11.1.0/gcc/opts-common.c	2021-05-03 03:06:36.726770318 +0200
 @@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.
  #include "system.h"
  #include "intl.h"
@@ -24,7 +24,7 @@ diff -up gcc-10-20200202/gcc/opts-common.c.linux32~ gcc-10-20200202/gcc/opts-com
  #include "opts.h"
  #include "options.h"
  #include "diagnostic.h"
-@@ -943,6 +944,10 @@ decode_cmdline_options_to_array (unsigne
+@@ -944,6 +945,10 @@ decode_cmdline_options_to_array (unsigne
    unsigned int n, i;
    struct cl_decoded_option *opt_array;
    unsigned int num_decoded_options;
@@ -33,10 +33,10 @@ diff -up gcc-10-20200202/gcc/opts-common.c.linux32~ gcc-10-20200202/gcc/opts-com
 +  bool arch_32bit = TARGET_32BIT_PERSONALITY;
 +#endif
  
-   opt_array = XNEWVEC (struct cl_decoded_option, argc);
- 
-@@ -981,11 +986,33 @@ decode_cmdline_options_to_array (unsigne
- 	  argv[++i] = replacement;
+   int opt_array_len = argc;
+   opt_array = XNEWVEC (struct cl_decoded_option, opt_array_len);
+@@ -1018,11 +1023,33 @@ decode_cmdline_options_to_array (unsigne
+ 	  continue;
  	}
  
 +#ifdef TARGET_32BIT_PERSONALITY

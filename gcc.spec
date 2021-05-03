@@ -102,7 +102,7 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			10.3
+%define		branch			11.1
 %define		ver			%{branch}.0
 %define		prerelease		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
@@ -127,7 +127,7 @@
 %define		libstdcxx_devel		%mklibname stdc++ -d
 %define		libstdcxx_static_devel	%mklibname stdc++ -d -s
 %define		multilibstdcxx		libstdc++%{stdcxx_major}
-%define		d_major			1
+%define		d_major			2
 %define		libgdruntime		%mklibname gdruntime %{d_major}
 %define		libgdruntime_devel	%mklibname gdruntime -d
 %define		libgdruntime_static_devel	%mklibname gdruntime -d -s
@@ -157,7 +157,7 @@
 %define		libgnat_devel		%mklibname gnat -d
 %define		libgnat_static_devel	%mklibname gnat -d -s
 %define		multilibgnat		libgnat%{gnat_major}
-%define		go_major		16
+%define		go_major		19
 %define		libgo			%mklibname go %{go_major}
 %define		libgo_devel		%mklibname go -d
 %define		libgo_static_devel	%mklibname go -d -s
@@ -344,7 +344,7 @@ Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	2
+Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -754,6 +754,7 @@ including templates and exception handling.
 %endif
 %{_bindir}/c++-%{ver}
 %{_bindir}/g++-%{ver}
+%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}/g++-mapper-server
 %{_bindir}/%{gcc_target_platform}-g++-%{ver}
 %(
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then

@@ -1,24 +1,24 @@
-diff -up gcc-9.1.0/libstdc++-v3/src/Makefile.am.omv~ gcc-9.1.0/libstdc++-v3/src/Makefile.am
---- gcc-9.1.0/libstdc++-v3/src/Makefile.am.omv~	2019-06-29 15:01:11.749832344 +0200
-+++ gcc-9.1.0/libstdc++-v3/src/Makefile.am	2019-06-29 15:02:14.859829282 +0200
-@@ -105,7 +105,7 @@ libstdc___la_DEPENDENCIES = \
- 	$(top_builddir)/src/c++17/libc++17convenience.la
+diff -up gcc-11.1.0/libstdc++-v3/src/Makefile.am.pthreadlinkage~ gcc-11.1.0/libstdc++-v3/src/Makefile.am
+--- gcc-11.1.0/libstdc++-v3/src/Makefile.am.pthreadlinkage~	2021-05-03 03:03:37.478782155 +0200
++++ gcc-11.1.0/libstdc++-v3/src/Makefile.am	2021-05-03 03:04:15.659435068 +0200
+@@ -123,7 +123,7 @@ libstdc___la_DEPENDENCIES = \
+ 	$(top_builddir)/src/c++20/libc++20convenience.la
  
  libstdc___la_LDFLAGS = \
 -	-version-info $(libtool_VERSION) ${version_arg} -lm
 +	-version-info $(libtool_VERSION) ${version_arg} -lm -pthread -lpthread
  
- libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
+ libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
  
-diff -up gcc-9.1.0/libstdc++-v3/src/Makefile.in.omv~ gcc-9.1.0/libstdc++-v3/src/Makefile.in
---- gcc-9.1.0/libstdc++-v3/src/Makefile.in.omv~	2019-06-29 15:02:17.735829143 +0200
-+++ gcc-9.1.0/libstdc++-v3/src/Makefile.in	2019-06-29 15:02:31.957828453 +0200
-@@ -513,7 +513,7 @@ libstdc___la_DEPENDENCIES = \
- 	$(top_builddir)/src/c++17/libc++17convenience.la
+diff -up gcc-11.1.0/libstdc++-v3/src/Makefile.in.pthreadlinkage~ gcc-11.1.0/libstdc++-v3/src/Makefile.in
+--- gcc-11.1.0/libstdc++-v3/src/Makefile.in.pthreadlinkage~	2021-05-03 03:03:37.478782155 +0200
++++ gcc-11.1.0/libstdc++-v3/src/Makefile.in	2021-05-03 03:04:38.051813536 +0200
+@@ -535,7 +535,7 @@ libstdc___la_DEPENDENCIES = \
+ 	$(top_builddir)/src/c++20/libc++20convenience.la
  
  libstdc___la_LDFLAGS = \
 -	-version-info $(libtool_VERSION) ${version_arg} -lm
 +	-version-info $(libtool_VERSION) ${version_arg} -lm -pthread -lpthread
  
- libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
- 
+ libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
+ @GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = $(LTCXXCOMPILE)
