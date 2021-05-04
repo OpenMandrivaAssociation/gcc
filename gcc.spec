@@ -7,7 +7,9 @@
 %ifarch %{arm}
 # Also missing a few deps...
 %global targets aarch64-linux armv7hnl-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-linux
-%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc ppc64-linuxmusl ppc64-linux ppc64le-linux ppc64le-linuxmusl x86_64-linux x86_64-linuxmusl i686-mingw32 x86_64-mingw32
+%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc ppc64-linuxmusl ppc64-linux ppc64le-linux ppc64le-linuxmusl x86_64-linux x86_64-linuxmusl
+# FIXME determine why Windoze crosscompilers don't compile on arm32
+# i686-mingw32 x86_64-mingw32
 %else
 %ifarch %{ix86}
 # FIXME at some point, we need to figure out why x86_32 to
