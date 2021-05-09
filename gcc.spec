@@ -427,6 +427,9 @@ Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
 
+# FIXME THIS IS *BROKEN*, but right now, we're lacking a better "fix"
+Patch1008:	gcc-11.1-workaround-bug-100490.patch
+
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
@@ -2505,6 +2508,8 @@ Static liblsan.
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
+
+%patch1008 -p1 -b .bug100490~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'

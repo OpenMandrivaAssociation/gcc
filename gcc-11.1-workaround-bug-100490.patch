@@ -1,0 +1,34 @@
+diff -up gcc-11.1.0/libstdc++-v3/src/c++17/floating_from_chars.cc.omv~ gcc-11.1.0/libstdc++-v3/src/c++17/floating_from_chars.cc
+--- gcc-11.1.0/libstdc++-v3/src/c++17/floating_from_chars.cc.omv~	2021-05-09 02:05:37.402161259 +0000
++++ gcc-11.1.0/libstdc++-v3/src/c++17/floating_from_chars.cc	2021-05-09 02:45:14.433266163 +0000
+@@ -34,7 +34,7 @@
+ #include <string>
+ #include <memory_resource>
+ #include <cfenv>
+-#include <cmath>
++//#include <cmath>
+ #include <cstdlib>
+ #include <cstring>
+ #include <cctype>
+diff -up gcc-11.1.0/libstdc++-v3/src/c++17/floating_to_chars.cc.omv~ gcc-11.1.0/libstdc++-v3/src/c++17/floating_to_chars.cc
+--- gcc-11.1.0/libstdc++-v3/src/c++17/floating_to_chars.cc.omv~	2021-05-09 02:41:31.806832511 +0000
++++ gcc-11.1.0/libstdc++-v3/src/c++17/floating_to_chars.cc	2021-05-09 02:49:32.699140261 +0000
+@@ -30,7 +30,17 @@
+ #include <bit>
+ #include <cfenv>
+ #include <cassert>
++#if !defined(__aarch64__) || defined(BUG100490_IS_FIXED)
+ #include <cmath>
++#else
++// Ugly hack, keep in sync with <math.h>
++#define FP_NAN 0
++#define FP_INFINITE 1
++#define FP_ZERO 2
++#define FP_SUBNORMAL 3
++#define FP_NORMAL 4
++extern "C" int abs(int j);
++#endif
+ #include <cstdio>
+ #include <cstring>
+ #if __has_include(<langinfo.h>)
+diff -up gcc-11.1.0/libstdc++-v3/src/filesystem/ops.cc.omv~ gcc-11.1.0/libstdc++-v3/src/filesystem/ops.cc
