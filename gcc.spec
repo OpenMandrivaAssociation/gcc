@@ -274,7 +274,7 @@
   %define	build_objc		%{system_gcc}
   %define	build_objcxx		%{system_gcc}
   %define	build_go		%{system_gcc}
-%if %isarch %{ix86} %{x86_64} %{arm} %{riscv}
+%if %isarch %{ix86} %{x86_64} %{arm} %{aarch64} %{riscv}
   %define	build_asan		%{system_gcc}
 %else
   %define	build_asan		0
