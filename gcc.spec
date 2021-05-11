@@ -2105,9 +2105,6 @@ GCC Address Sanitizer Library.
 
 %files -n %{libasan}
 %{target_libdir}/libasan.so.%{asan_major}*
-%ifarch %{aarch64}
-%{_libdir]/libhwasan.so.0*
-%endif
 
 #-----------------------------------------------------------------------
 
@@ -2147,9 +2144,6 @@ to use Address Sanitizer features.
 %{multilibdir}/libasan.so
 %{multilibdir}/libasan_preinit.o
 %endif
-%ifarch %{aarch64}
-%{_libdir]/libhwasan.so
-%endif
 
 #-----------------------------------------------------------------------
 
@@ -2165,9 +2159,6 @@ Static libasan.
 %{target_libdir}/libasan.a
 %if %{build_multilib}
 %{multilibdir}/libasan.a
-%endif
-%ifarch %{aarch64}
-%{_libdir]/libhwasan.a
 %endif
 %endif
 
