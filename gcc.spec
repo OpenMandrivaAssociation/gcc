@@ -346,7 +346,7 @@ Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	1
+Release:	2
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -2702,7 +2702,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %if !%isarch %{mipsx}
 			--enable-gold=default \
 %endif
-			--with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld \
+			--with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld.bfd \
 %if %{system_gcc}
 			--enable-bootstrap \
 %endif
@@ -2800,7 +2800,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				--disable-werror \
 				--enable-__cxa_atexit \
 				--enable-gold=default \
-				--with-plugin-ld=%{_bindir}/${i}-ld \
+				--with-plugin-ld=%{_bindir}/${i}-ld.bfd \
 				--enable-checking=release \
 				--enable-gnu-unique-object \
 				--enable-gnu-indirect-function \
