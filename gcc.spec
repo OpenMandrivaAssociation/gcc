@@ -105,8 +105,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			11.1
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20210529
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -528,6 +528,10 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %optional %{_infodir}/libquadmath.info*
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
+%dir %{_libdir}/gcc
+%if "%{_lib}" != "lib"
+%{_prefix}/lib/gcc
+%endif
 %dir %{gccdirparent}
 %dir %{gccdir}
 %dir %{gcclibexecdirparent}
@@ -3303,6 +3307,13 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		cd -
 	fi
 done
+%endif
+
+%if "%{_lib}" != "lib"
+# clang has a slightly strange way of detecting gcc cross toolchains.
+# Let's be compatible with it.
+mkdir -p %{buildroot}%{_prefix}/lib
+ln -s ../%{_lib}/gcc %{buildroot}%{_prefix}/lib/gcc
 %endif
 
 # Not sure why this ends up in /usr as well as the crosscompiler
