@@ -339,7 +339,7 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
