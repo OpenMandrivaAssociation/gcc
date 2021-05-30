@@ -339,14 +339,14 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	2
+Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -2607,7 +2607,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			export CXXFLAGS_FOR_TARGET="-m64"
 		fi
 	elif echo ${i} |grep ppc64; then
-		EXTRA_FLAGS="--without-multilib --disable-multilib"
+		EXTRA_FLAGS="--without-multilib --disable-multilib --with-abi=elfv2"
 		export CFLAGS_FOR_TARGET="-m64"
 		export CXXFLAGS_FOR_TARGET="-m64"
 	fi
