@@ -339,7 +339,7 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
@@ -2607,7 +2607,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			export CXXFLAGS_FOR_TARGET="-m64"
 		fi
 	elif echo ${i} |grep ppc64; then
-		EXTRA_FLAGS="--without-multilib --disable-multilib --with-abi=elfv2"
+		EXTRA_FLAGS="--without-multilib --disable-multilib"
 		export CFLAGS_FOR_TARGET="-m64"
 		export CXXFLAGS_FOR_TARGET="-m64"
 	fi
@@ -2617,8 +2617,8 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 	# Let's force glibc's view of the world to make it match.
 	# While other libcs don't barf as badly, --with-long-double-128 makes
 	# sense for all ppc64 targets.
-	if echo ${i} |grep -qE '^(ppc|powerpc)64le.*-gnu'; then
-		EXTRA_FLAGS="$EXTRA_FLAGS --with-long-double-128"
+	if echo ${i} |grep -qE '^(ppc|powerpc)64'; then
+		EXTRA_FLAGS="$EXTRA_FLAGS --with-long-double-128 --with-abi=elfv2"
 	fi
 	if echo ${i} |grep -q -- '-gnu'; then
 		# glibc target -- when bootstrapping, make sure we set defaults
