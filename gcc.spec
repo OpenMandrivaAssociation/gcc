@@ -104,9 +104,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			11.1
-%define		ver			%{branch}.1
-%define		prerelease		20210605
+%define		branch			11.2
+%define		ver			%{branch}.0
+%define		prerelease		%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
