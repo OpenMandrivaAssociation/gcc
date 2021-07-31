@@ -2482,6 +2482,7 @@ Static liblsan.
 
 ########################################################################
 %prep
+export LC_ALL=en_US.UTF-8
 %setup -q -n %{srcname}
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .pthreadlinkage~
