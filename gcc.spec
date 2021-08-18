@@ -437,6 +437,7 @@ BuildRequires:	gettext
 BuildRequires:	sharutils
 BuildRequires:	diffutils
 BuildRequires:	texinfo
+BuildRequires:	locales-en
 BuildRequires:	pkgconfig(libtirpc)
 # For py_puresitedir
 %if ! %{build_minimal}
