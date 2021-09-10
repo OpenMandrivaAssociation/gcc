@@ -516,17 +516,17 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/gcov
 %{_bindir}/gcov-dump
 %{_bindir}/gcov-tool
-%{_mandir}/man1/gcc.1*
-%{_mandir}/man1/gcov.1*
-%{_mandir}/man1/gcov-dump.1*
-%{_mandir}/man1/gcov-tool.1*
-%{_mandir}/man1/lto-dump.1*
-%{_mandir}/man7/*
-%{_infodir}/gcc.info*
-%{_infodir}/gccint.info*
-%{_infodir}/gccinstall.info*
+%doc %{_mandir}/man1/gcc.1*
+%doc %{_mandir}/man1/gcov.1*
+%doc %{_mandir}/man1/gcov-dump.1*
+%doc %{_mandir}/man1/gcov-tool.1*
+%doc %{_mandir}/man1/lto-dump.1*
+%doc %{_mandir}/man7/*
+%doc %{_infodir}/gcc.info*
+%doc %{_infodir}/gccint.info*
+%doc %{_infodir}/gccinstall.info*
 # Marked optional because of weird failure on armv7hnl
-%optional %{_infodir}/libquadmath.info*
+%optional %doc %{_infodir}/libquadmath.info*
 %{_bindir}/gcc-%{ver}
 %{_bindir}/%{gcc_target_platform}-gcc-%{ver}
 %dir %{_libdir}/gcc
@@ -722,8 +722,8 @@ The C preprocessor provides four separate functionalities:
 )
 %if %{system_gcc}
 /lib/cpp
-%{_mandir}/man1/cpp.1*
-%{_infodir}/cpp*
+%doc %{_mandir}/man1/cpp.1*
+%doc %{_infodir}/cpp*
 %if %{build_doc}
 %doc %{_docdir}/gcc-cpp
 %endif
@@ -753,7 +753,7 @@ including templates and exception handling.
 %files c++
 %if %{system_gcc}
 %{_bindir}/g++
-%{_mandir}/man1/g++.1*
+%doc %{_mandir}/man1/g++.1*
 %endif
 %if %{system_gcc}
 %{_bindir}/%{gcc_target_platform}-c++
@@ -902,8 +902,8 @@ This package adds D support to the GNU Compiler Collection.
 %files d
 %if %{system_gcc}
 %{_bindir}/gdc
-%{_mandir}/man1/gdc.1*
-%{_infodir}/gdc.info*
+%doc %{_mandir}/man1/gdc.1*
+%doc %{_infodir}/gdc.info*
 %endif
 %if %{system_gcc}
 %{_bindir}/%{gcc_target_platform}-gdc
@@ -1023,7 +1023,7 @@ tools, the documents and Ada 95 compiler.
 %files gnat
 %{_bindir}/gnat*
 %{gcclibexecdir}/gnat1
-%{_infodir}/gnat*
+%doc %{_infodir}/gnat*
 %if %{build_doc}
 %doc %{_docdir}/gcc-gnat
 %endif
@@ -1154,8 +1154,8 @@ programs with the GNU Compiler Collection.
 		echo "%%optional %{_bindir}/${shortplatform}-gfortran-%{ver}"
 	fi
 )
-%{_infodir}/gfortran.info*
-%{_mandir}/man1/gfortran.1*
+%doc %{_infodir}/gfortran.info*
+%doc %{_mandir}/man1/gfortran.1*
 %{gcclibexecdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libcaf_single.a
@@ -1288,8 +1288,8 @@ with the GNU Compiler Collection.
 %if %{build_multilib}
 %dir %{multilibdir}/go
 %endif
-%{_infodir}/gccgo.info*
-%{_mandir}/man1/gccgo.1*
+%doc %{_infodir}/gccgo.info*
+%doc %{_mandir}/man1/gccgo.1*
 %{_bindir}/gccgo-%{ver}
 %{_bindir}/%{gcc_target_platform}-gccgo-%{ver}
 %{gcclibexecdir}/go1
@@ -1307,8 +1307,8 @@ with the GNU Compiler Collection.
 %if %{build_doc}
 %doc %{_docdir}/gcc-go
 %endif
-%{_mandir}/man1/go.1*
-%{_mandir}/man1/gofmt.1*
+%doc %{_mandir}/man1/go.1*
+%doc %{_mandir}/man1/gofmt.1*
 
 #-----------------------------------------------------------------------
 
@@ -1907,7 +1907,7 @@ to compile OpenMP v3.0 support.
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
 %endif
-%{_infodir}/libgomp.info*
+%doc %{_infodir}/libgomp.info*
 %{gccdir}/include/omp*.h
 %if %{build_pdf}
 %doc %{_docdir}/libgomp
@@ -2071,7 +2071,7 @@ to use Transactional Memory features.
 %{multilibdir}/libitm.spec
 %endif
 %if %{system_gcc}
-%{_infodir}/libitm.info*
+%doc %{_infodir}/libitm.info*
 %endif
 
 #-----------------------------------------------------------------------
