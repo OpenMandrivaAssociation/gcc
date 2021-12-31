@@ -175,9 +175,9 @@
 %define		multilibgomp		libgomp%{gomp_major}
 %define		objc_major		4
 %define		libobjc			%mklibname objc %{objc_major}
-%define		libobjc_devel		%mklibname objc -d
-%define		libobjc_static_devel	%mklibname objc -d -s
-%define		multilibobjc		libobjc%{objc_major}
+%define		libobjc_devel		%mklibname gccobjc -d
+%define		libobjc_static_devel	%mklibname gccobjc -d -s
+%define		multilibobjc		libgccobjc%{objc_major}
 %define		quadmath_major		0
 %define		libquadmath		%mklibname quadmath %{quadmath_major}
 %define		libquadmath_devel	%mklibname quadmath -d
@@ -346,7 +346,7 @@ Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	1
+Release:	2
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
