@@ -104,9 +104,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			11.2
+%define		branch			12.0
 %define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		prerelease		20220313
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -193,12 +193,12 @@
 %define		libitm_devel		%mklibname itm -d
 %define		libitm_static_devel	%mklibname itm -d -s
 %define		multilibitm		libitm%{itm_major}
-%define		asan_major		6
+%define		asan_major		8
 %define		libasan			%mklibname asan %{asan_major}
 %define		libasan_devel		%mklibname asan -d
 %define		libasan_static_devel	%mklibname asan -d -s
 %define		multilibasan		libasan%{asan_major}
-%define		tsan_major		0
+%define		tsan_major		2
 %define		libtsan			%mklibname tsan %{tsan_major}
 %define		libtsan_devel		%mklibname tsan -d
 %define		libtsan_static_devel	%mklibname tsan -d -s
@@ -228,7 +228,10 @@
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
-%define		build_d			%{system_gcc}
+# FIXME This should be re-enabled, for a yet undetermined reason
+# "make install" fails on broken *.Po files when building gcc
+# 12.0-20220313 with gcc 11.2.1
+%define		build_d			0
 %define		build_lto		1
 %define		build_atomic		1
 %define		build_objc		0
@@ -263,8 +266,6 @@
 %if %isarch %{ix86} %{x86_64}
   %define	build_quadmath		%{system_gcc}
   %define	build_doc		1
-# system_gcc && build_cxx
-  %define	build_go		%{system_gcc}
   %define	build_vtv		%{system_gcc}
 %endif
 %if %isarch %{ix86} %{x86_64}
@@ -273,7 +274,9 @@
 %if %isarch %{ix86} %{x86_64} %{armx}
   %define	build_objc		%{system_gcc}
   %define	build_objcxx		%{system_gcc}
-  %define	build_go		%{system_gcc}
+# FIXME restore go when it's fixed
+# As of 12.0: No rule to make target '../libbacktrace/libbacktrace.la', needed by 'libgo.la'.
+  %define	build_go		0
 %if %isarch %{ix86} %{x86_64} %{arm} %{aarch64} %{riscv}
   %define	build_asan		%{system_gcc}
 %else
@@ -339,14 +342,14 @@ Url:		http://gcc.gnu.org/
 %define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
-Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').2
+Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	2
+Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
@@ -364,25 +367,17 @@ Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		libstdc++-pthread-linkage.patch
-Patch2:		gcc-4.8-aarch64-ld-path.patch
-Patch3:		gcc-4.7.1-linux32.patch
+#Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
-Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
+#Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
 Patch9:		gcc-4.7-androidcompat.patch
-Patch10:	gcc-4.7.3-texinfo-5.0.patch
-# Fix build failure
-Patch11:	gcc-4.8-istream-ignore.patch
 # Seems to be still required on armv7hnl
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
 Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
-# Alias -Oz to -Os for compatibility with clang's -Oz flag
-Patch14:	gcc-4.9-add-Oz-for-clang-compatibility.patch
-# Fix libstdc++ for use with clang
-Patch15:	gcc-9-libstdc++-locale-clang.patch
 # FIXME this is ***evil***
 # Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
 # A notable difference:
@@ -406,10 +401,6 @@ Patch18:	gcc-5.1.0-libstdc++-musl.patch
 Patch20:	gcc-6.3-libgcc-musl-workaround.patch
 
 # From Google's tree
-# 771c2f9542b4e84b08c107060319603d12ec8867
-Patch101:	gcc-4.9-neon-alignment.patch
-# d7c9c7963a79b60e2247bd5a41decc80938023f4
-Patch102:	gcc-4.9-libstdc++-clang.patch
 # 331e362574142e4c1d9d509533d1c96b6dc54d13
 Patch104:	gcc-4.9-simplify-got.patch
 
@@ -426,6 +417,11 @@ Patch209:	0009-musl-x86.patch
 Patch1001:	gcc33-pass-slibdir.patch
 # pass libdir around
 Patch1007:	gcc-4.6.2-multi-do-libdir.patch
+
+# Fix build of libstdc++ for mingw crosscompilers
+Patch1008:	libstdc++-12.0-mingw-crosscompilers.patch
+# Fix linking the stage-1 ADA compiler
+Patch1009:	gcc-12-fix-stage1-ada-linkage.patch
 
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
@@ -605,9 +601,9 @@ The %{libgcc} package contains header files and object files needed to
 build applications with libgcc.
 
 %files -n %{libgcc_devel}
-%{target_libdir}/libgcc_s.so
+/%{_lib}/libgcc_s.so
 %if %{build_multilib}
-%{multilibdir}/libgcc_s.so
+/lib/libgcc_s.so
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
@@ -638,7 +634,7 @@ Conflicts:	%{libgcc} < 4.6.2-11
 The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{multilibgcc}
-%{multirootlibdir}/libgcc_s.so.%{gcc_major}
+/lib/libgcc_s.so.%{gcc_major}
 %endif
 
 #-----------------------------------------------------------------------
@@ -2485,22 +2481,18 @@ Static liblsan.
 %prep
 export LC_ALL=en_US.UTF-8
 %setup -q -n %{srcname}
+%if 0
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .pthreadlinkage~
-#patch2 -p1 -b .aarch64~
-%patch3 -p1 -b .linux32~
+#patch3 -p1 -b .linux32~
 %patch4 -p1 -b .execstack~
-%patch6 -p1 -b .ltobfd~
+#patch6 -p1 -b .ltobfd~
 %patch7 -p1 -b .plugindet~
 # Breaks the build, see comment on bug 33763
 #patch8 -p1 -b .ext_inline~
 #patch9 -p1 -b .android~
-#patch10 -p1 -b .texi50~
-%patch11 -p1 -b .buildfix~
 %patch12 -p1 -b .compare~
 %patch13 -p1 -b .short
-%patch14 -p1 -b .Oz~
-%patch15 -p1 -b .libstdc++clang~
 %ifarch aarch64
 %patch16 -p1 -b .EVILaarch64~
 %endif
@@ -2508,8 +2500,6 @@ export LC_ALL=en_US.UTF-8
 %patch18 -p1 -b .musl1~
 %patch20 -p1 -b .musllibgcc~
 
-%patch101 -p2 -b .google2~
-%patch102 -p2 -b .google3~
 #patch104 -p1 -b .google5~
 
 %patch203 -p1 -b .musl4~
@@ -2520,6 +2510,9 @@ export LC_ALL=en_US.UTF-8
 
 %patch1001 -p1 -b .pass_slibdir~
 %patch1007 -p1 -b .multi-do-libdir~
+%endif
+%patch1008 -p1 -b .mingw32~
+%patch1009 -p1 -b .fixadabuild~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
@@ -2659,9 +2652,9 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 
 		# We can't currently compile gcc with clang, even
 		# though that would be great for bootstrapping
-		# --with-build-config=bootstrap-lto would be nice to
-		# add, but currently errors out on "make install" in
-		# fixincludes
+		# FIXME add
+		#	--with-build-config=bootstrap-lto \
+		# when it is fixed (currently breaks building go)
 		CC=gcc \
 		CXX=g++ \
 		CFLAGS="$OPT_FLAGS" \
@@ -2937,6 +2930,18 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 #-----------------------------------------------------------------------
 
 %install
+# There's a nasty bug in gcc Makefiles -- they go to fixincludes/ and run
+# make install, but they don't actually create a Makefile there if the
+# directory is empty.
+for i in %{long_bootstraptargets} %{long_targets}; do
+	if ! [ -e obj-${i}/fixincludes/Makefile ]; then
+		cat >obj-${i}/fixincludes/Makefile <<'EOF'
+install:
+	echo No fixincludes to take care of
+EOF
+	fi
+done
+
 %if %{with crosscompilers}
 # Install crosscompilers first so the native compiler can overwrite stuff
 for i in %{long_bootstraptargets} %{long_targets}; do
@@ -3058,56 +3063,6 @@ popd
             %{buildroot}%{multirootlibdir}
         ln -srf %{buildroot}%{multirootlibdir}/libgomp.so.%{gomp_major}.*.* \
             %{buildroot}%{multilibdir}/libgomp.so
-    %endif
-%endif
-
-%if %{system_gcc}
-    mkdir -p %{buildroot}/%{target_slibdir}
-    mv %{buildroot}%{target_libdir}/libgcc_s.so.%{gcc_major} \
-        %{buildroot}/%{target_slibdir}
-    # FIXME symlinking libgcc_s.so.%{gcc_major} to libgcc_s.so results in
-    # odd unresolved symbols as seen in
-    # https://bugzilla.redhat.com/show_bug.cgi?id=1830472
-    # The fix works, but why isn't upstream doing anything like this?
-    # Need to keep checking if there has been an upstream fix.
-    #ln -srf %{buildroot}/%{target_slibdir}/libgcc_s.so.%{gcc_major} \
-    #    %{buildroot}%{target_libdir}/libgcc_s.so
-    cat >%{buildroot}%{target_libdir}/libgcc_s.so <<EOF
-/* GNU ld script
-   Use the shared library, but some functions are only in
-   the static library, so try that secondarily.  */
-OUTPUT_FORMAT(`gcc -Wl,--print-output-format -nostdlib -r -o /dev/null`)
-GROUP ( %{target_slibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
-EOF
-
-    %if %{build_multilib}
-        mkdir -p %{buildroot}%{multirootlibdir}
-        mv %{buildroot}%{multilibdir}/libgcc_s.so.%{gcc_major} \
-            %{buildroot}%{multirootlibdir}
-#        ln -srf %{buildroot}%{multirootlibdir}/libgcc_s.so.%{gcc_major} \
-#            %{buildroot}%{multilibdir}/libgcc_s.so
-        cat >%{buildroot}%{multilibdir}/libgcc_s.so <<EOF
-/* GNU ld script
-   Use the shared library, but some functions are only in
-   the static library, so try that secondarily.  */
-OUTPUT_FORMAT(`gcc -m32 -Wl,--print-output-format -nostdlib -r -o /dev/null`)
-GROUP ( %{multirootlibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
-EOF
-
-	if [ -e %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} ]; then
-            mkdir -p %{buildroot}/libx32
-            mv %{buildroot}%{_prefix}/libx32/libgcc_s.so.%{gcc_major} \
-                %{buildroot}/libx32/
-#            ln -srf %{buildroot}/libx32/libgcc_s.so.%{gcc_major} \
-#                %{buildroot}%{_prefix}/libx32/libgcc_s.so
-            cat >%{buildroot}%{_prefix}/libx32/libgcc_s.so <<EOF
-/* GNU ld script
-   Use the shared library, but some functions are only in
-   the static library, so try that secondarily.  */
-OUTPUT_FORMAT(`gcc -mx32 -Wl,--print-output-format -nostdlib -r -o /dev/null`)
-GROUP ( %{multirootlibdir}/libgcc_s.so.%{gcc_major} libgcc.a )
-EOF
-        fi
     %endif
 %endif
 

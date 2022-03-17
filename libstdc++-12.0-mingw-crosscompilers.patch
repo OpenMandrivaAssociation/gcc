@@ -1,0 +1,13 @@
+diff -up gcc-12-20220306/libstdc++-v3/include/bits/c++config.omv~ gcc-12-20220306/libstdc++-v3/include/bits/c++config
+--- gcc-12-20220306/libstdc++-v3/include/bits/c++config.omv~	2022-03-14 22:03:59.934357781 +0100
++++ gcc-12-20220306/libstdc++-v3/include/bits/c++config	2022-03-14 22:04:29.994524724 +0100
+@@ -71,6 +71,9 @@
+ #else
+ // If this is not supplied by the OS-specific or CPU-specific
+ // headers included below, it will be defined to an empty default.
++# ifndef _GLIBCXX_PSEUDO_VISIBILITY
++#  define _GLIBCXX_PSEUDO_VISIBILITY(X)
++# endif
+ # define _GLIBCXX_VISIBILITY(V) _GLIBCXX_PSEUDO_VISIBILITY(V)
+ #endif
+ 

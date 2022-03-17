@@ -1,0 +1,13 @@
+diff -up gcc-12-20220313/gcc/ada/gcc-interface/Make-lang.in.omv~ gcc-12-20220313/gcc/ada/gcc-interface/Make-lang.in
+--- gcc-12-20220313/gcc/ada/gcc-interface/Make-lang.in.omv~	2022-03-16 02:24:26.612269017 +0100
++++ gcc-12-20220313/gcc/ada/gcc-interface/Make-lang.in	2022-03-16 02:28:15.892066658 +0100
+@@ -91,7 +91,7 @@ endif
+ 
+ ifeq ($(STAGE1),True)
+   ADA_INCLUDES=$(COMMON_ADA_INCLUDES)
+-  adalib=$(dir $(shell $(CC) -print-libgcc-file-name))adalib
++  adalib=$(dir $(shell $(CC) --print-file-name=libgnat.so))
+   GNATLIB=$(adalib)/$(if $(wildcard $(adalib)/libgnat.a),libgnat.a,libgnat.so) $(STAGE1_LIBS)
+ else
+   ADA_INCLUDES=-nostdinc $(COMMON_ADA_INCLUDES) -Iada/libgnat -I$(srcdir)/ada/libgnat -Iada/gcc-interface -I$(srcdir)/ada/gcc-interface
+diff -up gcc-12-20220313/gcc/ada/Makefile.in.omv~ gcc-12-20220313/gcc/ada/Makefile.in
