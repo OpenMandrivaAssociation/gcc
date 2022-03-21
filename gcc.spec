@@ -106,7 +106,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			12.0
 %define		ver			%{branch}.0
-%define		prerelease		20220313
+%define		prerelease		20220320
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -367,6 +367,7 @@ Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		libstdc++-pthread-linkage.patch
+Patch2:		gcc-12-locale-facets-clang.patch
 #Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
 #Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
@@ -2481,6 +2482,7 @@ Static liblsan.
 %prep
 export LC_ALL=en_US.UTF-8
 %setup -q -n %{srcname}
+%patch2 -p1 -b .clang~
 %if 0
 %patch0 -p1 -b .uclibc~
 %patch1 -p1 -b .pthreadlinkage~
