@@ -60,7 +60,7 @@
 %define nof_arches		noarch
 %define biarches		%{x86_64} mips64 mips64el mips mipsel
 
-%define	system_gcc		1
+%define system_gcc		1
 %define majorver %(echo %{version} |cut -d. -f1)
 
 %if %{system_gcc}
@@ -85,8 +85,8 @@
 %define gcc_target_platform	%{_target_platform}
 %define target_prefix		%{_prefix}
 %define target_libdir		%{_libdir}
-%define target_slibdir		/%{_lib}
-%define target_slibdir32	/lib
+%define target_slibdir		%{_libdir}
+%define target_slibdir32	%{prefix}/lib
 %define isarch()		%(case " %* " in (*" %{arch} "*) echo 1;; (*) echo 0;; esac)
 
 %if %isarch %{x86_64}
@@ -115,7 +115,7 @@
 %define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
 %define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
 %define		multilibdir		%{target_prefix}/lib
-%define		multirootlibdir		/lib
+%define		multirootlibdir		%{_libdir}
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -346,13 +346,11 @@ Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
 %define srcname gcc-%{major}-%{prerelease}
 Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	1
+Release:	2
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
 %endif
 Source4:	c89
@@ -587,7 +585,7 @@ Provides:	libgcc = %{EVRD}
 The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{libgcc}
-/%{_lib}/libgcc_s.so.%{gcc_major}
+%{_libdir}/libgcc_s.so.%{gcc_major}
 
 #-----------------------------------------------------------------------
 
@@ -601,9 +599,9 @@ The %{libgcc} package contains header files and object files needed to
 build applications with libgcc.
 
 %files -n %{libgcc_devel}
-/%{_lib}/libgcc_s.so
+%{_libdir}/libgcc_s.so
 %if %{build_multilib}
-/lib/libgcc_s.so
+%{_prefix}/lib/libgcc_s.so
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
@@ -634,7 +632,7 @@ Conflicts:	%{libgcc} < 4.6.2-11
 The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{multilibgcc}
-/lib/libgcc_s.so.%{gcc_major}
+%{_prefix}/lib/libgcc_s.so.%{gcc_major}
 %endif
 
 #-----------------------------------------------------------------------
@@ -717,7 +715,7 @@ The C preprocessor provides four separate functionalities:
 	fi
 )
 %if %{system_gcc}
-/lib/cpp
+%{_prefix}/lib/cpp
 %doc %{_mandir}/man1/cpp.1*
 %doc %{_infodir}/cpp*
 %if %{build_doc}
@@ -1860,7 +1858,7 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files -n %{libgomp}
-/%{_lib}/libgomp.so.%{gomp_major}*
+%{_libdir}/libgomp.so.%{gomp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2983,8 +2981,8 @@ mkdir -p %{buildroot}%{py_puresitedir}
 
 pushd %{buildroot}%{_bindir}
 %if %{system_gcc}
-    mkdir -p %{buildroot}/lib
-    ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
+    mkdir -p %{buildroot}%{_prefix}/lib
+    ln -sf %{_bindir}/cpp %{buildroot}{_prefix}/lib/cpp
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
     ln -sf %{gcc_target_platform}-gcc-%{ver} cc
 %else
@@ -3270,7 +3268,7 @@ done
 # clang has a slightly strange way of detecting gcc cross toolchains.
 # Let's be compatible with it.
 mkdir -p %{buildroot}%{_prefix}/lib
-ln -s ../%{_lib}/gcc %{buildroot}%{_prefix}/lib/gcc
+ln -s %{_libdir}/gcc %{buildroot}%{_prefix}/lib/gcc
 %endif
 
 # Not sure why this ends up in /usr as well as the crosscompiler
