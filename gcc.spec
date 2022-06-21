@@ -418,6 +418,10 @@ Patch1008:	libstdc++-12.0-mingw-crosscompilers.patch
 # Fix linking the stage-1 ADA compiler
 Patch1009:	gcc-12-fix-stage1-ada-linkage.patch
 
+%ifarch %{x86_64}
+# 32-bit glibc needed for 32-bit libstdc++ and friends
+BuildRequires:	libc6
+%endif
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
