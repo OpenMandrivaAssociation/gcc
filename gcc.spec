@@ -83,10 +83,6 @@
 %define arch			%(echo %{_target_cpu}|sed -e "s/\\(i.86\\|athlon\\)/i386/" -e "s/amd64/x86_64/")
 %define	target_cpu		%{arch}
 %define gcc_target_platform	%{_target_platform}
-%define target_prefix		%{_prefix}
-%define target_libdir		%{_libdir}
-%define target_slibdir		/%{_lib}
-%define target_slibdir32	/lib
 %define isarch()		%(case " %* " in (*" %{arch} "*) echo 1;; (*) echo 0;; esac)
 
 %if %isarch %{x86_64}
@@ -105,8 +101,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			12.1
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20220618
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -114,8 +110,7 @@
 %define		multigccdir		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/32
 %define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
 %define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
-%define		multilibdir		%{target_prefix}/lib
-%define		multirootlibdir		/lib
+%define		multilibdir		%{_prefix}/lib
 
 #-----------------------------------------------------------------------
 %define		gcc_major		1
@@ -587,7 +582,7 @@ Provides:	libgcc = %{EVRD}
 The %{libgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{libgcc}
-/%{_lib}/libgcc_s.so.%{gcc_major}
+%{_libdir}/libgcc_s.so.%{gcc_major}
 
 #-----------------------------------------------------------------------
 
@@ -601,9 +596,9 @@ The %{libgcc} package contains header files and object files needed to
 build applications with libgcc.
 
 %files -n %{libgcc_devel}
-/%{_lib}/libgcc_s.so
+%{_libdir}/libgcc_s.so
 %if %{build_multilib}
-/lib/libgcc_s.so
+%{_prefix}/lib/libgcc_s.so
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
@@ -634,7 +629,7 @@ Conflicts:	%{libgcc} < 4.6.2-11
 The %{multilibgcc} package contains GCC shared libraries for gcc %{branch}
 
 %files -n %{multilibgcc}
-/lib/libgcc_s.so.%{gcc_major}
+%{_prefix}/lib/libgcc_s.so.%{gcc_major}
 %endif
 
 #-----------------------------------------------------------------------
@@ -717,7 +712,7 @@ The C preprocessor provides four separate functionalities:
 	fi
 )
 %if %{system_gcc}
-/lib/cpp
+%{_prefix}/lib/cpp
 %doc %{_mandir}/man1/cpp.1*
 %doc %{_infodir}/cpp*
 %if %{build_doc}
@@ -791,7 +786,7 @@ GCC Standard C++ Library.
 %else
 %files -n %{libstdcxx}
 %endif
-%{target_slibdir}/libstdc++.so.%{stdcxx_major}*
+%{_libdir}/libstdc++.so.%{stdcxx_major}*
 
 #-----------------------------------------------------------------------
 
@@ -806,7 +801,7 @@ The libstdc++ package contains a rewritten standard compliant
 GCC Standard C++ Library.
 
 %files -n %{multilibstdcxx}
-%{multirootlibdir}/libstdc++.so.%{stdcxx_major}*
+%{multilibdir}/libstdc++.so.%{stdcxx_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -841,7 +836,7 @@ development. This includes rewritten implementation of STL.
 
 %files -n %{libstdcxx_devel}
 %{_includedir}/c++/%{ver}
-%{target_libdir}/libstdc++.so
+%{_libdir}/libstdc++.so
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 %if %{build_multilib}
 %{multilibdir}/libstdc++.so
@@ -867,9 +862,9 @@ Provides:	stdc++-static-devel = %{EVRD}
 Static libraries for the GNU standard C++ library.
 
 %files -n %{libstdcxx_static_devel}
-%{target_libdir}/libstdc++.*a
-%{target_libdir}/libstdc++fs.*a
-%{target_libdir}/libsupc++.*a
+%{_libdir}/libstdc++.*a
+%{_libdir}/libstdc++fs.*a
+%{_libdir}/libsupc++.*a
 %if %{build_multilib}
 %{multilibdir}/libstdc++.*a
 %{multilibdir}/libstdc++fs.*a
@@ -926,8 +921,8 @@ The libphobos package contains a version of the
 D Standard Library.
 
 %files -n %{libgdruntime}
-%{target_libdir}/libgdruntime.so.%{d_major}*
-%{target_libdir}/libgphobos.so.%{d_major}*
+%{_libdir}/libgdruntime.so.%{d_major}*
+%{_libdir}/libgphobos.so.%{d_major}*
 
 #-----------------------------------------------------------------------
 
@@ -964,9 +959,9 @@ package includes the header files and libraries needed for D
 development.
 
 %files -n %{libgdruntime_devel}
-%{target_libdir}/libgdruntime.so
-%{target_libdir}/libgphobos.so
-%{target_libdir}/libgphobos.spec
+%{_libdir}/libgdruntime.so
+%{_libdir}/libgphobos.so
+%{_libdir}/libgphobos.spec
 %{gccdir}/include/d
 %if %{build_multilib}
 %{multilibdir}/libgdruntime.so
@@ -989,8 +984,8 @@ Provides:	gdruntime-static-devel = %{EVRD}
 Static libraries for the GNU standard D library.
 
 %files -n %{libgdruntime_static_devel}
-%{target_libdir}/libgdruntime.*a
-%{target_libdir}/libgphobos.*a
+%{_libdir}/libgdruntime.*a
+%{_libdir}/libgphobos.*a
 %if %{build_multilib}
 %{multilibdir}/libgdruntime.*a
 %{multilibdir}/libgphobos.*a
@@ -1039,8 +1034,8 @@ GNAT is a GNU Ada 95 front-end to GCC. This package includes shared
 libraries, which are required to run programs compiled with the GNAT.
 
 %files -n %{libgnat}
-%{target_libdir}/libgnat-%{majorver}.so.%{gnat_major}
-%{target_libdir}/libgnarl-%{majorver}.so.%{gnat_major}
+%{_libdir}/libgnat-%{majorver}.so.%{gnat_major}
+%{_libdir}/libgnarl-%{majorver}.so.%{gnat_major}
 
 #-----------------------------------------------------------------------
 
@@ -1084,7 +1079,7 @@ libraries, which are required to compile with the GNAT.
 
 %files -n %{libgnat_devel}
 %if %{shared_libgnat}
-%{target_libdir}/libgnat*.so
+%{_libdir}/libgnat*.so
 %{_libdir}/libgnarl*.so
 %endif
 %{gccdir}/adalib
@@ -1183,7 +1178,7 @@ This package contains Fortran 95 shared library which is needed to run
 Fortran 95 dynamically linked programs.
 
 %files -n %{libgfortran}
-%{target_libdir}/libgfortran.so.%{gfortran_major}*
+%{_libdir}/libgfortran.so.%{gfortran_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1223,8 +1218,8 @@ This package contains Fortran 95 shared library which is needed to
 compile Fortran 95 programs.
 
 %files -n %{libgfortran_devel}
-%{target_libdir}/libgfortran.so
-%{target_libdir}/libgfortran.spec
+%{_libdir}/libgfortran.so
+%{_libdir}/libgfortran.spec
 %if %{build_multilib}
 %{multilibdir}/libgfortran.so
 %{multilibdir}/libgfortran.spec
@@ -1243,7 +1238,7 @@ This package contains Fortran 95 static library which is needed to
 compile Fortran 95 programs.
 
 %files -n %{libgfortran_static_devel}
-%{target_libdir}/libgfortran.*a
+%{_libdir}/libgfortran.*a
 %if %{build_multilib}
 %{multilibdir}/libgfortran.*a
 %endif
@@ -1318,7 +1313,7 @@ This package contains Go shared library which is needed to run
 Go dynamically linked programs.
 
 %files -n %{libgo}
-%{target_libdir}/libgo.so.%{go_major}*
+%{_libdir}/libgo.so.%{go_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1353,7 +1348,7 @@ This package includes libraries and support files for compiling
 Go programs.
 
 %files -n %{libgo_devel}
-%{target_libdir}/libgo.so
+%{_libdir}/libgo.so
 %if %{build_multilib}
 %{multilibdir}/libgo.so
 %endif
@@ -1371,7 +1366,7 @@ Provides:	go-static-devel = %{EVRD}
 This package contains static Go libraries.
 
 %files -n %{libgo_static_devel}
-%{target_libdir}/libgo.*a
+%{_libdir}/libgo.*a
 %if %{build_multilib}
 %{multilibdir}/libgo.*a
 %endif
@@ -1410,7 +1405,7 @@ This package contains Objective-C shared library which is needed to run
 Objective-C dynamically linked programs.
 
 %files -n %{libobjc}
-%{target_libdir}/libobjc.so.%{objc_major}*
+%{_libdir}/libobjc.so.%{objc_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1446,7 +1441,7 @@ This package includes libraries and support files for compiling
 Objective-C programs.
 
 %files -n %{libobjc_devel}
-%{target_libdir}/libobjc.so
+%{_libdir}/libobjc.so
 %{gccdir}/include/objc
 %if %{build_multilib}
 %{multilibdir}/libobjc.so
@@ -1465,7 +1460,7 @@ Provides:	objc-static-devel = %{EVRD}
 This package contains static Objective-C libraries.
 
 %files -n %{libobjc_static_devel}
-%{target_libdir}/libobjc.*a
+%{_libdir}/libobjc.*a
 %if %{build_multilib}
 %{multilibdir}/libobjc.*a
 %endif
@@ -1505,7 +1500,7 @@ This package contains GCC shared support library which is needed
 for FFI support.
 
 %files -n %{libffi}
-%{target_libdir}/libffi.so.%{ffi_major}*
+%{_libdir}/libffi.so.%{ffi_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1520,7 +1515,7 @@ This package contains GCC shared support library which is needed
 for FFI support.
 
 %files -n %{multilibffi}
-%{multirootlibdir}/libffi.so.%{ffi_major}*
+%{multilibdir}/libffi.so.%{ffi_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1541,7 +1536,7 @@ This package contains GCC development which is needed
 to compile FFI support.
 
 %files -n %{libffi_devel}
-%{target_libdir}/libffi.so
+%{_libdir}/libffi.so
 %if %{build_multilib}
 %{multilibdir}/libffi.so
 %endif
@@ -1560,7 +1555,7 @@ This package contains GCC static libraries which are needed
 to compile FFI support.
 
 %files -n %{libffi_static_devel}
-%{target_libdir}/libffi.*a
+%{_libdir}/libffi.*a
 %if %{build_multilib}
 %{multilibdir}/libffi.*a
 %endif
@@ -1582,7 +1577,7 @@ This package contains GCC shared support library which is needed
 for MPX support.
 
 %files -n %{libmpx}
-%{target_libdir}/libmpx.so.%{mpx_major}*
+%{_libdir}/libmpx.so.%{mpx_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1618,8 +1613,8 @@ This package contains GCC development which is needed
 to compile MPX support.
 
 %files -n %{libmpx_devel}
-%{target_libdir}/libmpx.so
-%{target_libdir}/libmpx.spec
+%{_libdir}/libmpx.so
+%{_libdir}/libmpx.spec
 %if %{build_multilib}
 %{multilibdir}/libmpx.so
 %{multilibdir}/libmpx.spec
@@ -1639,7 +1634,7 @@ This package contains GCC static libraries which are needed
 to compile MPX support.
 
 %files -n %{libmpx_static_devel}
-%{target_libdir}/libmpx.*a
+%{_libdir}/libmpx.*a
 %if %{build_multilib}
 %{multilibdir}/libmpx.*a
 %endif
@@ -1657,7 +1652,7 @@ This package contains GCC shared support library which is needed
 for MPX support.
 
 %files -n %{libmpxwrappers}
-%{target_libdir}/libmpxwrappers.so.%{mpxwrappers_major}*
+%{_libdir}/libmpxwrappers.so.%{mpxwrappers_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1693,7 +1688,7 @@ This package contains GCC development which is needed
 to compile MPX support.
 
 %files -n %{libmpxwrappers_devel}
-%{target_libdir}/libmpxwrappers.so
+%{_libdir}/libmpxwrappers.so
 %if %{build_multilib}
 %{multilibdir}/libmpxwrappers.so
 %endif
@@ -1712,7 +1707,7 @@ This package contains GCC static libraries which are needed
 to compile MPX support.
 
 %files -n %{libmpxwrappers_static_devel}
-%{target_libdir}/libmpxwrappers.*a
+%{_libdir}/libmpxwrappers.*a
 %if %{build_multilib}
 %{multilibdir}/libmpxwrappers.*a
 %endif
@@ -1735,7 +1730,7 @@ This package contains GCC shared support library which is needed
 for __float128 math support and for Fortran REAL*16 support.
 
 %files -n %{libquadmath}
-%{target_libdir}/libquadmath.so.%{quadmath_major}*
+%{_libdir}/libquadmath.so.%{quadmath_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1771,7 +1766,7 @@ This package contains support for building Fortran programs using
 REAL*16 and programs using __float128 math.
 
 %files -n %{libquadmath_devel}
-%{target_libdir}/libquadmath.so
+%{_libdir}/libquadmath.so
 %if %{build_multilib}
 %{multilibdir}/libquadmath.so
 %endif
@@ -1794,7 +1789,7 @@ This package contains static libraries for building Fortran programs
 using REAL*16 and programs using __float128 math.
 
 %files -n %{libquadmath_static_devel}
-%{target_libdir}/libquadmath.*a
+%{_libdir}/libquadmath.*a
 %if %{build_multilib}
 %{multilibdir}/libquadmath.*a
 %endif
@@ -1860,7 +1855,7 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files -n %{libgomp}
-/%{_lib}/libgomp.so.%{gomp_major}*
+%{_libdir}/libgomp.so.%{gomp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1876,7 +1871,7 @@ This package contains GCC shared library which is needed
 for OpenMP v3.0 support.
 
 %files -n %{multilibgomp}
-%{multirootlibdir}/libgomp.so.%{gomp_major}*
+%{multilibdir}/libgomp.so.%{gomp_major}*
 %endif
 
 #-----------------------------------------------------------------------
@@ -1897,8 +1892,8 @@ This package contains GCC development which is needed
 to compile OpenMP v3.0 support.
 
 %files -n %{libgomp_devel}
-%{target_libdir}/libgomp.so
-%{target_libdir}/libgomp.spec
+%{_libdir}/libgomp.so
+%{_libdir}/libgomp.spec
 %if %{build_multilib}
 %{multilibdir}/libgomp.so
 %{multilibdir}/libgomp.spec
@@ -1923,7 +1918,7 @@ This package contains GCC static libraries which are needed
 to compile OpenMP v3.0 support.
 
 %files -n %{libgomp_static_devel}
-%{target_libdir}/libgomp.*a
+%{_libdir}/libgomp.*a
 %if %{build_multilib}
 %{multilibdir}/libgomp.*a
 %endif
@@ -1946,7 +1941,7 @@ This package contains GCC shared support library which is needed
 for SSP support.
 
 %files -n %{libssp}
-%{target_libdir}/libssp.so.%{ssp_major}*
+%{_libdir}/libssp.so.%{ssp_major}*
 
 #-----------------------------------------------------------------------
 
@@ -1983,7 +1978,7 @@ This package contains GCC libraries which are needed
 to compile SSP support.
 
 %files -n %{libssp_devel}
-%{target_libdir}/libssp.so
+%{_libdir}/libssp.so
 %if %{build_multilib}
 %{multilibdir}/libssp.so
 %endif
@@ -2003,7 +1998,7 @@ This package contains GCC static libraries which are needed
 to compile SSP support.
 
 %files -n %{libssp_static_devel}
-%{target_libdir}/libssp.*.*a
+%{_libdir}/libssp.*.*a
 %if %{build_multilib}
 %{multilibdir}/libssp.*.*a
 %endif
@@ -2025,7 +2020,7 @@ Provides:	libitm = %{EVRD}
 This package contains GCC's Transactional Memory support library.
 
 %files -n %{libitm}
-%{target_libdir}/libitm.so.%{itm_major}*
+%{_libdir}/libitm.so.%{itm_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2060,8 +2055,8 @@ This package contains GCC libraries which are needed
 to use Transactional Memory features.
 
 %files -n %{libitm_devel}
-%{target_libdir}/libitm.so
-%{target_libdir}/libitm.spec
+%{_libdir}/libitm.so
+%{_libdir}/libitm.spec
 %if %{build_multilib}
 %{multilibdir}/libitm.so
 %{multilibdir}/libitm.spec
@@ -2084,7 +2079,7 @@ This package contains GCC static libraries which are needed
 to compile Transactional Memory support.
 
 %files -n %{libitm_static_devel}
-%{target_libdir}/libitm.a
+%{_libdir}/libitm.a
 %if %{build_multilib}
 %{multilibdir}/libitm.a
 %endif
@@ -2105,7 +2100,7 @@ Group:		Development/C
 GCC Address Sanitizer Library.
 
 %files -n %{libasan}
-%{target_libdir}/libasan.so.%{asan_major}*
+%{_libdir}/libasan.so.%{asan_major}*
 %ifarch %{aarch64}
 %{_libdir}/libhwasan.so.0*
 %endif
@@ -2142,8 +2137,8 @@ This package contains GCC libraries which are needed
 to use Address Sanitizer features.
 
 %files -n %{libasan_devel}
-%{target_libdir}/libasan.so
-%{target_libdir}/libasan_preinit.o
+%{_libdir}/libasan.so
+%{_libdir}/libasan_preinit.o
 %if %{build_multilib}
 %{multilibdir}/libasan.so
 %{multilibdir}/libasan_preinit.o
@@ -2163,7 +2158,7 @@ Requires:	%{libasan_devel} = %{EVRD}
 Static libasan.
 
 %files -n %{libasan_static_devel}
-%{target_libdir}/libasan.a
+%{_libdir}/libasan.a
 %if %{build_multilib}
 %{multilibdir}/libasan.a
 %endif
@@ -2185,7 +2180,7 @@ Group:		Development/C
 GCC Address Sanitizer Library.
 
 %files -n %{libtsan}
-%{target_libdir}/libtsan.so.%{tsan_major}*
+%{_libdir}/libtsan.so.%{tsan_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2202,8 +2197,8 @@ This package contains GCC libraries which are needed
 to use Thread Sanitizer features.
 
 %files -n %{libtsan_devel}
-%{target_libdir}/libtsan.so
-%{target_libdir}/libtsan_preinit.o
+%{_libdir}/libtsan.so
+%{_libdir}/libtsan_preinit.o
 
 #-----------------------------------------------------------------------
 
@@ -2216,7 +2211,7 @@ Requires:	%{libtsan_devel} = %{EVRD}
 Static libtsan.
 
 %files -n %{libtsan_static_devel}
-%{target_libdir}/libtsan.a
+%{_libdir}/libtsan.a
 %endif
 %endif
 
@@ -2232,7 +2227,7 @@ Group:		Development/C
 GCC Atomic operations Library.
 
 %files -n %{libatomic}
-%{target_libdir}/libatomic.so.%{atomic_major}*
+%{_libdir}/libatomic.so.%{atomic_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2266,7 +2261,7 @@ This package contains GCC libraries which are needed
 to use Atomic optimizer features.
 
 %files -n %{libatomic_devel}
-%{target_libdir}/libatomic.so
+%{_libdir}/libatomic.so
 %if %{build_multilib}
 %{multilibdir}/libatomic.so
 %endif
@@ -2282,7 +2277,7 @@ Requires:	%{libatomic_devel} = %{EVRD}
 Static libatomic.
 
 %files -n %{libatomic_static_devel}
-%{target_libdir}/libatomic.a
+%{_libdir}/libatomic.a
 %if %{build_multilib}
 %{multilibdir}/libatomic.a
 %endif
@@ -2301,7 +2296,7 @@ Group:		Development/C
 VTable Verification library.
 
 %files -n %{libvtv}
-%{target_libdir}/libvtv.so.%{vtv_major}*
+%{_libdir}/libvtv.so.%{vtv_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2335,7 +2330,7 @@ This package contains GCC libraries which are needed
 to use VTable Verification features.
 
 %files -n %{libvtv_devel}
-%{target_libdir}/libvtv.so
+%{_libdir}/libvtv.so
 %if %{build_multilib}
 %{multilibdir}/libvtv.so
 %endif
@@ -2351,7 +2346,7 @@ Requires:	%{libvtv_devel} = %{EVRD}
 Static libvtv
 
 %files -n %{libvtv_static_devel}
-%{target_libdir}/libvtv.a
+%{_libdir}/libvtv.a
 %if %{build_multilib}
 %{multilibdir}/libvtv.a
 %endif
@@ -2370,7 +2365,7 @@ Group:		Development/C
 Undefined Behavior Sanitizer library.
 
 %files -n %{libubsan}
-%{target_libdir}/libubsan.so.%{ubsan_major}*
+%{_libdir}/libubsan.so.%{ubsan_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2404,8 +2399,8 @@ This package contains GCC libraries which are needed
 to use Undefined Behavior Sanitizer features.
 
 %files -n %{libubsan_devel}
-%{target_libdir}/libubsan.so
-%{target_libdir}/libsanitizer.spec
+%{_libdir}/libubsan.so
+%{_libdir}/libsanitizer.spec
 %if %{build_multilib}
 %{multilibdir}/libubsan.so
 %{multilibdir}/libsanitizer.spec
@@ -2423,7 +2418,7 @@ Requires:	%{libubsan_devel} = %{EVRD}
 Static libubsan.
 
 %files -n %{libubsan_static_devel}
-%{target_libdir}/libubsan.a
+%{_libdir}/libubsan.a
 %if %{build_multilib}
 %{multilibdir}/libubsan.a
 %endif
@@ -2442,7 +2437,7 @@ Group:		Development/C
 Leak Sanitizer library.
 
 %files -n %{liblsan}
-%{target_libdir}/liblsan.so.%{lsan_major}*
+%{_libdir}/liblsan.so.%{lsan_major}*
 
 #-----------------------------------------------------------------------
 
@@ -2459,7 +2454,7 @@ This package contains GCC libraries which are needed
 to use Leak Sanitizer features.
 
 %files -n %{liblsan_devel}
-%{target_libdir}/liblsan.so
+%{_libdir}/liblsan.so
 %{_libdir}/liblsan_preinit.o
 
 #-----------------------------------------------------------------------
@@ -2473,7 +2468,7 @@ Requires:	%{liblsan_devel} = %{EVRD}
 Static liblsan.
 
 %files -n %{liblsan_static_devel}
-%{target_libdir}/liblsan.a
+%{_libdir}/liblsan.a
 %endif
 %endif
 
@@ -2667,7 +2662,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
 			--libdir=%{_libdir} \
-			--with-slibdir=%{target_slibdir} \
+			--with-slibdir=%{_libdir} \
 			--mandir=%{_mandir} \
 			--infodir=%{_infodir} \
 %if !%{build_cloog}
@@ -2847,7 +2842,7 @@ done
 %build
 # FIXME: extra tools needed
 export PATH=$PATH:$PWD/bin
-export sysroot=%{target_prefix}
+export sysroot=%{_prefix}
 #_prefix}/%{gcc_target_platform}
 
 # The -gdwarf-4 removal is a workaround for gcc bug #52420
@@ -2983,8 +2978,8 @@ mkdir -p %{buildroot}%{py_puresitedir}
 
 pushd %{buildroot}%{_bindir}
 %if %{system_gcc}
-    mkdir -p %{buildroot}/lib
-    ln -sf %{_bindir}/cpp %{buildroot}/lib/cpp
+    mkdir -p %{buildroot}%{_prefix}/lib
+    ln -sf %{_bindir}/cpp %{buildroot}%{_prefix}/lib/cpp
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
     ln -sf %{gcc_target_platform}-gcc-%{ver} cc
 %else
@@ -3028,53 +3023,25 @@ pushd %{buildroot}%{_bindir}
     perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
         %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 
-    mkdir -p %{buildroot}/%{target_slibdir}
-    mv %{buildroot}%{target_libdir}/libstdc++.so.%{stdcxx_major}* \
-        %{buildroot}/%{target_slibdir}
-    ln -srf %{buildroot}/%{target_slibdir}/libstdc++.so.%{stdcxx_major}.*.* \
-        %{buildroot}%{target_libdir}/libstdc++.so
-
     %if %{build_multilib}
         mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
         mv -f %{buildroot}%{multilibdir}/libstdc++.so.*.py \
         %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
         perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
             %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
-
-        mkdir -p %{buildroot}%{multirootlibdir}
-        mv %{buildroot}%{multilibdir}/libstdc++.so.%{stdcxx_major}* \
-            %{buildroot}%{multirootlibdir}
-        ln -srf %{buildroot}%{multirootlibdir}/libstdc++.so.%{stdcxx_major}.*.* \
-            %{buildroot}%{multilibdir}/libstdc++.so
     %endif
 %endif
 popd
 
-%if %{build_gomp}
-    mkdir -p %{buildroot}%{target_slibdir}
-    mv %{buildroot}%{target_libdir}/libgomp.so.%{gomp_major}* \
-        %{buildroot}%{target_slibdir}
-    ln -srf %{buildroot}%{target_slibdir}/libgomp.so.%{gomp_major}.*.* \
-        %{buildroot}%{target_libdir}/libgomp.so
-
-    %if %{build_multilib}
-        mkdir -p %{buildroot}%{multirootlibdir}
-        mv %{buildroot}%{multilibdir}/libgomp.so.%{gomp_major}* \
-            %{buildroot}%{multirootlibdir}
-        ln -srf %{buildroot}%{multirootlibdir}/libgomp.so.%{gomp_major}.*.* \
-            %{buildroot}%{multilibdir}/libgomp.so
-    %endif
-%endif
-
 %if %{shared_libgnat}
     %if %{build_ada}
         for lib in libgnarl libgnat; do
-            rm -f %{buildroot}%{target_libdir}/$lib.so
+            rm -f %{buildroot}%{_libdir}/$lib.so
             rm -f %{buildroot}%{gccdir}/adalib/$lib.so
             mv -f %{buildroot}%{gccdir}/adalib/$lib-%{majorver}.so \
-                    %{buildroot}%{target_libdir}/$lib-%{majorver}.so.%{gnat_major}
-            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{target_libdir}/$lib-%{majorver}.so
-            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{target_libdir}/$lib.so
+                    %{buildroot}%{_libdir}/$lib-%{majorver}.so.%{gnat_major}
+            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{_libdir}/$lib-%{majorver}.so
+            ln -sf $lib-%{majorver}.so.%{gnat_major} %{buildroot}%{_libdir}/$lib.so
             %if %{build_multilib}
                 rm -f %{buildroot}%{multilibdir}/$lib.so
                 rm -f %{buildroot}%{multigccdir}/adalib/$lib.so
@@ -3103,7 +3070,7 @@ rm -fr %{buildroot}%{gccdir}/install-tools/include
         rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so
     %endif
     %if !%{build_libgcc}
-         rm -f %{buildroot}%{target_libdir}/libgcc_s.so.*
+         rm -f %{buildroot}%{_libdir}/libgcc_s.so.*
          %if %{build_multilib}
              rm -f %{buildroot}%{multilibdir}/libgcc_s.so.*
              rm -f %{buildroot}%{_prefix}/libx32/libgcc_s.so.*
@@ -3114,22 +3081,22 @@ rm -f %{buildroot}%{_libdir}/libiberty.a
 rm -f %{buildroot}%{multilibdir}/libiberty.a
 
 %if !%{build_ubsan}
-    rm -f %{buildroot}%{target_libdir}/libubsan*
+    rm -f %{buildroot}%{_libdir}/libubsan*
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libubsan*
     %endif
-    rm -f %{buildroot}%{target_libdir}/libsanitizer.spec
+    rm -f %{buildroot}%{_libdir}/libsanitizer.spec
 %endif
 
 %if !%{build_asan}
-    rm -f %{buildroot}%{target_libdir}/libasan*
+    rm -f %{buildroot}%{_libdir}/libasan*
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libasan*
     %endif
 %endif
 
 %if !%{build_itm}
-    rm -f %{buildroot}%{target_libdir}/libitm* %{buildroot}%{_infodir}/libitm.info*
+    rm -f %{buildroot}%{_libdir}/libitm* %{buildroot}%{_infodir}/libitm.info*
     %if %{build_multilib}
         rm -f %{buildroot}%{multilibdir}/libitm*
     %endif
@@ -3140,23 +3107,9 @@ rm -f %{buildroot}%{multilibdir}/libiberty.a
 %endif
 
 %if !%{package_ffi}
-    rm -f %{buildroot}%{target_libdir}/libffi.*
+    rm -f %{buildroot}%{_libdir}/libffi.*
     rm -f %{buildroot}%{multilibdir}/libffi.*
     rm -f %{buildroot}%{_mandir}/man3/ffi*
-%else
-    mkdir -p %{buildroot}%{target_slibdir}
-    mv %{buildroot}%{target_libdir}/libffi.so.%{ffi_major}* \
-        %{buildroot}%{target_slibdir}
-    ln -srf %{buildroot}%{target_slibdir}/libffi.so.%{ffi_major}.*.* \
-        %{buildroot}%{target_libdir}/libffi.so
-
-    %if %{build_multilib}
-        mkdir -p %{buildroot}%{multirootlibdir}
-        mv %{buildroot}%{multilibdir}/libffi.so.%{ffi_major}* \
-            %{buildroot}%{multirootlibdir}
-        ln -srf %{buildroot}%{multirootlibdir}/libffi.so.%{ffi_major}.*.* \
-            %{buildroot}%{multilibdir}/libffi.so
-    %endif
 %endif
 
 pushd obj-%{gcc_target_platform}
