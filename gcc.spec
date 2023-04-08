@@ -100,9 +100,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			12.2
+%define		branch			13.0
 %define		ver			%{branch}.0
-%define		prerelease		%{nil}
+%define		prerelease		20230402
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -231,6 +231,7 @@
 %define		build_atomic		1
 %define		build_objc		0
 %define		build_objcxx		0
+%define		build_rust		0
 %define		build_quadmath		0
 %define		build_ssp		0
 %define		build_ubsan		%{system_gcc}
@@ -269,6 +270,7 @@
 %if %isarch %{ix86} %{x86_64} %{armx}
   %define	build_objc		%{system_gcc}
   %define	build_objcxx		%{system_gcc}
+  %define	build_rust		%{system_gcc}
 # FIXME restore go when it's fixed
 # As of 12.0: No rule to make target '../libbacktrace/libbacktrace.la', needed by 'libgo.la'.
   %define	build_go		0
@@ -304,6 +306,7 @@
 %define		build_lsan		0
 %define		build_objc		0
 %define		build_objcxx		0
+%define		build_rust		0
 %define		build_quadmath		0
 %define		build_ssp		0
 %define		build_tsan		0
@@ -471,6 +474,12 @@ Requires:	binutils >= 2.20.51.0.2
 Obsoletes:	%{_lib}mudflap0 < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-devel < 4.9.1_2014.05
 Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
+
+# Presence of a previous cross-mingw toolchain results in libstdc++
+# linking against libgcc from that toolchain, potentially causing ABI
+# issues.
+BuildConflicts:	cross-i686-w64-mingw32-gcc
+BuildConflicts:	cross-x86_64-w64-mingw32-gcc
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
@@ -867,10 +876,12 @@ Static libraries for the GNU standard C++ library.
 
 %files -n %{libstdcxx_static_devel}
 %{_libdir}/libstdc++.*a
+%{_libdir}/libstdc++exp.*a
 %{_libdir}/libstdc++fs.*a
 %{_libdir}/libsupc++.*a
 %if %{build_multilib}
 %{multilibdir}/libstdc++.*a
+%{multilibdir}/libstdc++exp.*a
 %{multilibdir}/libstdc++fs.*a
 %{multilibdir}/libsupc++.*a
 %endif
@@ -2105,9 +2116,7 @@ GCC Address Sanitizer Library.
 
 %files -n %{libasan}
 %{_libdir}/libasan.so.%{asan_major}*
-%ifarch %{aarch64}
-%{_libdir}/libhwasan.so.0*
-%endif
+%optional %{_libdir}/libhwasan.so.0*
 
 #-----------------------------------------------------------------------
 
@@ -2121,6 +2130,7 @@ GCC Address Sanitizer Library.
 
 %files -n %{multilibasan}
 %{multilibdir}/libasan.so.%{asan_major}*
+%optional %{multilibdir}/libhwasan.so.0*
 %endif
 
 #-----------------------------------------------------------------------
@@ -2143,12 +2153,13 @@ to use Address Sanitizer features.
 %files -n %{libasan_devel}
 %{_libdir}/libasan.so
 %{_libdir}/libasan_preinit.o
+%optional %{_libdir}/libhwasan.so
+%optional %{_libdir}/libhwasan_preinit.o
 %if %{build_multilib}
 %{multilibdir}/libasan.so
 %{multilibdir}/libasan_preinit.o
-%endif
-%ifarch %{aarch64}
-%{_libdir}/libhwasan.so
+%optional %{multilibdir}/libhwasan.so
+%optional %{multilibdir}/libhwasan_preinit.o
 %endif
 
 #-----------------------------------------------------------------------
@@ -2163,11 +2174,10 @@ Static libasan.
 
 %files -n %{libasan_static_devel}
 %{_libdir}/libasan.a
+%optional %{_libdir}/libhwasan.a
 %if %{build_multilib}
 %{multilibdir}/libasan.a
-%endif
-%ifarch %{aarch64}
-%{_libdir}/libhwasan.a
+%optional %{multilibdir}/libhwasan.a
 %endif
 %endif
 
@@ -2355,6 +2365,21 @@ Static libvtv
 %{multilibdir}/libvtv.a
 %endif
 %endif
+%endif
+
+%if %{build_rust}
+%package rust
+Summary:	Rust support for gcc
+Group:		Development/Other
+Requires:	%{name} = %{EVRD}
+
+%description rust
+Rust front-end to GCC.
+
+%files rust
+%{_bindir}/gccrs
+%{_bindir}/*-gccrs
+%{gcclibexecdir}/rust1
 %endif
 
 ########################################################################
@@ -2550,6 +2575,9 @@ LANGUAGES=c
 %if %{build_objcxx}
     LANGUAGES="$LANGUAGES,obj-c++"
 %endif
+%if %{build_rust}
+    LANGUAGES="$LANGUAGES,rust"
+%endif
 PROGRAM_SUFFIX=""
 %if "%{program_suffix}" != ""
 PROGRAM_SUFFIX="--program-suffix=%{program_suffix}"
@@ -2706,9 +2734,6 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 			--enable-checking=release \
 			--enable-gnu-unique-object \
-%if %mdvver <= 3000000
-			--with-default-libstdcxx-abi=gcc4-compatible \
-%endif
 			--enable-gnu-indirect-function \
 			--with-linker-hash-style=gnu \
 			--enable-languages="$LANGUAGES" \
@@ -3058,8 +3083,6 @@ popd
     %endif
 %endif
 
-mv -f %{buildroot}%{gccdir}/include{-fixed,}/syslimits.h
-mv -f %{buildroot}%{gccdir}/include{-fixed,}/limits.h
 rm -fr %{buildroot}%{gccdir}/include-fixed
 rm -fr %{buildroot}%{gccdir}/install-tools/include
 
