@@ -347,7 +347,7 @@ Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname
 Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
-Release:	2
+Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
