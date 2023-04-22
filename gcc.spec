@@ -100,9 +100,10 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			13.0
+%define		branch			13.1
 %define		ver			%{branch}.0
-%define		prerelease		20230402
+%define		prerelease		20230421
+%define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -270,7 +271,7 @@
 %if %isarch %{ix86} %{x86_64} %{armx}
   %define	build_objc		%{system_gcc}
   %define	build_objcxx		%{system_gcc}
-  %define	build_rust		%{system_gcc}
+  #define	build_rust		%{system_gcc}
 # FIXME restore go when it's fixed
 # As of 12.0: No rule to make target '../libbacktrace/libbacktrace.la', needed by 'libgo.la'.
   %define	build_go		0
@@ -342,9 +343,9 @@ Url:		http://gcc.gnu.org/
 Version:	%{ver}
 Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %global major %(echo %{ver} |cut -d. -f1)
-%define srcname gcc-%{major}-%{prerelease}
-Source0:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/%{srcname}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{major}-%{prerelease}/sha512.sum
+%define srcname gcc-%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}
+Source0:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
 Release:	1
