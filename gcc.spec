@@ -851,10 +851,14 @@ development. This includes rewritten implementation of STL.
 %files -n %{libstdcxx_devel}
 %{_includedir}/c++/%{ver}
 %{_libdir}/libstdc++.so
+%if ! %{cross_compiling}
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
+%endif
 %if %{build_multilib}
 %{multilibdir}/libstdc++.so
+%if ! %{cross_compiling}
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
+%endif
 %endif
 %{py_puresitedir}/libstdcxx
 %if %{build_doc}
@@ -2542,8 +2546,15 @@ export LC_ALL=en_US.UTF-8
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
 
-aclocal -I config
-autoconf
+# FIXME running autoconf here breaks crosscompiling
+# for whatever reason. It seems to drop necessary flags
+# when targeting a different --host
+#aclocal -I config
+#autoconf
+# FIXME since we can't run autoconf, we have to fix 
+# configure scripts here -- gcc_cv_objdump isn't set
+# anywhere, breaking --host=X --target=X --build=Y
+sed -i -e 's,\$gcc_cv_objdump,${target}-objdump,g' libcc1/configure
 
 echo %{vendor} > gcc/DEV-PHASE
 %if "%{snapshot}" != ""
@@ -2609,7 +2620,11 @@ armv7*) TARGET_FLAGS="--with-arch=armv7-a --with-tune=cortex-a15 ";;
 esac
 
 # Configure for building some key crosscompilers
+%if %{cross_compiling}
+for i in %{_target_platform}; do
+%else
 for i in %{long_bootstraptargets} %{long_targets}; do
+%endif
 	EXTRA_FLAGS=""
 	CFLAGS_FOR_TARGET=""
 	CXXFLAGS_FOR_TARGET=""
@@ -2646,7 +2661,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 	if echo ${i} |grep -q -- '-gnu'; then
 		# glibc target -- when bootstrapping, make sure we set defaults
 		# for the right version anyway
-		EXTRA_FLAGS="$EXTRA_FLAGS --with-glibc-version=2.32"
+		EXTRA_FLAGS="$EXTRA_FLAGS --with-glibc-version=2.37"
 	fi
 	if echo ${i} |grep -q musl; then
 		# gcc sanitizers currently aren't compatible with musl
@@ -2683,14 +2698,19 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		# FIXME add
 		#	--with-build-config=bootstrap-lto \
 		# when it is fixed (currently breaks building go)
+%if ! %{cross_compiling}
 		CC=gcc \
 		CXX=g++ \
+		ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+		NM_FOR_TARGET="%{_bindir}/binutils-nm" \
+%else
+		ORIGINAL_NM_FOR_TARGET="%{_bindir}/%{_target_platform}-nm" \
+		NM_FOR_TARGET="%{_bindir}/%{_target_platform}-nm" \
+%endif
 		CFLAGS="$OPT_FLAGS" \
 		CXXFLAGS="$OPT_FLAGS" \
 		TCFLAGS="$OPT_FLAGS" \
 		XCFLAGS="$OPT_FLAGS" \
-		ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
-		NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 		../configure \
 			--prefix=%{_prefix} \
 			--libexecdir=%{_libexecdir} \
@@ -2730,7 +2750,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			--enable-gold=default \
 %endif
 			--with-plugin-ld=%{_bindir}/%{gcc_target_platform}-ld.bfd \
-%if %{system_gcc}
+%if %{system_gcc} && ! %{cross_compiling}
 			--enable-bootstrap \
 %endif
 			--enable-checking=release \
@@ -2785,9 +2805,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 %endif
 			--host=%{_target_platform} \
+%if %{cross_compiling}
+			--target=${i} \
+%else
 			--build=%{_target_platform} \
+%endif
 			$TARGET_FLAGS \
 			$EXTRA_FLAGS
+
 %if %{with crosscompilers}
 	else
 		if echo $i |grep -q '^arm'; then
@@ -2896,23 +2921,31 @@ case " $OPT_FLAGS " in
 esac
 echo "Using OPT_FLAGS $OPT_FLAGS"
 
+%if %{cross_compiling}
+BOOTSTRAP=all
+%else
 BOOTSTRAP=bootstrap
 %if %isarch %{ix86} %{x86_64}
     %if %{system_gcc}
         BOOTSTRAP=profiledbootstrap
     %endif
 %endif
+%endif
 
 # FIXME debugedit
 [ ! -z "$TMP" ] && export TMP=`echo $TMP | sed -e 's|/$||'`
 [ ! -z "x$TMPDIR" ] && export TMPDIR=`echo $TMPDIR | sed -e 's|/$||'`
 
+%if  %{cross_compiling}
+for i in %{_target_platform}; do
+%else
 for i in %{long_bootstraptargets} %{long_targets}; do
+%endif
 	cd obj-${i}
 	if [ "%{gcc_target_platform}" = "$i" ]; then
 		# Native host compiler gets special treatment...
 
-		if ! %make BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
+		if ! %make_build BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
 			# Let's try to get a better error message
 			# (Workaround for builds working locally and failing in abf,
 			# let's see where exactly it's failing)
@@ -2920,14 +2953,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		fi
 
 %if %{build_pdf}
-		%make pdf || :
+		%make_build pdf || :
 %endif
 
 %if %{build_doc}
 		pushd host-%{gcc_target_platform}/gcc
-		%make html || :
+		%make_build html || :
 %if %{build_pdf}
-		%make pdf || :
+		%make_build pdf || :
 %endif
 		popd
 %endif
@@ -2959,7 +2992,7 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 # make install, but they don't actually create a Makefile there if the
 # directory is empty.
 for i in %{long_bootstraptargets} %{long_targets}; do
-	if ! [ -e obj-${i}/fixincludes/Makefile ]; then
+	if [ -d obj-${i}/fixincludes -a ! -e obj-${i}/fixincludes/Makefile ]; then
 		cat >obj-${i}/fixincludes/Makefile <<'EOF'
 install:
 	echo No fixincludes to take care of
@@ -2967,6 +3000,7 @@ EOF
 	fi
 done
 
+%if ! %{cross_compiling}
 %if %{with crosscompilers}
 # Install crosscompilers first so the native compiler can overwrite stuff
 for i in %{long_bootstraptargets} %{long_targets}; do
@@ -2985,6 +3019,8 @@ for i in %{buildroot}%{_libdir}/gcc/*mingw32/*/include/float.h; do
 	echo '#include_next <float.h>' >>$i
 done
 %endif
+%endif
+
 # Native compiler
 %make_install -C obj-%{gcc_target_platform}
 
@@ -3047,6 +3083,7 @@ pushd %{buildroot}%{_bindir}
         ln -sf %{gcc_target_platform}-g++-%{ver} %{gcc_target_platform}-c++
     %endif
 
+%if ! %{cross_compiling}
     mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
         %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
@@ -3060,6 +3097,7 @@ pushd %{buildroot}%{_bindir}
         perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
             %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
     %endif
+%endif
 %endif
 popd
 
@@ -3272,6 +3310,7 @@ rm -rf %{buildroot}%{_prefix}/{lib64,libx32}
 %endif
 %endif
 
+%if ! %{cross_compiling}
 %if %{with crosscompilers}
 %(
 for i in %{long_bootstraptargets} %{long_targets}; do
@@ -3336,4 +3375,5 @@ EOF
 	echo
 done
 )
+%endif
 %endif
