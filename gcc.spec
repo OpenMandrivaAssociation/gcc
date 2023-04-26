@@ -102,8 +102,8 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.1
 %define		ver			%{branch}.0
-%define		prerelease		20230421
-%define		beta			RC
+%define		prerelease		%{nil}
+%define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
