@@ -61,7 +61,6 @@
 %define biarches		%{x86_64} mips64 mips64el mips mipsel
 
 %define	system_gcc		1
-%define majorver %(echo %{version} |cut -d. -f1)
 
 %if %{system_gcc}
 %define cross_prefix		%{nil}
@@ -101,9 +100,9 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.1
-%define		ver			%{branch}.0
-%define		prerelease		%{nil}
-%define		beta			%{nil}
+%define		ver			%{branch}.1
+%define		prerelease		20230513
+#define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -338,14 +337,12 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
-%define		major %(echo %{ver} |cut -d. -f1)
 %if "%{prerelease}" != ""
 Version:	%{ver}
 Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
-%global major %(echo %{ver} |cut -d. -f1)
-%define srcname gcc-%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}
-Source0:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{major}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
+%define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
+Source0:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
+Source1:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
 %else
 Version:	%{ver}
 Release:	1
@@ -366,6 +363,7 @@ Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
 Patch1:		libstdc++-pthread-linkage.patch
+Patch2:		gcc-13.1.0-crosscompiler-lld-mold.patch
 #Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
 #Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
@@ -2542,6 +2540,8 @@ export LC_ALL=en_US.UTF-8
 %endif
 %patch1008 -p1 -b .mingw32~
 %patch1009 -p1 -b .fixadabuild~
+
+%patch2 -p1 -b .xclld~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'

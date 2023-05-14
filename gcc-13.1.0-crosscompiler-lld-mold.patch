@@ -1,0 +1,15 @@
+diff -up gcc-13.1.0/gcc/collect2.cc.omv~ gcc-13.1.0/gcc/collect2.cc
+--- gcc-13.1.0/gcc/collect2.cc.omv~	2023-05-14 16:08:26.911043282 +0200
++++ gcc-13.1.0/gcc/collect2.cc	2023-05-14 16:10:30.604264409 +0200
+@@ -1104,6 +1104,11 @@ main (int argc, char **argv)
+      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
+   if (ld_file_name == 0)
+     ld_file_name = find_a_file (&path, full_ld_suffixes[selected_linker], X_OK);
++  /* Since lld and mold have built-in crosscompiling support with no need
++     for a separate `TARGET-ld', check for plain `ld' even if
++     crosscompiling. */
++  if (ld_file_name == 0 && (selected_linker == USE_LLD_LD || selected_linker == USE_MOLD_LD))
++    ld_file_name = find_a_file (&path, ld_suffixes[selected_linker], X_OK);
+ 
+ #ifdef REAL_NM_FILE_NAME
+   nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME, X_OK);
