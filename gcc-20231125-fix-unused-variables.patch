@@ -1,0 +1,21 @@
+diff -up gcc-13-20231125/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp.omv~ gcc-13-20231125/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp
+--- gcc-13-20231125/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp.omv~	2023-11-27 16:24:00.232132249 +0000
++++ gcc-13-20231125/libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cpp	2023-11-27 16:25:17.071647644 +0000
+@@ -177,7 +177,7 @@ typedef struct user_fpregs elf_fpregset_
+ #  include "sanitizer_platform_limits_posix.h"
+ 
+ #if SANITIZER_INTERCEPT_CRYPT_R
+-#include <crypt.h>
++//include <crypt.h>
+ #endif
+ 
+ namespace __sanitizer {
+@@ -284,7 +284,7 @@ namespace __sanitizer {
+ #endif // SANITIZER_LINUX && !SANITIZER_ANDROID
+ 
+ #if SANITIZER_INTERCEPT_CRYPT_R
+-  unsigned struct_crypt_data_sz = sizeof(struct crypt_data);
++//  unsigned struct_crypt_data_sz = sizeof(struct crypt_data);
+ #endif
+ 
+ #if SANITIZER_LINUX && !SANITIZER_ANDROID

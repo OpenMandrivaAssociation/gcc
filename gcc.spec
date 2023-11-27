@@ -366,6 +366,7 @@ Patch1:		libstdc++-pthread-linkage.patch
 Patch2:		gcc-13.1.0-crosscompiler-lld-mold.patch
 #Patch3:		gcc-4.7.1-linux32.patch
 Patch4:		gnatmake-execstack.patch
+Patch5:		gcc-20231125-fix-unused-variables.patch
 #Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
 Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
@@ -2544,6 +2545,7 @@ export LC_ALL=en_US.UTF-8
 %patch1009 -p1 -b .fixadabuild~
 
 %patch2 -p1 -b .xclld~
+%patch5 -p1 -b .unused~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
