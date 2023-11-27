@@ -99,9 +99,9 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			13.1
+%define		branch			13.2
 %define		ver			%{branch}.1
-%define		prerelease		20230722
+%define		prerelease		20231125
 #define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -614,6 +614,8 @@ build applications with libgcc.
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
+%{_libdir}/*.o
+%{_libdir}/libgcc*.a
 %if %{build_multilib}
 %ifarch mips mipsel
 %dir %{multigccdirn32}
@@ -3311,6 +3313,12 @@ rm -rf %{buildroot}%{_prefix}/{lib64,libx32}
 %endif
 
 %if ! %{cross_compiling}
+# Symlink CRT files where other compilers can find them without
+# having to guess too hard
+cd %{buildroot}%{_libdir}
+ln -s gcc/%{gcc_target_platform}/%{version}/*.{a,o} .
+cd -
+
 %if %{with crosscompilers}
 %(
 for i in %{long_bootstraptargets} %{long_targets}; do
