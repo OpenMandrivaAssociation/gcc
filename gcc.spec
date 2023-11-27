@@ -437,6 +437,7 @@ BuildRequires:	diffutils
 BuildRequires:	texinfo
 BuildRequires:	locales-en
 BuildRequires:	pkgconfig(libtirpc)
+BuildRequires:	locales-extra-charsets
 # For py_puresitedir
 %if ! %{build_minimal}
 BuildRequires:	python >= 3.4
