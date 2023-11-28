@@ -545,6 +545,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{gcclibexecdir}/cc1
 %{gcclibexecdir}/collect2
 %{gccdir}/libgcov.a
+%{_libdir}/libgcov.a
 %{gcclibexecdir}/lto*
 %if %{build_lto}
 %{gcclibexecdir}/liblto*
@@ -1172,6 +1173,7 @@ programs with the GNU Compiler Collection.
 %{gcclibexecdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libcaf_single.a
+%{_libdir}/libcaf_single.a
 %if %{build_multilib}
 %{multigccdir}/libcaf_single.a
 %{multigccdir}/finclude
