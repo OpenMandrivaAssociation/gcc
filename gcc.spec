@@ -101,7 +101,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.2
 %define		ver			%{branch}.1
-%define		prerelease		20231125
+%define		prerelease		20231223
 #define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -481,6 +481,12 @@ Obsoletes:	%{_lib}mudflap-static-devel < 4.9.1_2014.05
 # issues.
 BuildConflicts:	cross-i686-w64-mingw32-gcc
 BuildConflicts:	cross-x86_64-w64-mingw32-gcc
+
+# Allow "lazy dependencies" (without having to check if a needed
+# compiler is a cross-compiler or native). Obviously a native
+# compiler is a "cross-compiler" to its own architecture.
+Provides:	cross-%{gcc_target_platform}-gcc = %{EVRD}
+Provides:	cross-%{gcc_target_platform}-gcc-bootstrap = %{EVRD}
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
