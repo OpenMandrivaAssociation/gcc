@@ -101,7 +101,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.2
 %define		ver			%{branch}.1
-%define		prerelease		20231223
+%define		prerelease		20240106
 #define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -372,6 +372,9 @@ Patch7:		gcc-4.7.1-linker-plugin-detect.patch
 Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
 # Patch for Android compatibility (creating Linux->Android crosscompilers etc)
 Patch9:		gcc-4.7-androidcompat.patch
+# https://github.com/llvm/llvm-project/issues/50248
+# Affects building chromium with the clang/libstdc++ combo
+Patch10:	libstdc++-workaround-clang-bug-50248.patch
 # Seems to be still required on armv7hnl
 Patch12:	gcc-4.8-non-fatal-compare-failure.patch
 # https://bugs.launchpad.net/gcc-linaro/+bug/1225317
@@ -2555,6 +2558,7 @@ export LC_ALL=en_US.UTF-8
 
 %patch2 -p1 -b .xclld~
 %patch5 -p1 -b .unused~
+%patch10 -p1 -b .clang50248~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'

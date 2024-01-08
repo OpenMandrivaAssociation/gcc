@@ -1,0 +1,68 @@
+diff -up gcc-13-20240106/libstdc++-v3/include/std/optional.omv~ gcc-13-20240106/libstdc++-v3/include/std/optional
+--- gcc-13-20240106/libstdc++-v3/include/std/optional.omv~	2024-01-08 10:51:39.927458192 +0100
++++ gcc-13-20240106/libstdc++-v3/include/std/optional	2024-01-08 11:11:22.189280471 +0100
+@@ -516,8 +516,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+       constexpr _Optional_base() = default;
+ 
+       // Constructors for engaged optionals.
++#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
++      template<typename... _Args>
++#else
+       template<typename... _Args,
+ 	       enable_if_t<is_constructible_v<_Tp, _Args...>, bool> = false>
++#endif
+ 	constexpr explicit
+ 	_Optional_base(in_place_t, _Args&&... __args)
+ 	: _M_payload(in_place, std::forward<_Args>(__args)...)
+@@ -811,11 +815,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 	    emplace(std::move(*__t));
+ 	}
+ 
++#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
++      template<typename... _Args>
++	explicit constexpr
++	optional(in_place_t, _Args&&... __args)
++#else
+       template<typename... _Args,
+ 	       _Requires<is_constructible<_Tp, _Args...>> = false>
+ 	explicit constexpr
+ 	optional(in_place_t, _Args&&... __args)
+ 	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
++#endif
+ 	: _Base(std::in_place, std::forward<_Args>(__args)...) { }
+ 
+       template<typename _Up, typename... _Args,
+@@ -912,9 +922,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+       template<typename... _Args>
+ 	_GLIBCXX20_CONSTEXPR
++#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
++	_Tp& emplace(_Args&&... __args)
++#else
+ 	enable_if_t<is_constructible_v<_Tp, _Args...>, _Tp&>
+ 	emplace(_Args&&... __args)
+ 	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
++#endif
+ 	{
+ 	  this->_M_reset();
+ 	  this->_M_construct(std::forward<_Args>(__args)...);
+@@ -1463,12 +1477,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     noexcept(is_nothrow_constructible_v<optional<decay_t<_Tp>>, _Tp>)
+     { return optional<decay_t<_Tp>>{ std::forward<_Tp>(__t) }; }
+ 
++#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
++  template<typename _Tp, typename... _Args>
++    constexpr
++		optional<_Tp>
++    make_optional(_Args&&... __args)
++#else
+   template<typename _Tp, typename... _Args>
+     constexpr
+     enable_if_t<is_constructible_v<_Tp, _Args...>,
+ 		optional<_Tp>>
+     make_optional(_Args&&... __args)
+     noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
++#endif
+     { return optional<_Tp>{ in_place, std::forward<_Args>(__args)... }; }
+ 
+   template<typename _Tp, typename _Up, typename... _Args>
