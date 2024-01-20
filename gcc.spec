@@ -3282,7 +3282,10 @@ ln -s %{_bindir}/%{name} %{buildroot}/%{_libdir}/%{name}/bin/%{name}
 
 %if %{with crosscompilers}
 for i in %{long_bootstraptargets} %{long_targets}; do
-	# aarch64-mandriva-linux-gnu and aarch64-linux-gnu are similar enough...
+%else
+for i in %{_target_platform}; do
+%endif
+	# aarch64-openmandriva-linux-gnu and aarch64-linux-gnu are similar enough...
 	longplatform=$(grep ^target_alias= obj-$i/Makefile |cut -d= -f2-)
 	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
 		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
@@ -3300,7 +3303,6 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		cd -
 	fi
 done
-%endif
 
 %if "%{_lib}" != "lib"
 # clang has a slightly strange way of detecting gcc cross toolchains.
@@ -3327,7 +3329,6 @@ rm -rf %{buildroot}%{_prefix}/{lib64,libx32}
 %endif
 %endif
 
-%if ! %{cross_compiling}
 # Symlink CRT files where other compilers can find them without
 # having to guess too hard
 cd %{buildroot}%{_libdir}
@@ -3398,5 +3399,4 @@ EOF
 	echo
 done
 )
-%endif
 %endif
