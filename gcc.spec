@@ -3333,6 +3333,9 @@ rm -rf %{buildroot}%{_prefix}/{lib64,libx32}
 # having to guess too hard
 cd %{buildroot}%{_libdir}
 ln -s gcc/%{gcc_target_platform}/%{version}/*.{a,o} .
+# But not files we get from glibc (on RISC-V, both libgcc and
+# glibc have crti.o and crtn.o)
+rm -f crti.o crtn.o
 cd -
 
 %if %{with crosscompilers}
