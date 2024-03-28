@@ -22,6 +22,7 @@
 %endif
 %endif
 %endif
+%global offloadtargets amdgcn-amdhsa nvptx-none
 # Once bionic is built, add: aarch64-android armv7l-android armv8l-android
 %global long_targets %(
         for i in %{targets}; do
@@ -38,6 +39,7 @@
         done
 )
 %bcond_without crosscompilers
+%bcond_without offloading
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -101,7 +103,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.2
 %define		ver			%{branch}.1
-%define		prerelease		20240309
+%define		prerelease		20240323
 #define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -351,6 +353,11 @@ Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar
 Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
 %endif
+%if %{with offloading}
+Source2:	https://sourceware.org/pub/newlib/newlib-4.4.0.20231231.tar.gz
+BuildRequires:	nvptx-tools
+BuildRequires:	llvm
+%endif
 Source4:	c89
 Source5:	c99
 
@@ -361,64 +368,11 @@ Source12:	gcc.csh
 
 Source100:	gcc.rpmlintrc
 
-Patch0:		gcc-4.7.1-uclibc-ldso-path.patch
-Patch1:		libstdc++-pthread-linkage.patch
 Patch2:		gcc-13.1.0-crosscompiler-lld-mold.patch
-#Patch3:		gcc-4.7.1-linux32.patch
-Patch4:		gnatmake-execstack.patch
 Patch5:		gcc-20231125-fix-unused-variables.patch
-#Patch6:		gcc-9-20190706-use-bfd-ld-with-lto.patch
-Patch7:		gcc-4.7.1-linker-plugin-detect.patch
-Patch8:		gcc-4.7.1-extern-inline-not-inlined.patch
-# Patch for Android compatibility (creating Linux->Android crosscompilers etc)
-Patch9:		gcc-4.7-androidcompat.patch
 # https://github.com/llvm/llvm-project/issues/50248
 # Affects building chromium with the clang/libstdc++ combo
 Patch10:	libstdc++-workaround-clang-bug-50248.patch
-# Seems to be still required on armv7hnl
-Patch12:	gcc-4.8-non-fatal-compare-failure.patch
-# https://bugs.launchpad.net/gcc-linaro/+bug/1225317
-Patch13:	Gcc-4.8.2-arm-thumb2-CASE_VECTOR_SHORTEN_MODE.patch
-# FIXME this is ***evil***
-# Without this patch, we get an Exec format error every time cc1plus is run inside qemu.
-# A notable difference:
-# Without the patch:
-# $ file except.o
-# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (SYSV), not stripped
-# With the patch:
-# except.o: ELF 64-bit LSB relocatable, ARM aarch64, version 1 (GNU/Linux), not stripped
-# Apparently, the kernel or glibc can't handle Linux specific object files in
-# qemu?
-# This needs further debugging (and preferrably testing on real hardware), but
-# for now, the evil patch allows us to continue building.
-Patch16:	gcc-4.9-aarch64-evil-exception-workaround.patch
-
-# Provide functions from compiler-rt in libgcc
-Patch17:	gcc-6.3-libgcc-__muloti4.patch
-
-# MUSL Support
-Patch18:	gcc-5.1.0-libstdc++-musl.patch
-
-Patch20:	gcc-6.3-libgcc-musl-workaround.patch
-
-# From Google's tree
-# 331e362574142e4c1d9d509533d1c96b6dc54d13
-Patch104:	gcc-4.9-simplify-got.patch
-
-# MUSL support
-Patch203:	0003-musl-unwind.patch
-Patch205:	0005-musl-config-revert.patch
-Patch206:	0006-musl-config.patch
-Patch207:	0007-musl-gcc.patch
-Patch208:	0008-musl-mips.patch
-Patch209:	0009-musl-x86.patch
-
-# Patches 1001 and 1007 disabled until they're committed
-# slibdir is either /lib or /lib64
-Patch1001:	gcc33-pass-slibdir.patch
-# pass libdir around
-Patch1007:	gcc-4.6.2-multi-do-libdir.patch
-
 # Fix build of libstdc++ for mingw crosscompilers
 Patch1008:	libstdc++-12.0-mingw-crosscompilers.patch
 # Fix linking the stage-1 ADA compiler
@@ -2523,35 +2477,16 @@ Static liblsan.
 %prep
 export LC_ALL=en_US.UTF-8
 %setup -q -n %{srcname}
-%if 0
-%patch0 -p1 -b .uclibc~
-%patch1 -p1 -b .pthreadlinkage~
-#patch3 -p1 -b .linux32~
-%patch4 -p1 -b .execstack~
-#patch6 -p1 -b .ltobfd~
-%patch7 -p1 -b .plugindet~
-# Breaks the build, see comment on bug 33763
-#patch8 -p1 -b .ext_inline~
-#patch9 -p1 -b .android~
-%patch12 -p1 -b .compare~
-%patch13 -p1 -b .short
-%ifarch aarch64
-%patch16 -p1 -b .EVILaarch64~
-%endif
-%patch17 -p1 -b .compilerRt~
-%patch18 -p1 -b .musl1~
-%patch20 -p1 -b .musllibgcc~
-
-#patch104 -p1 -b .google5~
-
-%patch203 -p1 -b .musl4~
-#patch205 -p1 -b .musl6~
-#patch206 -p1 -b .musl7~
-#patch207 -p1 -b .musl8~
-#patch208 -p1 -b .musl9~
-
-%patch1001 -p1 -b .pass_slibdir~
-%patch1007 -p1 -b .multi-do-libdir~
+%if %{with offloading}
+tar xf %{S:2}
+mv newlib-*/newlib newlib
+mkdir amdgpu-binutils
+for i in ar nm ranlib; do
+	ln -s %{_bindir}/llvm-${i} amdgpu-binutils/amdgcn-amdhsa-${i}
+done
+ln -s %{_bindir}/llvm-mc amdgpu-binutils/amdgcn-amdhsa-as
+ln -s %{_bindir}/ld.lld amdgpu-binutils/amdgcn-amdhsa-ld
+export PATH=$(pwd)/amdgpu-binutils:${PATH}
 %endif
 %patch1008 -p1 -b .mingw32~
 %patch1009 -p1 -b .fixadabuild~
@@ -2642,6 +2577,36 @@ for i in %{_target_platform}; do
 %else
 for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
+%if %{with offloading}
+	# GPU Offloading
+	for j in %{offloadtargets}; do
+		CFLAGS_FOR_TARGET=""
+		CXXFLAGS_FOR_TARGET=""
+		if echo $j |grep -q amd; then
+			# We have to kill off fiji because fiji requires Object Code v3, which
+			# has been dropped from the LLVM toolchain in 18.x
+			# (And even gcc uses the LLVM assembler for amdgpu)
+			EXTRA_FLAGS="--with-arch=gfx900 --with-multilib-list=gfx900,gfx906,gfx908,gfx90a,gfx1030,gfx1036,gfx1100,gfx1103"
+		elif echo $j |grep -q nvptx; then
+			EXTRA_FLAGS="--enable-newlib-io-long-long"
+		else
+			EXTRA_FLAGS=""
+		fi
+		mkdir -p obj-${i}-accel-${j}
+		cd obj-${i}-accel-${j}
+		../configure \
+			--prefix=%{_prefix} \
+			--target=${j} \
+			--enable-as-accelerator-for=${i} \
+			--disable-sjlj-exceptions \
+			--enable-languages=c,c++,lto,fortran \
+			--with-newlib \
+			$EXTRA_FLAGS
+		%make_build
+		cd ..
+	done
+%endif
+
 	EXTRA_FLAGS=""
 	CFLAGS_FOR_TARGET=""
 	CXXFLAGS_FOR_TARGET=""
@@ -2735,6 +2700,10 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			--with-slibdir=%{_libdir} \
 			--mandir=%{_mandir} \
 			--infodir=%{_infodir} \
+%if %{with offloading}
+			--enable-offload-targets=$(echo %{offloadtargets} |sed -e 's| |,|g') \
+			--enable-offload-defaulted \
+%endif
 %if !%{build_cloog}
 			--without-cloog \
 			--without-ppl \
@@ -2896,6 +2865,10 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				--infodir=%{_infodir} \
 				--with-sysroot=%{_prefix}/${i} \
 				--with-native-system-header-dir=/include \
+%if %{with offloading}
+				--enable-offload-targets=$(echo %{offloadtargets} |sed -e 's| |,|g') \
+				--enable-offload-defaulted \
+%endif
 				--enable-threads \
 				--enable-shared \
 				--enable-lto \
@@ -3021,6 +2994,14 @@ done
 %if %{with crosscompilers}
 # Install crosscompilers first so the native compiler can overwrite stuff
 for i in %{long_bootstraptargets} %{long_targets}; do
+%if %{with offloading}
+	# GPU Offloading
+	for j in %{offloadtargets}; do
+		mkdir -p obj-${i}-accel-${j}
+		%make_install -C obj-${i}-accel-${j}
+	done
+%endif
+
 	[ "%{gcc_target_platform}" = "$i" ] && continue
 	%make_install -C obj-${i}
 	# libgcc_s.so* is always installed in the wrong place
@@ -3055,7 +3036,6 @@ ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
 mkdir -p %{buildroot}%{py_puresitedir}
     if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
         mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/* \
-            %{buildroot}%{py_puresitedir}
         rm -fr %{buildroot}%{_datadir}/gcc-%{ver}
     fi
 
