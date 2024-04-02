@@ -368,18 +368,18 @@ Source12:	gcc.csh
 
 Source100:	gcc.rpmlintrc
 
-Patch2:		gcc-13.1.0-crosscompiler-lld-mold.patch
-Patch5:		gcc-20231125-fix-unused-variables.patch
+Patch0:		gcc-13.1.0-crosscompiler-lld-mold.patch
+Patch1:		gcc-20231125-fix-unused-variables.patch
 # https://github.com/llvm/llvm-project/issues/50248
 # Affects building chromium with the clang/libstdc++ combo
-Patch10:	libstdc++-workaround-clang-bug-50248.patch
+Patch2:		libstdc++-workaround-clang-bug-50248.patch
 # https://github.com/llvm/llvm-project/issues/80210
 # Affects building chromium with the clang/libstdc++ combo
-Patch11:	libstdc++-workaround-clang-bug-80210.patch
+Patch3:		libstdc++-workaround-clang-bug-80210.patch
 # Fix build of libstdc++ for mingw crosscompilers
-Patch1008:	libstdc++-12.0-mingw-crosscompilers.patch
+Patch4:		libstdc++-12.0-mingw-crosscompilers.patch
 # Fix linking the stage-1 ADA compiler
-Patch1009:	gcc-12-fix-stage1-ada-linkage.patch
+Patch5:		gcc-12-fix-stage1-ada-linkage.patch
 
 %ifarch %{x86_64}
 # 32-bit glibc needed for 32-bit libstdc++ and friends
@@ -2479,7 +2479,7 @@ Static liblsan.
 ########################################################################
 %prep
 export LC_ALL=en_US.UTF-8
-%setup -q -n %{srcname}
+%autosetup -p1 -n %{srcname}
 %if %{with offloading}
 tar xf %{S:2}
 mv newlib-*/newlib newlib
@@ -2491,12 +2491,6 @@ ln -s %{_bindir}/llvm-mc amdgpu-binutils/amdgcn-amdhsa-as
 ln -s %{_bindir}/ld.lld amdgpu-binutils/amdgcn-amdhsa-ld
 export PATH=$(pwd)/amdgpu-binutils:${PATH}
 %endif
-%patch1008 -p1 -b .mingw32~
-%patch1009 -p1 -b .fixadabuild~
-
-%patch2 -p1 -b .xclld~
-%patch5 -p1 -b .unused~
-%patch10 -p1 -b .clang50248~
 
 # Allow building with current autoconf
 find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
@@ -3039,6 +3033,7 @@ ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
 mkdir -p %{buildroot}%{py_puresitedir}
     if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
         mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/* \
+		%{buildroot}%{py_puresitedir}
         rm -fr %{buildroot}%{_datadir}/gcc-%{ver}
     fi
 
