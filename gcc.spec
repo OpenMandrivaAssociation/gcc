@@ -39,7 +39,7 @@
         done
 )
 %bcond_without crosscompilers
-%bcond_without offloading
+%bcond_with offloading
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -103,7 +103,7 @@
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			13.2
 %define		ver			%{branch}.1
-%define		prerelease		20240323
+%define		prerelease		20240330
 #define		beta			%{nil}
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
@@ -373,6 +373,9 @@ Patch5:		gcc-20231125-fix-unused-variables.patch
 # https://github.com/llvm/llvm-project/issues/50248
 # Affects building chromium with the clang/libstdc++ combo
 Patch10:	libstdc++-workaround-clang-bug-50248.patch
+# https://github.com/llvm/llvm-project/issues/80210
+# Affects building chromium with the clang/libstdc++ combo
+Patch11:	libstdc++-workaround-clang-bug-80210.patch
 # Fix build of libstdc++ for mingw crosscompilers
 Patch1008:	libstdc++-12.0-mingw-crosscompilers.patch
 # Fix linking the stage-1 ADA compiler
