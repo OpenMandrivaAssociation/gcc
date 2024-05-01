@@ -1,9 +1,9 @@
-diff -up gcc-13-20240323/libstdc++-v3/include/bits/stl_construct.h.omv~ gcc-13-20240323/libstdc++-v3/include/bits/stl_construct.h
---- gcc-13-20240323/libstdc++-v3/include/bits/stl_construct.h.omv~	2024-04-02 16:05:16.005754956 +0200
-+++ gcc-13-20240323/libstdc++-v3/include/bits/stl_construct.h	2024-04-02 16:06:40.810791752 +0200
+diff -up gcc-14.1.0-RC-20240430/libstdc++-v3/include/bits/stl_construct.h.3~ gcc-14.1.0-RC-20240430/libstdc++-v3/include/bits/stl_construct.h
+--- gcc-14.1.0-RC-20240430/libstdc++-v3/include/bits/stl_construct.h.3~	2024-04-30 21:06:17.387222211 +0200
++++ gcc-14.1.0-RC-20240430/libstdc++-v3/include/bits/stl_construct.h	2024-04-30 21:07:24.740011057 +0200
 @@ -90,10 +90,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  
- #if __cplusplus >= 202002L
+ #if __cpp_constexpr_dynamic_alloc // >= C++20
    template<typename _Tp, typename... _Args>
 -    constexpr auto
 +    constexpr _Tp*

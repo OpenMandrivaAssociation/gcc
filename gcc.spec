@@ -39,7 +39,7 @@
         done
 )
 %bcond_without crosscompilers
-%bcond_with offloading
+%bcond_without offloading
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
@@ -101,17 +101,16 @@
 
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
-%define		branch			13.2
-%define		ver			%{branch}.1
-%define		prerelease		20240330
-#define		beta			%{nil}
+%define		branch			%(echo %{version} |cut -d. -f1-2)
+%define		prerelease		20240430
+%define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
-%define		gcclibexecdir		%{gcclibexecdirparent}/%{ver}
+%define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
-%define		gccdir			%{gccdirparent}/%{ver}
-%define		multigccdir		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/32
-%define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/n32
-%define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{ver}/64
+%define		gccdir			%{gccdirparent}/%{version}
+%define		multigccdir		%{_libdir}/gcc/%{gcc_target_platform}/%{version}/32
+%define		multigccdirn32		%{_libdir}/gcc/%{gcc_target_platform}/%{version}/n32
+%define		multigccdir64		%{_libdir}/gcc/%{gcc_target_platform}/%{version}/64
 %define		multilibdir		%{_prefix}/lib
 
 #-----------------------------------------------------------------------
@@ -340,13 +339,13 @@ License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2
 Group:		Development/C
 Url:		http://gcc.gnu.org/
 %if "%{prerelease}" != ""
-Version:	%{ver}
+Version:	14.1.0
 Release:	0.%(echo %{prerelease} |sed -e 's,-,_,g').1
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
-Source0:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
+Source0:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
+Source1:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
 %else
-Version:	%{ver}
+Version:	14.1.0
 Release:	1
 # http://www.gnu.org/prep/ftp.html ...
 Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
@@ -369,7 +368,7 @@ Source12:	gcc.csh
 Source100:	gcc.rpmlintrc
 
 Patch0:		gcc-13.1.0-crosscompiler-lld-mold.patch
-Patch1:		gcc-20231125-fix-unused-variables.patch
+#Patch1:		gcc-20231125-fix-unused-variables.patch
 # https://github.com/llvm/llvm-project/issues/50248
 # Affects building chromium with the clang/libstdc++ combo
 Patch2:		libstdc++-workaround-clang-bug-50248.patch
@@ -465,7 +464,7 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
 		echo "%%optional %{_bindir}/${shortplatform}-gcc"
-		echo "%%optional %{_bindir}/${shortplatform}-gcc-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-gcc-%{version}"
 		echo "%%optional %{_bindir}/${shortplatform}-gcc-ar"
 		echo "%%optional %{_bindir}/${shortplatform}-gcc-nm"
 		echo "%%optional %{_bindir}/${shortplatform}-gcc-ranlib"
@@ -498,8 +497,8 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %doc %{_infodir}/gccinstall.info*
 # Marked optional because of weird failure on armv7hnl
 %optional %doc %{_infodir}/libquadmath.info*
-%{_bindir}/gcc-%{ver}
-%{_bindir}/%{gcc_target_platform}-gcc-%{ver}
+%{_bindir}/gcc-%{version}
+%{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %dir %{_libdir}/gcc
 %if "%{_lib}" != "lib"
 %{_prefix}/lib/gcc
@@ -686,12 +685,12 @@ The C preprocessor provides four separate functionalities:
 %endif
 %{_bindir}/cpp
 %{_bindir}/%{gcc_target_platform}-cpp
-%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
+%{_bindir}/%{gcc_target_platform}-cpp-%{version}
 %(
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
 		echo "%%optional %{_bindir}/${shortplatform}-cpp"
-		echo "%%optional %{_bindir}/${shortplatform}-cpp-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-cpp-%{version}"
 	fi
 )
 %if %{system_gcc}
@@ -733,16 +732,16 @@ including templates and exception handling.
 %{_bindir}/%{gcc_target_platform}-c++
 %{_bindir}/%{gcc_target_platform}-g++
 %endif
-%{_bindir}/c++-%{ver}
-%{_bindir}/g++-%{ver}
-%{_libexecdir}/gcc/%{gcc_target_platform}/%{ver}/g++-mapper-server
-%{_bindir}/%{gcc_target_platform}-g++-%{ver}
+%{_bindir}/c++-%{version}
+%{_bindir}/g++-%{version}
+%{_libexecdir}/gcc/%{gcc_target_platform}/%{version}/g++-mapper-server
+%{_bindir}/%{gcc_target_platform}-g++-%{version}
 %(
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
 		echo "%%optional %{_bindir}/${shortplatform}-c++"
 		echo "%%optional %{_bindir}/${shortplatform}-g++"
-		echo "%%optional %{_bindir}/${shortplatform}-g++-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-g++-%{version}"
 	fi
 )
 %{gcclibexecdir}/cc1plus
@@ -800,14 +799,6 @@ Requires:	%{multilibstdcxx} = %{EVRD}
 Provides:	libstdc++-devel = %{EVRD}
 %endif
 Provides:	stdc++-devel = %{EVRD}
-%if "%{ver}" != "%{version}"
-# 4.7.2_2010.10 should provide 4.7.2 so clang can pick up the dep
-%if "%{libstdcxx_devel}" != "libstdc++-devel"
-Provides:	%{libstdcxx_devel} = %{ver}-%{release}
-%endif
-Provides:	libstdc++-devel = %{ver}-%{release}
-Provides:	stdc++-devel = %{ver}-%{release}
-%endif
 # We don't want to pull in an entire Python environment just because of
 # libstdc++'s python based gdb plugin...
 %define __requires_exclude_from ^(%{py_puresitedir}|%{_datadir}/gdb/).*$
@@ -818,7 +809,7 @@ package includes the header files and libraries needed for C++
 development. This includes rewritten implementation of STL.
 
 %files -n %{libstdcxx_devel}
-%{_includedir}/c++/%{ver}
+%{_includedir}/c++/%{version}
 %{_libdir}/libstdc++.so
 %if ! %{cross_compiling}
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
@@ -1124,14 +1115,14 @@ programs with the GNU Compiler Collection.
 
 %files gfortran
 %{_bindir}/gfortran
-%{_bindir}/gfortran-%{ver}
+%{_bindir}/gfortran-%{version}
 %{_bindir}/%{_target_platform}-gfortran
-%{_bindir}/%{_target_platform}-gfortran-%{ver}
+%{_bindir}/%{_target_platform}-gfortran-%{version}
 %(
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
 		echo "%%optional %{_bindir}/${shortplatform}-gfortran"
-		echo "%%optional %{_bindir}/${shortplatform}-gfortran-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-gfortran-%{version}"
 	fi
 )
 %doc %{_infodir}/gfortran.info*
@@ -1260,7 +1251,7 @@ with the GNU Compiler Collection.
 	if [ -n "$(echo %{gcc_target_platform} |cut -d- -f4-)" ]; then
 		shortplatform="$(echo %{gcc_target_platform} |cut -d- -f1)-$(echo %{gcc_target_platform} |cut -d- -f3-)"
 		echo "%%optional %{_bindir}/${shortplatform}-gccgo"
-		echo "%%optional %{_bindir}/${shortplatform}-gccgo-%{ver}"
+		echo "%%optional %{_bindir}/${shortplatform}-gccgo-%{version}"
 	fi
 )
 %{_libexecdir}/gcc/*/*/cgo
@@ -1271,17 +1262,17 @@ with the GNU Compiler Collection.
 %endif
 %doc %{_infodir}/gccgo.info*
 %doc %{_mandir}/man1/gccgo.1*
-%{_bindir}/gccgo-%{ver}
-%{_bindir}/%{gcc_target_platform}-gccgo-%{ver}
+%{_bindir}/gccgo-%{version}
+%{_bindir}/%{gcc_target_platform}-gccgo-%{version}
 %{gcclibexecdir}/go1
 %{gcclibexecdir}/buildid
 %{gcclibexecdir}/test2json
 %{gcclibexecdir}/vet
-%{_libdir}/go/%{ver}
+%{_libdir}/go/%{version}
 %{_libdir}/libgobegin.a
 %{_libdir}/libgolibbegin.a
 %if %{build_multilib}
-%{multilibdir}/go/%{ver}
+%{multilibdir}/go/%{version}
 %{multilibdir}/libgobegin.a
 %{multilibdir}/libgolibbegin.a
 %endif
@@ -3022,19 +3013,19 @@ done
 %if %{build_lto}
 # Put the LTO plugin where ld can see it...
 mkdir -p %{buildroot}%{_libdir}/bfd-plugins
-ln -s ../../libexec/gcc/%{gcc_target_platform}/%{ver}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
+ln -s ../../libexec/gcc/%{gcc_target_platform}/%{version}/liblto_plugin.so %{buildroot}%{_libdir}/bfd-plugins/liblto_plugin.so
 %endif
 
 # Make cpp names crosscompiler friendly
 ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp
-ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{ver}
+ln -s cpp %{buildroot}%{_bindir}/%{gcc_target_platform}-cpp-%{version}
 
 # configure python dir option does not cover libstdc++
 mkdir -p %{buildroot}%{py_puresitedir}
-    if [ -d %{buildroot}%{_datadir}/gcc-%{ver}/python ]; then
-        mv -f %{buildroot}%{_datadir}/gcc-%{ver}/python/* \
+    if [ -d %{buildroot}%{_datadir}/gcc-%{version}/python ]; then
+        mv -f %{buildroot}%{_datadir}/gcc-%{version}/python/* \
 		%{buildroot}%{py_puresitedir}
-        rm -fr %{buildroot}%{_datadir}/gcc-%{ver}
+        rm -fr %{buildroot}%{_datadir}/gcc-%{version}
     fi
 
 pushd %{buildroot}%{_bindir}
@@ -3042,7 +3033,7 @@ pushd %{buildroot}%{_bindir}
     mkdir -p %{buildroot}%{_prefix}/lib
     ln -sf %{_bindir}/cpp %{buildroot}%{_prefix}/lib/cpp
     install -m 0755 %{SOURCE4} %{SOURCE5} %{buildroot}%{_bindir}
-    ln -sf %{gcc_target_platform}-gcc-%{ver} cc
+    ln -sf %{gcc_target_platform}-gcc-%{version} cc
 %else
     rm %{buildroot}%{_bindir}/cpp
 %endif
@@ -3058,38 +3049,38 @@ pushd %{buildroot}%{_bindir}
     %endif
     for prog in $PROGRAMS; do
         if [ -f %{gcc_target_platform}-$prog ]; then
-            rm -f %{gcc_target_platform}-$prog-%{ver}
-            mv -f %{gcc_target_platform}-$prog{,-%{ver}}
+            rm -f %{gcc_target_platform}-$prog-%{version}
+            mv -f %{gcc_target_platform}-$prog{,-%{version}}
         fi
         rm -f $prog
-        ln -sf %{gcc_target_platform}-$prog-%{ver} $prog-%{ver}
+        ln -sf %{gcc_target_platform}-$prog-%{version} $prog-%{version}
         %if %{system_gcc}
-            ln -sf %{gcc_target_platform}-$prog-%{ver} $prog
-            ln -sf %{gcc_target_platform}-$prog-%{ver} %{gcc_target_platform}-$prog
+            ln -sf %{gcc_target_platform}-$prog-%{version} $prog
+            ln -sf %{gcc_target_platform}-$prog-%{version} %{gcc_target_platform}-$prog
         %endif
     done
 %if %{build_cxx}
-    rm -f c++ %{gcc_target_platform}-c++{,-%{ver}}
-    ln -sf %{gcc_target_platform}-g++-%{ver} c++-%{ver}
+    rm -f c++ %{gcc_target_platform}-c++{,-%{version}}
+    ln -sf %{gcc_target_platform}-g++-%{version} c++-%{version}
     %if %{system_gcc}
-        ln -sf %{gcc_target_platform}-g++-%{ver} c++
+        ln -sf %{gcc_target_platform}-g++-%{version} c++
     %endif
     %if %{system_gcc}
-        ln -sf %{gcc_target_platform}-g++-%{ver} %{gcc_target_platform}-c++
+        ln -sf %{gcc_target_platform}-g++-%{version} %{gcc_target_platform}-c++
     %endif
 
 %if ! %{cross_compiling}
     mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
     mv -f %{buildroot}%{_libdir}/libstdc++.so.*.py \
         %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}
-    perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
+    perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
         %{buildroot}%{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 
     %if %{build_multilib}
         mkdir -p %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
         mv -f %{buildroot}%{multilibdir}/libstdc++.so.*.py \
         %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}
-        perl -pi -e 's|%{_datadir}/gcc-%{ver}/python|%{py_puresitedir}|;' \
+        perl -pi -e 's|%{_datadir}/gcc-%{version}/python|%{py_puresitedir}|;' \
             %{buildroot}%{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
     %endif
 %endif
@@ -3180,7 +3171,7 @@ pushd obj-%{gcc_target_platform}
     mkdir -p %{buildroot}%{_docdir}/libstdc++
     cp -far libstdc++-v3/doc/html %{buildroot}%{_docdir}/libstdc++
     %endif
-    pushd host-%{gcc_target_platform}/gcc/HTML/gcc-%{ver}
+    pushd host-%{gcc_target_platform}/gcc/HTML/gcc-%{version}
         mkdir -p %{buildroot}%{_docdir}/gcc/html
         for doc in gcc gccinstall gccint; do
             cp -far $doc %{buildroot}%{_docdir}/gcc/html
