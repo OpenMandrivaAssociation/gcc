@@ -2874,7 +2874,7 @@ done
 #-----------------------------------------------------------------------
 %build
 # FIXME: extra tools needed
-export PATH=$PATH:$PWD/bin
+export PATH=$(pwd)/amdgpu-binutils:$PATH:$PWD/bin
 export sysroot=%{_prefix}
 #_prefix}/%{gcc_target_platform}
 
@@ -2966,6 +2966,8 @@ install -D -m644 test_summary.log %{buildroot}%{_docdir}/gcc/test_summary.log
 #-----------------------------------------------------------------------
 
 %install
+export PATH=$(pwd)/amdgpu-binutils:${PATH}
+
 # There's a nasty bug in gcc Makefiles -- they go to fixincludes/ and run
 # make install, but they don't actually create a Makefile there if the
 # directory is empty.
