@@ -3374,3 +3374,54 @@ EOF
 done
 )
 %endif
+
+%if %{with offloading}
+%(
+for i in %{offloadtargets}; do
+	cat <<EOF
+%package offload-$i
+Summary: Runtime files for offloading to $i GPUs
+
+%description offload-$i
+Runtime files for offloading to $i GPUs
+
+%package offload-$i-devel
+Summary: Development files for offloading to $i GPUs
+Requires: offload-$i = %{EVRD}
+
+%description offload-$i-devel
+Development files for offloading to $i GPUs
+
+%files offload-$i
+%{_bindir}/*-accel-$i-*
+%{_libexecdir}/gcc/$i/%{version}/g++-mapper-server
+%dir %{_libexecdir}/gcc/*/%{version}/accel
+%dir %{_libexecdir}/gcc/*/%{version}/accel/$i
+%{_libexecdir}/gcc/*/%{version}/accel/gcn-run
+%{_libexecdir}/gcc/*/%{version}/accel/mkoffload
+EOF
+
+	if [ "$i" = "amdgcn-amdhsa" ]; then
+		echo '%{_libdir}/libgomp-plugin-gcn.so*'
+	elif [ "$i" = "nvptx-none" ]; then
+		echo '%{_libdir}/libgomp-plugin-nvptx.so*'
+	fi
+
+	cat <<EOF
+%files offload-$i-devel
+%{_prefix}/$i
+%{_libexecdir}/gcc/$i/%{version}/install-tools
+%{_libexecdir}/gcc/*/%{version}/accel/cc1
+%{_libexecdir}/gcc/*/%{version}/accel/cc1plus
+%{_libexecdir}/gcc/*/%{version}/accel/collect2
+%{_libexecdir}/gcc/*/%{version}/accel/f951
+%{_libexecdir}/gcc/*/%{version}/accel/install-tools
+%{_libexecdir}/gcc/*/%{version}/accel/liblto_plugin.so
+%{_libexecdir}/gcc/*/%{version}/accel/lto-wrapper
+%{_libexecdir}/gcc/*/%{version}/accel/lto1
+%{_libexecdir}/gcc/*/%{version}/accel/plugin
+%{_mandir}/man1/*-accel-$i*.1*
+EOF
+done
+)
+%endif
