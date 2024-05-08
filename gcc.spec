@@ -3397,11 +3397,11 @@ Development files for offloading to $i GPUs
 %{_libexecdir}/gcc/$i/%{version}/g++-mapper-server
 %dir %{_libexecdir}/gcc/*/%{version}/accel
 %dir %{_libexecdir}/gcc/*/%{version}/accel/$i
-%{_libexecdir}/gcc/*/%{version}/accel/gcn-run
-%{_libexecdir}/gcc/*/%{version}/accel/mkoffload
+%{_libexecdir}/gcc/*/%{version}/accel/$i/mkoffload
 EOF
 
 	if [ "$i" = "amdgcn-amdhsa" ]; then
+		echo "%{_libexecdir}/gcc/*/%{version}/accel/$i/gcn-run"
 		echo '%{_libdir}/libgomp-plugin-gcn.so*'
 	elif [ "$i" = "nvptx-none" ]; then
 		echo '%{_libdir}/libgomp-plugin-nvptx.so*'
