@@ -17,8 +17,10 @@
 %global targets aarch64-linux armv7hnl-linux x32-linux riscv64-linux i686-mingw32
 %global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux x86_64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl
 %else
-%global targets loongarch-linux loongarch-linuxmusl aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl
-%global bootstraptargets loongarch-linuxuclibc aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+#global targets loongarch64-linux loongarch64-linuxmusl aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl
+#global bootstraptargets loongarch64-linuxuclibc aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+%global targets x86_64-linux aarch64-linux
+%global bootstraptargets %{nil}
 %endif
 %endif
 %endif
@@ -542,6 +544,11 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %endif
 %if %{build_check}
 %doc %{_docdir}/gcc/test_summary.log
+%endif
+%if %{with offloading}
+%exclude %{_prefix}/lib/gcc/*/*/accel
+%exclude %{_prefix}/lib/gcc/amdgcn-amdhsa
+%exclude %{_prefix}/lib/gcc/nvptx-none
 %endif
 
 
@@ -3356,17 +3363,28 @@ Gcc for crosscompiling to ${i}
 %{_mandir}/man?/${i}-*
 %{_libdir}/gcc/${i}
 %{_libexecdir}/gcc/${i}
+%if %{with offloading}
+%exclude %{_bindir}/${i}-accel-*
+%exclude %{_mandir}/man?/${i}-accel-*
+%exclude %{_libexecdir}/gcc/${i}/%{version}/accel
+%endif
 EOF
 	if ! $bootstrap; then
 		cat <<EOF
 %{_prefix}/${i}/include/*
 %{_prefix}/${i}/lib*/*
+%if %{with offloading}
+%exclude %{_prefix}/${i}/lib*/libgomp-plugin-*.*
+%endif
 EOF
 	fi
 
 	if [ -n "$(echo $i |cut -d- -f4-)" ]; then
 		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
 		echo "%{_bindir}/${shortplatform}-*"
+%if %{with offloading}
+		echo "%exclude %{_bindir}/${shortplatform}-accel-*"
+%endif
 	fi
 	echo
 done
@@ -3375,51 +3393,98 @@ done
 
 %if %{with offloading}
 %(
+
 for i in %{offloadtargets}; do
 	cat <<EOF
-%package offload-$i
-Summary: Runtime files for offloading to $i GPUs
+%package offload-$i-common
+Summary: Runtime files for offloading to $i GPUs common to all (cross-)gcc compilers
 
-%description offload-$i
-Runtime files for offloading to $i GPUs
+%description offload-$i-common
+Runtime files for offloading to $i GPUs common to all (cross-)gcc compilers
 
-%package offload-$i-devel
-Summary: Development files for offloading to $i GPUs
-Requires: offload-$i = %{EVRD}
-
-%description offload-$i-devel
-Development files for offloading to $i GPUs
-
-%files offload-$i
-%{_bindir}/*-accel-$i-*
+%files offload-$i-common
 %{_libexecdir}/gcc/$i/%{version}/g++-mapper-server
-%dir %{_libexecdir}/gcc/*/%{version}/accel
-%dir %{_libexecdir}/gcc/*/%{version}/accel/$i
-%{_libexecdir}/gcc/*/%{version}/accel/$i/mkoffload
 EOF
 
 	if [ "$i" = "amdgcn-amdhsa" ]; then
-		echo "%{_libexecdir}/gcc/*/%{version}/accel/$i/gcn-run"
 		echo '%{_libdir}/libgomp-plugin-gcn.so*'
 	elif [ "$i" = "nvptx-none" ]; then
 		echo '%{_libdir}/libgomp-plugin-nvptx.so*'
 	fi
 
 	cat <<EOF
-%files offload-$i-devel
+%package offload-$i-common-devel
+Summary: Development files for offloading to $i GPUs common to all (cross-)gcc compilers
+Requires: %{name}-offload-$i-common = %{EVRD}
+
+%description offload-$i-common-devel
+Development files for offloading to $i GPUs common to all (cross-)gcc compilers
+
+%files offload-$i-common-devel
 %{_prefix}/$i
 %{_libexecdir}/gcc/$i/%{version}/install-tools
-%{_libexecdir}/gcc/*/%{version}/accel/cc1
-%{_libexecdir}/gcc/*/%{version}/accel/cc1plus
-%{_libexecdir}/gcc/*/%{version}/accel/collect2
-%{_libexecdir}/gcc/*/%{version}/accel/f951
-%{_libexecdir}/gcc/*/%{version}/accel/install-tools
-%{_libexecdir}/gcc/*/%{version}/accel/liblto_plugin.so
-%{_libexecdir}/gcc/*/%{version}/accel/lto-wrapper
-%{_libexecdir}/gcc/*/%{version}/accel/lto1
-%{_libexecdir}/gcc/*/%{version}/accel/plugin
-%{_mandir}/man1/*-accel-$i*.1*
 EOF
+done
+
+for i in %{long_bootstraptargets} %{long_targets}; do
+	for j in %{offloadtargets}; do
+		if [ "$i" = "%{_target_platform}" ]; then
+			package="%{name}-offload-$j"
+		else
+			package="cross-$i-%{name}-offload-$j"
+		fi
+		cat <<EOF
+%package -n $package
+Summary: Runtime files for offloading to $j GPUs
+Requires: %{name}-offload-$j-common = %{EVRD}
+
+%description -n $package
+Runtime files for offloading to $j GPUs
+
+%package -n $package-devel
+Summary: Development files for offloading to $j GPUs
+Requires: $package = %{EVRD}
+Requires: %{name}-offload-$j-common-devel = %{EVRD}
+
+%description -n $package-devel
+Development files for offloading to $j GPUs
+
+%files -n $package
+%{_bindir}/$i-accel-$j-*
+%dir %{_libexecdir}/gcc/$i/%{version}/accel
+%dir %{_libexecdir}/gcc/$i/%{version}/accel/$j
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/mkoffload
+EOF
+
+		if [ "$j" = "amdgcn-amdhsa" ]; then
+			echo "%{_libexecdir}/gcc/$i/%{version}/accel/$j/gcn-run"
+		fi
+
+		cat <<EOF
+%files -n $package-devel
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/cc1
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/cc1plus
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/collect2
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/f951
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/install-tools
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/lto-wrapper
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/lto1
+%{_libexecdir}/gcc/$i/%{version}/accel/$j/plugin
+%{_mandir}/man1/$i-accel-$j*.1*
+EOF
+
+		if [ "$j" = "amdgcn-amdhsa" ]; then
+			echo "%{_libexecdir}/gcc/$i/%{version}/accel/$j/liblto_plugin.so"
+		fi
+
+		# aarch64-openmandriva-linux-gnu and aarch64-linux-gnu are similar enough...
+		longplatform=$(grep ^target_alias= obj-$i/Makefile |cut -d= -f2-)
+		if [ -n "$(echo $i |cut -d- -f4-)" ]; then
+			shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
+			echo "%{_bindir}/$shortplatform-accel-$j-gcc"
+			echo "%{_bindir}/$shortplatform-accel-$j-lto-dump"
+		fi
+	done
 done
 )
 %endif
