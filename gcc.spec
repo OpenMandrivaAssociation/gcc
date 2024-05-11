@@ -499,9 +499,6 @@ The gcc package contains the GNU Compiler Collection version %{branch}.
 %{_bindir}/gcc-%{version}
 %{_bindir}/%{gcc_target_platform}-gcc-%{version}
 %dir %{_libdir}/gcc
-%if "%{_lib}" != "lib"
-%{_prefix}/lib/gcc
-%endif
 %dir %{gccdirparent}
 %dir %{gccdir}
 %dir %{gcclibexecdirparent}
@@ -3279,13 +3276,6 @@ for i in %{_target_platform}; do
 	fi
 done
 
-%if "%{_lib}" != "lib"
-# clang has a slightly strange way of detecting gcc cross toolchains.
-# Let's be compatible with it.
-mkdir -p %{buildroot}%{_prefix}/lib
-ln -s ../%{_lib}/gcc %{buildroot}%{_prefix}/lib/gcc
-%endif
-
 # Not sure why this ends up in /usr as well as the crosscompiler
 # directories... Doesn't belong there for sure
 %ifarch %{aarch64} %{riscv}
@@ -3487,3 +3477,13 @@ EOF
 done
 )
 %endif
+
+# In gcc 13 (up to 2024-05-11, OM 5.0), /usr/lib/gcc was a
+# symlink to ../lib64/gcc. It's its own directory in 14.
+# This scriptlet can be removed when we stop supporting
+# upgrading from gcc < 14
+%pretrans -p <lua>
+st = posix.stat("/usr/lib/gcc")
+if st and st.type == "link" then
+        os.remove("/usr/lib/gcc")
+end
