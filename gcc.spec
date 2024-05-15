@@ -396,6 +396,8 @@ BuildRequires:	texinfo
 BuildRequires:	locales-en
 BuildRequires:	pkgconfig(libtirpc)
 BuildRequires:	locales-extra-charsets
+# For calculating number of CPUs to use
+BuildRequires:	bc
 # For py_puresitedir
 %if ! %{build_minimal}
 BuildRequires:	python >= 3.4
@@ -2502,6 +2504,7 @@ echo %{vendor} > gcc/DEV-PHASE
 echo %{version} > gcc/BASE-VER
 %endif
 
+%conf
 # Let's get our flags right...
 LANGUAGES=c
 %if %{build_ada}
@@ -2566,6 +2569,7 @@ for i in %{_target_platform}; do
 %else
 for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
+(
 %if %{with offloading}
 	# GPU Offloading
 	for j in %{offloadtargets}; do
@@ -2591,7 +2595,6 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			--enable-languages=c,c++,lto,fortran \
 			--with-newlib \
 			$EXTRA_FLAGS
-		%make_build
 		cd ..
 	done
 %endif
@@ -2870,7 +2873,9 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 	fi
 	cd ..
+) &
 done
+wait
 
 #-----------------------------------------------------------------------
 %build
@@ -2904,7 +2909,7 @@ echo "Using OPT_FLAGS $OPT_FLAGS"
 BOOTSTRAP=all
 %else
 BOOTSTRAP=bootstrap
-%if %isarch %{ix86} %{x86_64}
+%if %isarch %{ix86} %{x86_64} %{aarch64}
     %if %{system_gcc}
         BOOTSTRAP=profiledbootstrap
     %endif
@@ -2918,7 +2923,21 @@ BOOTSTRAP=bootstrap
 %if  %{cross_compiling}
 for i in %{_target_platform}; do
 %else
+TARGETS=$(echo %{long_bootstraptargets} %{long_targets} |wc -w)
+echo "$RPM_BUILD_NCPUS for $TARGETS targets"
+
+RPM_BUILD_NCPUS=$(echo $RPM_BUILD_NCPUS '*' 2 / $TARGETS |bc)
+[ "$RPM_BUILD_NCPUS" -lt 2 ] && RPM_BUILD_NCPUS=2
+echo "Using $RPM_BUILD_NCPUS CPUs per target"
+
 for i in %{long_bootstraptargets} %{long_targets}; do
+%endif
+(
+%if %{with offloading}
+	# GPU Offloading
+	for j in %{offloadtargets}; do
+		%make_build -C obj-${i}-accel-${j}
+	done
 %endif
 	cd obj-${i}
 	if [ "%{gcc_target_platform}" = "$i" ]; then
@@ -2946,11 +2965,13 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 
 %if %{with crosscompilers}
 	else
-		%make
+		%make_build
 %endif
 	fi
 	cd ..
+) &
 done
+wait
 
 #-----------------------------------------------------------------------
 
@@ -2988,7 +3009,6 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %if %{with offloading}
 	# GPU Offloading
 	for j in %{offloadtargets}; do
-		mkdir -p obj-${i}-accel-${j}
 		%make_install -C obj-${i}-accel-${j}
 	done
 %endif
