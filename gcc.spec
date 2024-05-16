@@ -3487,7 +3487,6 @@ EOF
 		fi
 
 		# aarch64-openmandriva-linux-gnu and aarch64-linux-gnu are similar enough...
-		longplatform=$(grep ^target_alias= obj-$i/Makefile |cut -d= -f2-)
 		if [ -n "$(echo $i |cut -d- -f4-)" ]; then
 			shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
 			echo "%{_bindir}/$shortplatform-accel-$j-gcc"
