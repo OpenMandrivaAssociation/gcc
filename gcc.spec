@@ -2571,32 +2571,34 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 (
 %if %{with offloading}
-	# GPU Offloading
-	for j in %{offloadtargets}; do
-		CFLAGS_FOR_TARGET=""
-		CXXFLAGS_FOR_TARGET=""
-		if echo $j |grep -q amd; then
-			# We have to kill off fiji because fiji requires Object Code v3, which
-			# has been dropped from the LLVM toolchain in 18.x
-			# (And even gcc uses the LLVM assembler for amdgpu)
-			EXTRA_FLAGS="--with-arch=gfx900 --with-multilib-list=gfx900,gfx906,gfx908,gfx90a,gfx1030,gfx1036,gfx1100,gfx1103"
-		elif echo $j |grep -q nvptx; then
-			EXTRA_FLAGS="--enable-newlib-io-long-long"
-		else
-			EXTRA_FLAGS=""
-		fi
-		mkdir -p obj-${i}-accel-${j}
-		cd obj-${i}-accel-${j}
-		../configure \
-			--prefix=%{_prefix} \
-			--target=${j} \
-			--enable-as-accelerator-for=${i} \
-			--disable-sjlj-exceptions \
-			--enable-languages=c,c++,lto,fortran \
-			--with-newlib \
-			$EXTRA_FLAGS
-		cd ..
-	done
+	# GPU Offloading (except for bootstrap targets - mapper-server needs libc)
+	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
+		for j in %{offloadtargets}; do
+			CFLAGS_FOR_TARGET=""
+			CXXFLAGS_FOR_TARGET=""
+			if echo $j |grep -q amd; then
+				# We have to kill off fiji because fiji requires Object Code v3, which
+				# has been dropped from the LLVM toolchain in 18.x
+				# (And even gcc uses the LLVM assembler for amdgpu)
+				EXTRA_FLAGS="--with-arch=gfx900 --with-multilib-list=gfx900,gfx906,gfx908,gfx90a,gfx1030,gfx1036,gfx1100,gfx1103"
+			elif echo $j |grep -q nvptx; then
+				EXTRA_FLAGS="--enable-newlib-io-long-long"
+			else
+				EXTRA_FLAGS=""
+			fi
+			mkdir -p obj-${i}-accel-${j}
+			cd obj-${i}-accel-${j}
+			../configure \
+				--prefix=%{_prefix} \
+				--target=${j} \
+				--enable-as-accelerator-for=${i} \
+				--disable-sjlj-exceptions \
+				--enable-languages=c,c++,lto,fortran \
+				--with-newlib \
+				$EXTRA_FLAGS
+			cd ..
+		done
+	fi
 %endif
 
 	EXTRA_FLAGS=""
@@ -2935,9 +2937,11 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 (
 %if %{with offloading}
 	# GPU Offloading
-	for j in %{offloadtargets}; do
-		%make_build -C obj-${i}-accel-${j}
-	done
+	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
+		for j in %{offloadtargets}; do
+			%make_build -C obj-${i}-accel-${j}
+		done
+	fi
 %endif
 	cd obj-${i}
 	if [ "%{gcc_target_platform}" = "$i" ]; then
@@ -3008,9 +3012,11 @@ done
 for i in %{long_bootstraptargets} %{long_targets}; do
 %if %{with offloading}
 	# GPU Offloading
-	for j in %{offloadtargets}; do
-		%make_install -C obj-${i}-accel-${j}
-	done
+	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
+		for j in %{offloadtargets}; do
+			%make_install -C obj-${i}-accel-${j}
+		done
+	fi
 %endif
 
 	[ "%{gcc_target_platform}" = "$i" ] && continue
@@ -3372,11 +3378,6 @@ Gcc for crosscompiling to ${i}
 %{_mandir}/man?/${i}-*
 %{_libdir}/gcc/${i}
 %{_libexecdir}/gcc/${i}
-%if %{with offloading}
-%exclude %{_bindir}/${i}-accel-*
-%exclude %{_mandir}/man?/${i}-accel-*
-%exclude %{_libexecdir}/gcc/${i}/%{version}/accel
-%endif
 EOF
 	if ! $bootstrap; then
 		cat <<EOF
@@ -3384,6 +3385,9 @@ EOF
 %{_prefix}/${i}/lib*/*
 %if %{with offloading}
 %exclude %{_prefix}/${i}/lib*/libgomp-plugin-*.*
+%exclude %{_bindir}/${i}-accel-*
+%exclude %{_mandir}/man?/${i}-accel-*
+%exclude %{_libexecdir}/gcc/${i}/%{version}/accel
 %endif
 EOF
 	fi
@@ -3392,7 +3396,9 @@ EOF
 		shortplatform="$(echo $i |cut -d- -f1)-$(echo $i |cut -d- -f3-)"
 		echo "%{_bindir}/${shortplatform}-*"
 %if %{with offloading}
-		echo "%exclude %{_bindir}/${shortplatform}-accel-*"
+		if ! $bootstrap; then
+			echo "%exclude %{_bindir}/${shortplatform}-accel-*"
+		fi
 %endif
 	fi
 	echo
@@ -3435,7 +3441,7 @@ Development files for offloading to $i GPUs common to all (cross-)gcc compilers
 EOF
 done
 
-for i in %{long_bootstraptargets} %{long_targets}; do
+for i in %{long_targets}; do
 	for j in %{offloadtargets}; do
 		if [ "$i" = "%{_target_platform}" ]; then
 			package="%{name}-offload-$j"
