@@ -2571,7 +2571,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 (
 %if %{with offloading}
-	# GPU Offloading (except for bootstrap targets - mapper-server needs libc)
+	# GPU Offloading (except for bootstrap targets)
 	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
 		for j in %{offloadtargets}; do
 			CFLAGS_FOR_TARGET=""
@@ -2943,23 +2943,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		done
 	fi
 %endif
-	cd obj-${i}
 	if [ "%{gcc_target_platform}" = "$i" ]; then
-		# Native host compiler gets special treatment...
+		# Native host compiler gets special treatment:
+		# profiledbootstrap support and potentially building docs
 
-		if ! %make_build BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP; then
-			# Let's try to get a better error message
-			# (Workaround for builds working locally and failing in abf,
-			# let's see where exactly it's failing)
-			make -j1 BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
-		fi
-
-%if %{build_pdf}
-		%make_build pdf || :
-%endif
+		%make_build -C obj-${i} BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
 
 %if %{build_doc}
-		pushd host-%{gcc_target_platform}/gcc
+		pushd obj-${i}/host-%{gcc_target_platform}/gcc
 		%make_build html || :
 %if %{build_pdf}
 		%make_build pdf || :
@@ -2969,10 +2960,9 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 
 %if %{with crosscompilers}
 	else
-		%make_build
+		%make_build -C obj-${i}
 %endif
 	fi
-	cd ..
 ) &
 done
 wait
