@@ -2478,12 +2478,11 @@ export LC_ALL=en_US.UTF-8
 tar xf %{S:2}
 mv newlib-*/newlib newlib
 mkdir amdgpu-binutils
-for i in ar nm ranlib; do
+for i in ar nm ranlib objdump readelf otool; do
 	ln -s %{_bindir}/llvm-${i} amdgpu-binutils/amdgcn-amdhsa-${i}
 done
 ln -s %{_bindir}/llvm-mc amdgpu-binutils/amdgcn-amdhsa-as
 ln -s %{_bindir}/ld.lld amdgpu-binutils/amdgcn-amdhsa-ld
-export PATH=$(pwd)/amdgpu-binutils:${PATH}
 %endif
 
 # Allow building with current autoconf
@@ -2505,6 +2504,10 @@ echo %{version} > gcc/BASE-VER
 %endif
 
 %conf
+%if %{with offloading}
+export PATH=$(pwd)/amdgpu-binutils:${PATH}
+%endif
+
 # Let's get our flags right...
 LANGUAGES=c
 %if %{build_ada}
