@@ -2853,6 +2853,11 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				$EXTRA_FLAGS
 		else
 			echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
+			if echo $i |grep -q mingw; then
+				THREADS="--enable-threads=mcf"
+			else
+				THREADS="--enable-threads"
+			fi
 			CC=gcc CXX=g++ LDFLAGS="-fuse-ld=bfd" ../configure \
 				--prefix=%{_prefix} \
 				--libexecdir=%{_libexecdir} \
@@ -2866,7 +2871,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				--enable-offload-targets=$(echo %{offloadtargets} |sed -e 's| |,|g') \
 				--enable-offload-defaulted \
 %endif
-				--enable-threads \
+				$THREADS \
 				--enable-shared \
 				--enable-lto \
 				--enable-plugin \
@@ -3013,6 +3018,16 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 
 	[ "%{gcc_target_platform}" = "$i" ] && continue
+
+	# FIXME This really shouldn't happen, but it does. SMP issue with the makefiles?
+	if ! [ -e obj-${i}/c++tools/g++-mapper-server ]; then
+		echo "=== g++-mapper-server wasn't built for ${i}. Please check logs! ==="
+		make -C obj-${i}
+		echo "=== g++-mapper-server still wasn't built for ${i}. Please check logs! ==="
+		make -C obj-${i}/c++tools
+		echo "=== g++-mapper-server failed to build for ${i}. Please check logs! ==="
+	fi
+
 	%make_install -C obj-${i}
 	# libgcc_s.so* is always installed in the wrong place
 	# Using "%{_prefix}/lib*" to catch /usr/lib, /usr/lib64 and /usr/libx32
