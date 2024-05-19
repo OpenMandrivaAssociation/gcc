@@ -2948,6 +2948,8 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
 		for j in %{offloadtargets}; do
 			%make_build -C obj-${i}-accel-${j}
+			# Just to be on the safe side, some of those Makefiles seem to have SMP issues
+			make -C obj-${i}-accel-${j}
 		done
 	fi
 %endif
@@ -2969,6 +2971,8 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %if %{with crosscompilers}
 	else
 		%make_build -C obj-${i}
+		# Just to be on the safe side, some of those Makefiles seem to have SMP issues
+		make -C obj-${i}
 %endif
 	fi
 ) &
@@ -3012,6 +3016,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 	# GPU Offloading
 	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
 		for j in %{offloadtargets}; do
+			# FIXME This really shouldn't happen, but it does. SMP issue with the makefiles?
+			if ! [ -e obj-${i}-accel-${j}/c++tools/g++-mapper-server ]; then
+				echo "=== g++-mapper-server wasn't built for ${i}-accel-${j}. Please check logs! ==="
+				make -C obj-${i}-accel-${j}
+				echo "=== g++-mapper-server still wasn't built for ${i}-accel-${j}. Please check logs! ==="
+				make -C obj-${i}-accel-${j}/c++tools
+				echo "=== g++-mapper-server failed to build for ${i}-accel-${j}. Please check logs! ==="
+			fi
 			%make_install -C obj-${i}-accel-${j}
 		done
 	fi
