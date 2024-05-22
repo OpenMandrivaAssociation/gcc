@@ -366,19 +366,6 @@ Source12:	gcc.csh
 
 Source100:	gcc.rpmlintrc
 
-Patch0:		gcc-13.1.0-crosscompiler-lld-mold.patch
-#Patch1:		gcc-20231125-fix-unused-variables.patch
-# https://github.com/llvm/llvm-project/issues/50248
-# Affects building chromium with the clang/libstdc++ combo
-Patch2:		libstdc++-workaround-clang-bug-50248.patch
-# https://github.com/llvm/llvm-project/issues/80210
-# Affects building chromium with the clang/libstdc++ combo
-Patch3:		libstdc++-workaround-clang-bug-80210.patch
-# Fix build of libstdc++ for mingw crosscompilers
-Patch4:		libstdc++-12.0-mingw-crosscompilers.patch
-# Fix linking the stage-1 ADA compiler
-Patch5:		gcc-12-fix-stage1-ada-linkage.patch
-
 %ifarch %{x86_64}
 # 32-bit glibc needed for 32-bit libstdc++ and friends
 BuildRequires:	libc6
@@ -447,6 +434,26 @@ BuildConflicts:	cross-x86_64-w64-mingw32-gcc
 # compiler is a "cross-compiler" to its own architecture.
 Provides:	cross-%{gcc_target_platform}-gcc = %{EVRD}
 Provides:	cross-%{gcc_target_platform}-gcc-bootstrap = %{EVRD}
+
+%patchlist
+gcc-13.1.0-crosscompiler-lld-mold.patch
+libstdc++-workaround-clang-bug-50248.patch
+libstdc++-workaround-clang-bug-80210.patch
+libstdc++-12.0-mingw-crosscompilers.patch
+gcc-12-fix-stage1-ada-linkage.patch
+# When we want to start building wine stuff on aarch64
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/0c7e3b486772d9020e82fa53e2f824b5a7d59b11.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/f7b7f5752bf1c5ca3cb0fec1e6c6bf7254b87bf1.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/dfeacdb168fa3ff3df329784e029e5603c6958d6.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/84bbe00ac831c47b54095f0d7e23b2895f437b79.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/275e2096cbfe0cb33e6e30ba15b68ee19ee01fe2.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/8317547abfece2921d6d11aa114d4c56dbc86081.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/1da99bca196950246ba09bd17b4d10242d33dfc0.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/d10f00df67210ce62d5614e3b1b4bc825ee63ce2.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/236d782cb638db02a7a2f3a83745e05903472d05.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/bfb934fbf050ad143d7bd305db8ec441385af04b.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/f9fbd303067ca9a70eb29b02eccc41cef0280c66.patch
+#https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/627c4859ee73a975fde71458055c787def775bf0.patch
 
 %description
 The gcc package contains the GNU Compiler Collection version %{branch}.
