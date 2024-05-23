@@ -2861,7 +2861,10 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		else
 			echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
 			if echo $i |grep -q mingw; then
-				THREADS="--enable-threads=mcf"
+				# FIXME we should to
+				#THREADS="--enable-threads=mcf"
+				# once we have https://github.com/lhmouse/mcfgthread integrated
+				THREADS="--enable-threads"
 			else
 				THREADS="--enable-threads"
 			fi
