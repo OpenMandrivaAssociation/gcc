@@ -1,0 +1,24 @@
+diff -up gcc-14.1.0/gcc/config.gcc.omv~ gcc-14.1.0/gcc/config.gcc
+--- gcc-14.1.0/gcc/config.gcc.omv~	2024-05-24 17:16:55.875653291 +0100
++++ gcc-14.1.0/gcc/config.gcc	2024-05-24 17:17:32.055720953 +0100
+@@ -1783,7 +1783,7 @@ amdgcn-*-amdhsa)
+ 	extra_modes=gcn/gcn-modes.def
+ 	extra_objs="${extra_objs} gcn-tree.o"
+ 	case "$host" in
+-	x86_64*-*-linux-gnu )
++	*-linux-gnu|*-linux-uclibc|*-linux-musl)
+ 		if test "$ac_cv_search_dlopen" != no; then
+ 			extra_programs="${extra_programs} gcn-run\$(exeext)"
+ 		fi
+diff -up gcc-14.1.0/include/hsa.h.omv~ gcc-14.1.0/include/hsa.h
+--- gcc-14.1.0/include/hsa.h.omv~	2024-05-24 17:19:50.745982052 +0100
++++ gcc-14.1.0/include/hsa.h	2024-05-24 17:20:09.226017025 +0100
+@@ -66,7 +66,7 @@
+ // Try to detect CPU endianness
+ #if !defined(LITTLEENDIAN_CPU) && !defined(BIGENDIAN_CPU)
+ #if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || \
+-    defined(_M_X64)
++    defined(_M_X64) || defined(__aarch64__) || defined(__riscv64__) || defined(__loongarch64__)
+ #define LITTLEENDIAN_CPU
+ #endif
+ #endif

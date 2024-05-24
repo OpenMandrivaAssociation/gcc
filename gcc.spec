@@ -441,6 +441,7 @@ libstdc++-workaround-clang-bug-50248.patch
 libstdc++-workaround-clang-bug-80210.patch
 libstdc++-12.0-mingw-crosscompilers.patch
 gcc-12-fix-stage1-ada-linkage.patch
+gcn-run-more-arches.patch
 # When we want to start building wine stuff on aarch64
 #https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/0c7e3b486772d9020e82fa53e2f824b5a7d59b11.patch
 #https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/f7b7f5752bf1c5ca3cb0fec1e6c6bf7254b87bf1.patch
@@ -3452,7 +3453,8 @@ Runtime files for offloading to $i GPUs common to all (cross-)gcc compilers
 EOF
 
 	if [ "$i" = "amdgcn-amdhsa" ]; then
-		echo '%{_libdir}/libgomp-plugin-gcn.so*'
+#		echo '%{_libdir}/libgomp-plugin-gcn.so*'
+		echo
 	elif [ "$i" = "nvptx-none" ]; then
 		echo '%{_libdir}/libgomp-plugin-nvptx.so*'
 	fi
