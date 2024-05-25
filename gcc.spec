@@ -103,7 +103,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-#define		prerelease		20240430
+%define		prerelease		20240518
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -339,7 +339,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		http://gcc.gnu.org/
-Version:	14.1.0
+Version:	14.1.1
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
@@ -3453,8 +3453,7 @@ Runtime files for offloading to $i GPUs common to all (cross-)gcc compilers
 EOF
 
 	if [ "$i" = "amdgcn-amdhsa" ]; then
-#		echo '%{_libdir}/libgomp-plugin-gcn.so*'
-		echo
+		echo '%{_libdir}/libgomp-plugin-gcn.so*'
 	elif [ "$i" = "nvptx-none" ]; then
 		echo '%{_libdir}/libgomp-plugin-nvptx.so*'
 	fi

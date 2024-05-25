@@ -22,3 +22,45 @@ diff -up gcc-14.1.0/include/hsa.h.omv~ gcc-14.1.0/include/hsa.h
  #define LITTLEENDIAN_CPU
  #endif
  #endif
+diff -up gcc-14.1.0/libgomp/configure.omv~ gcc-14.1.0/libgomp/configure
+--- gcc-14.1.0/libgomp/configure.omv~	2024-05-25 12:15:27.062298743 +0100
++++ gcc-14.1.0/libgomp/configure	2024-05-25 12:16:00.222295344 +0100
+@@ -15308,7 +15308,7 @@ if test x"$enable_offload_targets" != x;
+     case $tgt in
+       nvptx*)
+ 	case "${target}" in
+-	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-*)
++	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-* | riscv64-*-* | loongarch64-*-*)
+ 	    case "$ac_cv_sizeof_void_p" in
+ 	      4)
+ 		# PR libgomp/65099: Currently, we only support offloading in
+@@ -15329,7 +15329,7 @@ if test x"$enable_offload_targets" != x;
+ 	;;
+       amdgcn*)
+ 	case "${target}" in
+-	  x86_64-*-*)
++	  x86_64-*-*|aarch64-*-*|riscv64-*-*|loongarch64-*-*|powerpc64le-*-*)
+ 	    case "$ac_cv_sizeof_void_p" in
+ 	      4)
+ 		PLUGIN_GCN=0
+diff -up gcc-14.1.0/libgomp/plugin/configfrag.ac.omv~ gcc-14.1.0/libgomp/plugin/configfrag.ac
+--- gcc-14.1.0/libgomp/plugin/configfrag.ac.omv~	2024-05-25 12:14:01.482325442 +0100
++++ gcc-14.1.0/libgomp/plugin/configfrag.ac	2024-05-25 12:15:16.222300655 +0100
+@@ -61,7 +61,7 @@ if test x"$enable_offload_targets" != x;
+     case $tgt in
+       nvptx*)
+ 	case "${target}" in
+-	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-*)
++	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-* | riscv64-*-* | loongarch64-*-*)
+ 	    case "$ac_cv_sizeof_void_p" in
+ 	      4)
+ 		# PR libgomp/65099: Currently, we only support offloading in
+@@ -82,7 +82,7 @@ if test x"$enable_offload_targets" != x;
+ 	;;
+       amdgcn*)
+ 	case "${target}" in
+-	  x86_64-*-*)
++	  x86_64-*-*|aarch64-*-*|riscv64-*-*|loongarch64-*-*|powerpc64le-*-*)
+ 	    case "$ac_cv_sizeof_void_p" in
+ 	      4)
+ 		PLUGIN_GCN=0
