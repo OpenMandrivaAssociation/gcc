@@ -103,7 +103,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20240723
+%define		prerelease		20240729
 %define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
