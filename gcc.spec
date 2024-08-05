@@ -103,8 +103,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20240729
-%define		beta			RC
+#define		prerelease		20240729
+#define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -3050,7 +3050,10 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		make -C obj-${i}/c++tools
 		echo "=== g++-mapper-server failed to build for ${i}. Please check logs! ==="
 	fi
-
+	if ! [ -e obj-${i}/${i}/libsanitizer ]; then
+		echo "=== libsanitizer wasn't built for ${i}. Please check logs! ==="
+		make -C obj-${i}
+	fi
 	%make_install -C obj-${i}
 	# libgcc_s.so* is always installed in the wrong place
 	# Using "%{_prefix}/lib*" to catch /usr/lib, /usr/lib64 and /usr/libx32
