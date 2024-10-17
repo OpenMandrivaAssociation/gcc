@@ -338,7 +338,7 @@ Name:		gcc%{package_suffix}
 %endif
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
-Url:		http://gcc.gnu.org/
+Url:		https://gcc.gnu.org/
 Version:	14.2.0
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
