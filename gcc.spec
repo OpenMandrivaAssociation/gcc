@@ -18,8 +18,13 @@
 %global targets aarch64-linux armv7hnl-linux x32-linux riscv64-linux i686-mingw32
 %global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux x86_64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl loongarch64-linux loongarch64-linuxmusl
 %else
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl
-%global bootstraptargets loongarch64-linux loongarch64-linuxmusl aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x86_64-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+%ifarch %{aarch64}
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl aarch64-linuxuclibc
+%global bootstraptargets loongarch64-linux loongarch64-linuxmusl x86_64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+%else
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl x86_64-linuxuclibc
+%global bootstraptargets loongarch64-linux loongarch64-linuxmusl aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+%endif
 %endif
 %endif
 %endif
@@ -103,7 +108,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-#define		prerelease		20240729
+%define		prerelease		20250405
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -339,7 +344,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	14.2.0
+Version:	14.2.1
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
@@ -352,7 +357,7 @@ Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
 %endif
 %if %{with offloading}
-Source2:	https://sourceware.org/pub/newlib/newlib-4.4.0.20231231.tar.gz
+Source2:	https://sourceware.org/pub/newlib/newlib-4.5.0.20241231.tar.gz
 BuildRequires:	nvptx-tools
 BuildRequires:	llvm
 %endif
