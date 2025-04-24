@@ -1,18 +1,18 @@
-diff -up gcc-14.1.0/gcc/config.gcc.omv~ gcc-14.1.0/gcc/config.gcc
---- gcc-14.1.0/gcc/config.gcc.omv~	2024-05-24 17:16:55.875653291 +0100
-+++ gcc-14.1.0/gcc/config.gcc	2024-05-24 17:17:32.055720953 +0100
-@@ -1783,7 +1783,7 @@ amdgcn-*-amdhsa)
- 	extra_modes=gcn/gcn-modes.def
+diff -up gcc-15.1.0-RC-20250418/gcc/config.gcc.5~ gcc-15.1.0-RC-20250418/gcc/config.gcc
+--- gcc-15.1.0-RC-20250418/gcc/config.gcc.5~	2025-04-18 11:20:10.000000000 +0200
++++ gcc-15.1.0-RC-20250418/gcc/config.gcc	2025-04-23 01:01:24.738917715 +0200
+@@ -1810,7 +1810,7 @@ amdgcn-*-amdhsa)
  	extra_objs="${extra_objs} gcn-tree.o"
+ 	extra_options="${extra_options} gcn/gcn-tables.opt"
  	case "$host" in
 -	x86_64*-*-linux-gnu )
-+	*-linux-gnu|*-linux-uclibc|*-linux-musl)
++	*-linux-gnu|*-linux-uclibc|*-linux-musl )
  		if test "$ac_cv_search_dlopen" != no; then
  			extra_programs="${extra_programs} gcn-run\$(exeext)"
  		fi
-diff -up gcc-14.1.0/include/hsa.h.omv~ gcc-14.1.0/include/hsa.h
---- gcc-14.1.0/include/hsa.h.omv~	2024-05-24 17:19:50.745982052 +0100
-+++ gcc-14.1.0/include/hsa.h	2024-05-24 17:20:09.226017025 +0100
+diff -up gcc-15.1.0-RC-20250418/include/hsa.h.5~ gcc-15.1.0-RC-20250418/include/hsa.h
+--- gcc-15.1.0-RC-20250418/include/hsa.h.5~	2025-04-18 11:20:18.000000000 +0200
++++ gcc-15.1.0-RC-20250418/include/hsa.h	2025-04-23 00:58:21.217767311 +0200
 @@ -66,7 +66,7 @@
  // Try to detect CPU endianness
  #if !defined(LITTLEENDIAN_CPU) && !defined(BIGENDIAN_CPU)
@@ -22,9 +22,9 @@ diff -up gcc-14.1.0/include/hsa.h.omv~ gcc-14.1.0/include/hsa.h
  #define LITTLEENDIAN_CPU
  #endif
  #endif
-diff -up gcc-14.1.0/libgomp/configure.omv~ gcc-14.1.0/libgomp/configure
---- gcc-14.1.0/libgomp/configure.omv~	2024-05-25 12:15:27.062298743 +0100
-+++ gcc-14.1.0/libgomp/configure	2024-05-25 12:16:00.222295344 +0100
+diff -up gcc-15.1.0-RC-20250418/libgomp/configure.5~ gcc-15.1.0-RC-20250418/libgomp/configure
+--- gcc-15.1.0-RC-20250418/libgomp/configure.5~	2025-04-18 11:20:21.000000000 +0200
++++ gcc-15.1.0-RC-20250418/libgomp/configure	2025-04-23 00:58:21.218602778 +0200
 @@ -15308,7 +15308,7 @@ if test x"$enable_offload_targets" != x;
      case $tgt in
        nvptx*)
@@ -43,9 +43,9 @@ diff -up gcc-14.1.0/libgomp/configure.omv~ gcc-14.1.0/libgomp/configure
  	    case "$ac_cv_sizeof_void_p" in
  	      4)
  		PLUGIN_GCN=0
-diff -up gcc-14.1.0/libgomp/plugin/configfrag.ac.omv~ gcc-14.1.0/libgomp/plugin/configfrag.ac
---- gcc-14.1.0/libgomp/plugin/configfrag.ac.omv~	2024-05-25 12:14:01.482325442 +0100
-+++ gcc-14.1.0/libgomp/plugin/configfrag.ac	2024-05-25 12:15:16.222300655 +0100
+diff -up gcc-15.1.0-RC-20250418/libgomp/plugin/configfrag.ac.5~ gcc-15.1.0-RC-20250418/libgomp/plugin/configfrag.ac
+--- gcc-15.1.0-RC-20250418/libgomp/plugin/configfrag.ac.5~	2025-04-18 11:20:19.000000000 +0200
++++ gcc-15.1.0-RC-20250418/libgomp/plugin/configfrag.ac	2025-04-23 00:58:21.219094025 +0200
 @@ -61,7 +61,7 @@ if test x"$enable_offload_targets" != x;
      case $tgt in
        nvptx*)

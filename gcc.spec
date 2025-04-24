@@ -108,8 +108,8 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20250405
-#define		beta			RC
+%define		prerelease		20250418
+%define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
 %define		gccdirparent		%{_libdir}/gcc/%{gcc_target_platform}/
@@ -344,7 +344,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	14.2.1
+Version:	15.1.0
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
@@ -443,7 +443,7 @@ Provides:	cross-%{gcc_target_platform}-gcc-bootstrap = %{EVRD}
 %patchlist
 gcc-13.1.0-crosscompiler-lld-mold.patch
 libstdc++-workaround-clang-bug-50248.patch
-libstdc++-workaround-clang-bug-80210.patch
+#libstdc++-workaround-clang-bug-80210.patch
 libstdc++-12.0-mingw-crosscompilers.patch
 gcc-12-fix-stage1-ada-linkage.patch
 gcn-run-more-arches.patch
@@ -827,11 +827,13 @@ development. This includes rewritten implementation of STL.
 %files -n %{libstdcxx_devel}
 %{_includedir}/c++/%{version}
 %{_libdir}/libstdc++.so
+%{_libdir}/libstdc++.modules.json
 %if ! %{cross_compiling}
 %{_datadir}/gdb/auto-load%{_libdir}/libstdc++.*.py
 %endif
 %if %{build_multilib}
 %{multilibdir}/libstdc++.so
+%{multilibdir}/libstdc++.modules.json
 %if ! %{cross_compiling}
 %{_datadir}/gdb/auto-load%{multilibdir}/libstdc++.*.py
 %endif
