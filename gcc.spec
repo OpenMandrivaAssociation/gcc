@@ -223,6 +223,9 @@
 %define		liblsan			%mklibname lsan %{lsan_major}
 %define		liblsan_devel		%mklibname lsan -d
 %define		liblsan_static_devel	%mklibname lsan -d -s
+%define		gccjit_major		0
+%define		libgccjit		%mklibname gccjit %{gccjit_major}
+%define		libgccjit_devel		%mklibname gccjit -d
 
 #-----------------------------------------------------------------------
 %define		build_ada		0
@@ -2486,6 +2489,41 @@ Static liblsan.
 %endif
 
 ########################################################################
+# JIT (Just-In-Time)
+########################################################################
+%if %{system_gcc}
+%package -n %{libgccjit}
+Summary:        JIT library
+Group:          Development/C
+
+%description -n %{libgccjit}
+JIT library.
+
+%files -n %{libgccjit}
+%{_libdir}/libgccjit.so.%{gccjit_major}*
+
+#-----------------------------------------------------------------------
+
+%package -n %{libgccjit_devel}
+Summary:        GCC JIT development support
+Group:          Development/C
+Requires:       %{name} = %{EVRD}
+Requires:       %{libgccjit} = %{EVRD}
+Provides:       libgccjit-devel = %{EVRD}
+Provides:       gccjit-devel = %{EVRD}
+
+%description -n %{libgccjit_devel}
+This package contains GCC libraries which are needed
+to use JIT features.
+
+%files -n %{libgccjit_devel}
+%{_includedir}/libgccjit.h
+%{_includedir}/libgccjit++.h
+%{_libdir}/libgccjit.so
+%doc %{_infodir}/libgccjit.info*
+%endif
+
+########################################################################
 %prep
 export LC_ALL=en_US.UTF-8
 %autosetup -p1 -n %{srcname}
@@ -2755,7 +2793,8 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 			--enable-gnu-unique-object \
 			--enable-gnu-indirect-function \
 			--with-linker-hash-style=gnu \
-			--enable-languages="$LANGUAGES" \
+			--enable-languages="$LANGUAGES,jit" \
+			--enable-host-shared \
 			$PROGRAM_PREFIX \
 			--enable-linker-build-id \
 %if !%{build_plugin}
