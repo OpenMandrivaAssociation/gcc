@@ -348,7 +348,7 @@ License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2
 Group:		Development/C
 Url:		https://gcc.gnu.org/
 Version:	15.1.0
-Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
+Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}2
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
 Source0:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
