@@ -347,7 +347,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	15.1.0
+Version:	15.2.0
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}2
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
@@ -450,8 +450,6 @@ libstdc++-workaround-clang-bug-50248.patch
 libstdc++-12.0-mingw-crosscompilers.patch
 gcc-12-fix-stage1-ada-linkage.patch
 gcn-run-more-arches.patch
-# Required for glibc >= 2.42 build; already merged upstream
-gcc-15.1.0-compat-glibc-2.42.patch
 # When we want to start building wine stuff on aarch64
 #https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/0c7e3b486772d9020e82fa53e2f824b5a7d59b11.patch
 #https://github.com/Windows-on-ARM-Experiments/gcc-woarm64/commit/f7b7f5752bf1c5ca3cb0fec1e6c6bf7254b87bf1.patch
