@@ -19,11 +19,11 @@
 %global bootstraptargets i686-linux aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc riscv64-linuxuclibc ppc64-linux ppc64le-linux x86_64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl loongarch64-linux loongarch64-linuxmusl
 %else
 %ifarch %{aarch64}
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl
-%global bootstraptargets loongarch64-linux loongarch64-linuxmusl x86_64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc aarch64-linuxuclibc
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl loongarch64-linux loongarch64-linuxmusl
+%global bootstraptargets x86_64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc aarch64-linuxuclibc
 %else
-%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl x86_64-linuxuclibc
-%global bootstraptargets loongarch64-linux loongarch64-linuxmusl aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
+%global targets aarch64-linux armv7hnl-linux x86_64-linux x32-linux riscv64-linux aarch64-linuxmusl armv7hnl-linuxmusl i686-linuxmusl x86_64-linuxmusl x32-linuxmusl riscv64-linuxmusl i686-mingw32 x86_64-mingw32 i686-linux ppc64le-linux ppc64le-linuxmusl ppc64-linux ppc64-linuxmusl x86_64-linuxuclibc loongarch64-linux loongarch64-linuxmusl
+%global bootstraptargets aarch64-linuxuclibc armv7hnl-linuxuclibc i686-linuxuclibc x32-linuxuclibc riscv64-linuxuclibc ppc64-linuxuclibc ppc64le-linuxuclibc
 %endif
 %endif
 %endif
@@ -108,7 +108,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-#define		prerelease		20250418
+%define		prerelease		20260103
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -236,7 +236,7 @@
 # FIXME This should be re-enabled, for a yet undetermined reason
 # "make install" fails on broken *.Po files when building gcc
 # 12.0-20220313 with gcc 11.2.1
-%define		build_d			0
+%define		build_d			1
 %define		build_lto		1
 %define		build_atomic		1
 %define		build_objc		0
@@ -347,8 +347,8 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	15.2.0
-Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}2
+Version:	15.2.1
+Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
 Source0:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/%{srcname}.tar.xz
