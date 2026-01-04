@@ -378,6 +378,7 @@ Source100:	gcc.rpmlintrc
 # 32-bit glibc needed for 32-bit libstdc++ and friends
 BuildRequires:	libc6
 %endif
+BuildRequires:	make
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
