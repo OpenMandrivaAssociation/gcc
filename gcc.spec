@@ -233,10 +233,11 @@
 %define		build_check		0
 %define		build_multilib		0
 %define		build_go		0
-# FIXME This should be re-enabled, for a yet undetermined reason
-# "make install" fails on broken *.Po files when building gcc
-# 12.0-20220313 with gcc 11.2.1
-%define		build_d			1
+# FIXME This should be re-enabled, but the bootstrapping problem
+# must be solved (gdc requires gdc to be installed already).
+# Chances are we need to build a bootstrap compiler from before
+# the time it became a requirement (apparently gcc 12).
+%define		build_d			0
 %define		build_lto		1
 %define		build_atomic		1
 %define		build_objc		0
