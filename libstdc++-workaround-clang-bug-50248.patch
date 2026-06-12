@@ -1,7 +1,7 @@
-diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional
---- gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~	2025-04-18 11:20:19.000000000 +0200
-+++ gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional	2025-04-23 00:51:43.748712508 +0200
-@@ -488,8 +488,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+diff -up gcc-16.1.0/libstdc++-v3/include/std/optional.omv~ gcc-16.1.0/libstdc++-v3/include/std/optional
+--- gcc-16.1.0/libstdc++-v3/include/std/optional.omv~	2026-05-03 00:03:33.468641608 +0200
++++ gcc-16.1.0/libstdc++-v3/include/std/optional	2026-05-03 00:11:57.263384963 +0200
+@@ -509,8 +509,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        constexpr _Optional_base() = default;
  
        // Constructors for engaged optionals.
@@ -14,8 +14,8 @@ diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-
  	constexpr explicit
  	_Optional_base(in_place_t, _Args&&... __args)
  	: _M_payload(in_place, std::forward<_Args>(__args)...)
-@@ -988,13 +992,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
- 	    emplace(std::move(__t._M_get()));
+@@ -1022,13 +1026,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 	    emplace(std::move(__t)._M_fwd());
  	}
  
 +#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
@@ -39,7 +39,7 @@ diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-
        template<typename _Up, typename... _Args,
  	       _Requires<is_constructible<_Tp,
  					  initializer_list<_Up>&,
-@@ -1003,6 +1018,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+@@ -1037,6 +1052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  	optional(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
  	noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&,
  					    _Args...>)
@@ -47,12 +47,12 @@ diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-
  	: _Base(std::in_place, __il, std::forward<_Args>(__args)...) { }
  #endif
  
-@@ -1112,9 +1128,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
- 
+@@ -1148,9 +1164,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+       // 2746. Inconsistency between requirements for emplace between optional and variant
        template<typename... _Args>
  	_GLIBCXX20_CONSTEXPR
 +#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
-+	_Tp& emplace(_Args&&... __args)
++        _Tp& emplace(_Args&&... __args)
 +#else
  	enable_if_t<is_constructible_v<_Tp, _Args...>, _Tp&>
  	emplace(_Args&&... __args)
@@ -61,14 +61,14 @@ diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-
  	{
  	  this->_M_reset();
  	  this->_M_construct(std::forward<_Args>(__args)...);
-@@ -1715,12 +1735,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+@@ -2216,12 +2236,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      noexcept(is_nothrow_constructible_v<optional<decay_t<_Tp>>, _Tp>)
-     { return optional<decay_t<_Tp>>{ std::forward<_Tp>(__t) }; }
+     { return optional<decay_t<_Tp>>( std::forward<_Tp>(__t) ); }
  
 +#ifdef __clang__ // FIXME https://github.com/llvm/llvm-project/issues/50248
 +  template<typename _Tp, typename... _Args>
 +    constexpr
-+		optional<_Tp>
++                optional<_Tp>
 +    make_optional(_Args&&... __args)
 +#else
    template<typename _Tp, typename... _Args>
@@ -78,6 +78,6 @@ diff -up gcc-15.1.0-RC-20250418/libstdc++-v3/include/std/optional.2~ gcc-15.1.0-
      make_optional(_Args&&... __args)
      noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 +#endif
-     { return optional<_Tp>{ in_place, std::forward<_Args>(__args)... }; }
+     { return optional<_Tp>( in_place, std::forward<_Args>(__args)... ); }
  
    template<typename _Tp, typename _Up, typename... _Args>

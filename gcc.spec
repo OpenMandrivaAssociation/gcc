@@ -55,7 +55,6 @@
 # shared objects (regardless of unresolved symbols)
 %define		_disable_ld_no_undefined	1
 
-# avoid build failure due to configure built with different autoconf version
 %define		_disable_libtoolize		1
 # -flto in compiler flags breaks things, but --with-build-config=bootstrap-lto
 # does the right thing
@@ -108,7 +107,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20260103
+%define		prerelease		20260606
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -337,6 +336,9 @@
 %define		shared_libgnat		0
 %endif
 
+%bcond_with cobol
+%bcond_with algol68
+
 #-----------------------------------------------------------------------
 
 Summary:	GNU Compiler Collection
@@ -348,7 +350,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	15.2.1
+Version:	16.1.1
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
@@ -356,12 +358,12 @@ Source0:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?bet
 Source1:	https://mirrorservice.org/sites/sourceware.org/pub/gcc/snapshots/%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}/sha512.sum
 %else
 # http://www.gnu.org/prep/ftp.html ...
-Source0:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
-Source1:	http://mirror.koddos.net/gcc/releases/gcc-%{version}/sha512.sum
+Source0:	https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-%{version}/gcc-%{version}.tar.xz
+Source1:	https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-%{version}/sha512.sum
 %define srcname gcc-%{version}
 %endif
 %if %{with offloading}
-Source2:	https://sourceware.org/pub/newlib/newlib-4.5.0.20241231.tar.gz
+Source2:	https://sourceware.org/pub/newlib/newlib-4.6.0.20260123.tar.gz
 BuildRequires:	nvptx-tools
 BuildRequires:	llvm
 %endif
@@ -446,9 +448,9 @@ Provides:	cross-%{gcc_target_platform}-gcc = %{EVRD}
 Provides:	cross-%{gcc_target_platform}-gcc-bootstrap = %{EVRD}
 
 %patchlist
+gcc-refresh-buildsystem.patch
 gcc-13.1.0-crosscompiler-lld-mold.patch
 libstdc++-workaround-clang-bug-50248.patch
-#libstdc++-workaround-clang-bug-80210.patch
 libstdc++-12.0-mingw-crosscompilers.patch
 gcc-12-fix-stage1-ada-linkage.patch
 gcn-run-more-arches.patch
@@ -598,8 +600,10 @@ build applications with libgcc.
 
 %files -n %{libgcc_devel}
 %{_libdir}/libgcc_s.so
+%{_libdir}/libgcc_s_asneeded.so
 %if %{build_multilib}
 %{_prefix}/lib/libgcc_s.so
+%{_prefix}/lib/libgcc_s_asneeded.so
 %endif
 %{gccdir}/*.o
 %{gccdir}/libgcc*.a
@@ -1153,9 +1157,12 @@ programs with the GNU Compiler Collection.
 %{gcclibexecdir}/f951
 %{gccdir}/finclude
 %{gccdir}/libcaf_single.a
+%{gccdir}/libcaf_shmem.a
 %{_libdir}/libcaf_single.a
+%{_libdir}/libcaf_shmem.a
 %if %{build_multilib}
 %{multigccdir}/libcaf_single.a
+%{multigccdir}/libcaf_shmem.a
 %{multigccdir}/finclude
 %endif
 %if %{build_doc}
@@ -2265,8 +2272,10 @@ to use Atomic optimizer features.
 
 %files -n %{libatomic_devel}
 %{_libdir}/libatomic.so
+%{_libdir}/libatomic_asneeded.so
 %if %{build_multilib}
 %{multilibdir}/libatomic.so
+%{multilibdir}/libatomic_asneeded.so
 %endif
 
 #-----------------------------------------------------------------------
@@ -2281,8 +2290,10 @@ Static libatomic.
 
 %files -n %{libatomic_static_devel}
 %{_libdir}/libatomic.a
+%{_libdir}/libatomic_asneeded.a
 %if %{build_multilib}
 %{multilibdir}/libatomic.a
+%{multilibdir}/libatomic_asneeded.a
 %endif
 %endif
 
@@ -2538,10 +2549,24 @@ for i in ar nm ranlib objdump readelf otool; do
 done
 ln -s %{_bindir}/llvm-mc amdgpu-binutils/amdgcn-amdhsa-as
 ln -s %{_bindir}/ld.lld amdgpu-binutils/amdgcn-amdhsa-ld
+rm -rf newlib-*
 %endif
 
 # Allow building with current autoconf
-find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
+AC_VERSION="$(autoconf --version |head -n1 |sed -e 's,.* ,,')"
+GCC_AC_VERSION="$(grep -E 'm4_define.*_GCC_AUTOCONF_VERSION' config/override.m4 |grep -v ^dnl |sed -e 's,.*\[,,;s,\].*,,;s,\.,\\.,g')"
+find . -name "*.m4" |xargs sed -i -e "s,${GCC_AC_VERSION},${AC_VERSION},g"
+
+find . -name ltoptions.m4 -o -name ltsugar.m4 -o -name ltversion.m4 -o -name lt~obsolete.m4 -o -name libtool.m4 |xargs rm
+find . -name libtool -o -name ltmain.sh |while read r; do
+	rm $r
+	cat >$r <<'EOF'
+#!/bin/sh
+exec /usr/bin/rclibtool "$@"
+EOF
+	chmod +x $r
+done
+find . -name configure |xargs sed -i -e 's,^LIBTOOL=.*,LIBTOOL=rclibtool,g'
 
 # FIXME running autoconf here breaks crosscompiling
 # for whatever reason. It seems to drop necessary flags
@@ -2551,7 +2576,7 @@ find . -name "*.m4" |xargs sed -i -e 's,2\.69,2.71,g'
 # FIXME since we can't run autoconf, we have to fix 
 # configure scripts here -- gcc_cv_objdump isn't set
 # anywhere, breaking --host=X --target=X --build=Y
-sed -i -e 's,\$gcc_cv_objdump,${target}-objdump,g' libcc1/configure
+#sed -i -e 's,\$gcc_cv_objdump,${target}-objdump,g' libcc1/configure
 
 echo %{vendor} > gcc/DEV-PHASE
 %if "%{snapshot}" != ""
@@ -2591,6 +2616,12 @@ LANGUAGES=c
 %endif
 %if %{build_rust}
     LANGUAGES="$LANGUAGES,rust"
+%endif
+%if %{with algol68}
+    LANGUAGES="$LANGUAGES,algol68"
+%endif
+%if %{with cobol}
+    LANGUAGES="$LANGUAGES,cobol"
 %endif
 PROGRAM_SUFFIX=""
 %if "%{program_suffix}" != ""
@@ -2909,6 +2940,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				$EXTRA_FLAGS
 		else
 			echo "===== Building %{gcc_target_platform} -> $i crosscompiler ====="
+			LANGS="c,c++,fortran,lto"
 			if echo $i |grep -q mingw; then
 				# FIXME we should to
 				#THREADS="--enable-threads=mcf"
@@ -2916,6 +2948,8 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				THREADS="--enable-threads"
 			else
 				THREADS="--enable-threads"
+				# libobjc barfs in mingw crosscompilers, avoid it there
+				LANGS="$LANGS,objc,obj-c++"
 			fi
 			CC=gcc CXX=g++ LDFLAGS="-fuse-ld=bfd" ../configure \
 				--prefix=%{_prefix} \
@@ -2934,7 +2968,7 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 				--enable-shared \
 				--enable-lto \
 				--enable-plugin \
-				--enable-languages=c,c++,fortran,lto,objc,obj-c++ \
+				--enable-languages="$LANGS" \
 				--target=${i} \
 				--with-bugurl=https://issues.openmandriva.org \
 				$EXTRA_FLAGS
@@ -3102,6 +3136,14 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		echo "=== libsanitizer wasn't built for ${i}. Please check logs! ==="
 		make -C obj-${i}
 	fi
+	# Disable dangerous relink but fake success for install
+	echo "=== Fixing libtool relink only for libsanitizer ==="
+
+	find %{builddir}/obj-${i}/${i}/libsanitizer \
+	     -name '*.la' -exec sed -i \
+	  -e 's|^relink_command=.*|relink_command="cp -fp \$(dirname \$0)/.libs/\$(notdir \$@) \$(dirname \$0)/.libs/\$(notdir \$@)T 2>/dev/null || true"|' \
+	  -e 's|^installed=no|installed=yes|' \
+	  {} + || :
 	%make_install -C obj-${i}
 	# libgcc_s.so* is always installed in the wrong place
 	# Using "%{_prefix}/lib*" to catch /usr/lib, /usr/lib64 and /usr/libx32
