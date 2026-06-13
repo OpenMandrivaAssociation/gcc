@@ -382,6 +382,7 @@ Source100:	gcc.rpmlintrc
 BuildRequires:	libc6
 %endif
 BuildRequires:	make
+BuildRequires:	slibtool
 BuildRequires:	binutils >= 2.20.51.0.2
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
