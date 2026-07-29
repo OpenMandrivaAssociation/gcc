@@ -384,6 +384,10 @@ BuildRequires:	libc6
 BuildRequires:	make
 BuildRequires:	slibtool
 BuildRequires:	binutils >= 2.20.51.0.2
+# Host gcc 16+ always passes -latomic_asneeded when linking (see *link_gcc_c_sequence).
+# Needs libatomic_asneeded.so from atomic-devel; without it configure fails in mock with
+# "C compiler cannot create executables". Host gcc 15 did not require this.
+BuildRequires:	atomic-devel
 BuildRequires:	dejagnu
 BuildRequires:	elfutils-devel >= 0.147
 BuildRequires:	bison
