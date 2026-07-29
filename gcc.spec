@@ -107,7 +107,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20260606
+%define		prerelease		20260725
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -425,6 +425,7 @@ Requires:	%{libgcc} >= %{EVRD}
 Requires:	%{libgcc_devel} >= %{EVRD}
 Requires:	%{libgomp} >= %{EVRD}
 Requires:	%{libcc1} >= %{EVRD}
+Requires:	atomic-devel >= %{EVRD}
 # as gcc now has it's own output color support, let's obsolete the old
 # colorgcc with it's perl wrapper script which is slightly buggy with it's
 # it's output redirection anyways...
