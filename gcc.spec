@@ -107,7 +107,7 @@
 %define		default_compiler	0
 %define		majorver		%(echo %{version} |cut -d. -f1)
 %define		branch			%(echo %{version} |cut -d. -f1-2)
-%define		prerelease		20260725
+#define		prerelease		20260725
 #define		beta			RC
 %define		gcclibexecdirparent	%{_libexecdir}/gcc/%{gcc_target_platform}/
 %define		gcclibexecdir		%{gcclibexecdirparent}/%{version}
@@ -350,7 +350,7 @@ Name:		gcc%{package_suffix}
 License:	GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
 Group:		Development/C
 Url:		https://gcc.gnu.org/
-Version:	16.1.1
+Version:	16.2.0
 Release:	%{?prerelease:0.%(echo %{prerelease} |sed -e 's,-,_,g').}1
 %if 0%{?prerelease:1}
 %define srcname gcc-%{?beta:%{version}}%{!?beta:%{majorver}}-%{?beta:%{beta}-}%{prerelease}
