@@ -46,6 +46,13 @@
 )
 %bcond_without crosscompilers
 %bcond_without offloading
+%if ! %{with crosscompilers}
+# targets is the short list (riscv64-linux); long_targets expands it with
+# rpm --target=$CPU-$OS, where OS is field 2. Do not assign
+# %{_target_platform} to targets. Collapse the expanded lists instead.
+%global long_targets %{_target_platform}
+%global long_bootstraptargets %{nil}
+%endif
 
 # functions with printf format attribute but with special parser and also
 # receiving non constant format strings
