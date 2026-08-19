@@ -268,7 +268,7 @@
 %define		build_libgcc		%{system_gcc}
 %define		build_pdf		%{build_doc}
 %define		build_plugin		%{system_gcc}
-%if %isarch %{x86_64} %{armx}
+%if %isarch %{x86_64} %{armx} %{riscv}
   %define	build_tsan		%{system_gcc}
   %define	build_lsan		%{system_gcc}
 
@@ -2589,7 +2589,9 @@ find . -name configure |xargs sed -i -e 's,^LIBTOOL=.*,LIBTOOL=rclibtool,g'
 # FIXME since we can't run autoconf, we have to fix 
 # configure scripts here -- gcc_cv_objdump isn't set
 # anywhere, breaking --host=X --target=X --build=Y
-#sed -i -e 's,\$gcc_cv_objdump,${target}-objdump,g' libcc1/configure
+%if %{cross_compiling}
+sed -i -e 's,\$gcc_cv_objdump,${target}-objdump,g' libcc1/configure
+%endif
 
 echo %{vendor} > gcc/DEV-PHASE
 %if "%{snapshot}" != ""
@@ -2671,7 +2673,9 @@ for i in %{_target_platform}; do
 %else
 for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
+%if ! %{cross_compiling}
 (
+%endif
 %if %{with offloading}
 	# GPU Offloading (except for bootstrap targets)
 	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
@@ -2989,9 +2993,13 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
 	fi
 	cd ..
+%if %{cross_compiling}
+done
+%else
 ) &
 done
 wait
+%endif
 
 #-----------------------------------------------------------------------
 %build
@@ -3020,6 +3028,12 @@ case " $OPT_FLAGS " in
   ;;
 esac
 echo "Using OPT_FLAGS $OPT_FLAGS"
+%if %{cross_compiling}
+# libcc1/configure uses $gcc_cv_objdump, which the top-level Makefile never
+# exports for --build != --host == --target. Empty value becomes "-T".
+export gcc_cv_objdump=%{_bindir}/%{_target_platform}-objdump
+export OBJDUMP=$gcc_cv_objdump
+%endif
 
 %if %{cross_compiling}
 BOOTSTRAP=all
@@ -3048,7 +3062,9 @@ echo "Using $RPM_BUILD_NCPUS CPUs per target"
 
 for i in %{long_bootstraptargets} %{long_targets}; do
 %endif
+%if ! %{cross_compiling}
 (
+%endif
 %if %{with offloading}
 	# GPU Offloading
 	if ! echo " %{long_bootstraptargets} " |grep -q " $i "; then
@@ -3064,6 +3080,10 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		# profiledbootstrap support and potentially building docs
 
 		%make_build -C obj-${i} BOOT_CFLAGS="$OPT_FLAGS" $BOOTSTRAP
+		if ! [ -e obj-${i}/c++tools/g++-mapper-server ]; then
+			echo "=== g++-mapper-server wasn't built. Please check logs! ==="
+			make -C obj-${i}/c++tools
+		fi
 
 %if %{build_doc}
 		pushd obj-${i}/host-%{gcc_target_platform}/gcc
@@ -3081,9 +3101,13 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		make -C obj-${i}
 %endif
 	fi
+%if %{cross_compiling}
+done
+%else
 ) &
 done
 wait
+%endif
 
 #-----------------------------------------------------------------------
 
@@ -3173,7 +3197,28 @@ done
 %endif
 %endif
 
+%if %{cross_compiling}
+%if %{with offloading}
+# Offload compilers are built for this target even when canadian-crossing;
+# the !cross_compiling install loop skipped them.
+for j in %{offloadtargets}; do
+	if [ -d obj-%{gcc_target_platform}-accel-${j} ]; then
+		if ! [ -e obj-%{gcc_target_platform}-accel-${j}/c++tools/g++-mapper-server ]; then
+			echo "=== g++-mapper-server wasn't built for accel-${j}. Please check logs! ==="
+			make -C obj-%{gcc_target_platform}-accel-${j}/c++tools
+		fi
+		%make_install -C obj-%{gcc_target_platform}-accel-${j}
+	fi
+done
+%endif
+%endif
+
 # Native compiler
+if ! [ -e obj-%{gcc_target_platform}/c++tools/g++-mapper-server ]; then
+	echo "=== g++-mapper-server wasn't built. Please check logs! ==="
+	make -C obj-%{gcc_target_platform}
+	make -C obj-%{gcc_target_platform}/c++tools
+fi
 %make_install -C obj-%{gcc_target_platform}
 
 %if %{build_lto}
@@ -3443,6 +3488,13 @@ done
 # directories... Doesn't belong there for sure
 %ifarch %{aarch64} %{riscv}
 rm -rf %{buildroot}%{_prefix}/libx32
+%endif
+%if %{cross_compiling}
+# libsanitizer installs tsan/lsan on riscv64, but the %files for those
+# libs are gated on %isarch x86_64/aarch64 and are not emitted when
+# canadian-crossing.
+rm -f %{buildroot}%{_libdir}/libtsan.so* %{buildroot}%{_libdir}/libtsan.a %{buildroot}%{_libdir}/libtsan_preinit.o
+rm -f %{buildroot}%{_libdir}/liblsan.so* %{buildroot}%{_libdir}/liblsan.a %{buildroot}%{_libdir}/liblsan_preinit.o
 %endif
 %ifarch %{ix86}
 # Not sure why ix86 would try to build multilib stuff?
