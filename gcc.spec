@@ -45,7 +45,11 @@
         done
 )
 %bcond_without crosscompilers
+%if %{cross_compiling}
+%bcond_with offloading
+%else
 %bcond_without offloading
+%endif
 %if ! %{with crosscompilers}
 # targets is the short list (riscv64-linux); long_targets expands it with
 # rpm --target=$CPU-$OS, where OS is field 2. Do not assign
@@ -2786,6 +2790,9 @@ for i in %{long_bootstraptargets} %{long_targets}; do
 		ORIGINAL_NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 		NM_FOR_TARGET="%{_bindir}/binutils-nm" \
 %else
+		# clang++ rejects GCC's extern-inline redefinitions in tree.cc
+		CC=%{_target_platform}-gcc \
+		CXX=%{_target_platform}-g++ \
 		ORIGINAL_NM_FOR_TARGET="%{_bindir}/%{_target_platform}-nm" \
 		NM_FOR_TARGET="%{_bindir}/%{_target_platform}-nm" \
 %endif
